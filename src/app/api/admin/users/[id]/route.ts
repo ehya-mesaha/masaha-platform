@@ -34,13 +34,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const { id } = await params
-    const { status } = await req.json()
+    const body = await req.json()
+    const { status, role } = body as { status?: 'ACTIVE' | 'SUSPENDED'; role?: 'ADMIN' | 'SELLER' | 'BUYER' }
 
-    const updated = await prisma.user.update({
-      where: { id },
-      data: { status },
-    })
+    const data: { status?: 'ACTIVE' | 'SUSPENDED'; role?: 'ADMIN' | 'SELLER' | 'BUYER' } = {}
+    if (status) data.status = status
+    if (role) {
+      // Prevent an admin from demoting themselves (avoid lockout)
+      if (id === user.id && role !== 'ADMIN') {
+        return NextResponse.json({ error: 'لا يمكنك تغيير دورك بنفسك' }, { status: 400 })
+      }
+      data.role = role
+    }
 
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'لا توجد بيانات للتحديث' }, { status: 400 })
+    }
+
+    const updated = await prisma.user.update({ where: { id }, data })
     return NextResponse.json({ user: updated })
   } catch (err) {
     console.error(err)
