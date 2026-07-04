@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer'
 import SpaceCard from '@/components/spaces/SpaceCard'
 
 export const dynamic = 'force-dynamic'
+
 export const revalidate = 0
 
 async function getFeaturedSpaces() {
