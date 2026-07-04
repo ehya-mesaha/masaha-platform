@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#F5F0E6"/>
+  <rect x="100" y="150" width="600" height="350" fill="#E8E3D8" rx="12"/>
+  <rect x="200" y="100" width="400" height="30" fill="#1B3A2D" rx="4"/>
+  <rect x="150" y="200" width="250" height="180" fill="#1B3A2D" rx="8"/>
+  <rect x="420" y="200" width="230" height="80" fill="#C49A3C" rx="6"/>
+  <rect x="420" y="295" width="230" height="85" fill="#C49A3C" opacity="0.6" rx="6"/>
+  <rect x="200" y="400" width="400" height="80" fill="#1B3A2D" opacity="0.3" rx="6"/>
+  <text x="400" y="560" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#6B7280">مساحة</text>
+</svg>

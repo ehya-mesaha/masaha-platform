@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  BUYER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum SpaceStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  INACTIVE
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  phone     String?
+  password  String
+  role      Role       @default(BUYER)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  spaces   Space[]
+  bookings Booking[]
+}
+
+model SpaceType {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  spaces Space[]
+}
+
+model Amenity {
+  id     String         @id @default(cuid())
+  name   String         @unique
+  icon   String?
+  spaces SpaceAmenity[]
+}
+
+model Space {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  city        String
+  district    String?
+  address     String?
+  capacity    Int?
+  price       Float
+  pricePeriod String      @default("hour")
+  status      SpaceStatus @default(DRAFT)
+  adminNotes  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  typeId   String
+  type     SpaceType @relation(fields: [typeId], references: [id])
+  sellerId String
+  seller   User      @relation(fields: [sellerId], references: [id])
+
+  images    SpaceImage[]
+  amenities SpaceAmenity[]
+  bookings  Booking[]
+}
+
+model SpaceImage {
+  id      String @id @default(cuid())
+  url     String
+  order   Int    @default(0)
+  spaceId String
+  space   Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+model SpaceAmenity {
+  spaceId   String
+  amenityId String
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
+
+  @@id([spaceId, amenityId])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  date       String
+  startTime  String
+  endTime    String
+  persons    Int?
+  notes      String?
+  status     BookingStatus @default(PENDING)
+  sellerNote String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  spaceId String
+  space   Space  @relation(fields: [spaceId], references: [id])
+  buyerId String
+  buyer   User   @relation(fields: [buyerId], references: [id])
+}

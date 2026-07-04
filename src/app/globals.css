@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --green-dark: #1B3A2D;
+  --green-deeper: #0F2219;
+  --gold: #C49A3C;
+  --gold-light: #D4AA4C;
+  --bg-warm: #F5F0E6;
+  --border: #E8E3D8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: var(--bg-warm);
+  color: #1A1A1A;
+}
+
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}

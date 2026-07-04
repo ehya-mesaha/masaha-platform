@@ -1,0 +1,374 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Card from '@/components/ui/Card'
+
+type SpaceType = { id: string; name: string }
+type Amenity = { id: string; name: string }
+
+export default function NewSpacePage() {
+  const router = useRouter()
+  const [step, setStep] = useState(1)
+  const [types, setTypes] = useState<SpaceType[]>([])
+  const [amenities, setAmenities] = useState<Amenity[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const [form, setForm] = useState({
+    name: '',
+    typeId: '',
+    description: '',
+    city: '',
+    district: '',
+    address: '',
+    capacity: '',
+    price: '',
+    pricePeriod: 'hour',
+    images: [''],
+    amenityIds: [] as string[],
+  })
+
+  useEffect(() => {
+    fetch('/api/admin/categories')
+      .then(r => r.json())
+      .then(data => {
+        setTypes(data.types || [])
+        setAmenities(data.amenities || [])
+      })
+  }, [])
+
+  function update(field: string, value: unknown) {
+    setForm(p => ({ ...p, [field]: value }))
+  }
+
+  function toggleAmenity(id: string) {
+    setForm(p => ({
+      ...p,
+      amenityIds: p.amenityIds.includes(id)
+        ? p.amenityIds.filter(a => a !== id)
+        : [...p.amenityIds, id],
+    }))
+  }
+
+  async function handleSubmit() {
+    setError('')
+    setLoading(true)
+
+    try {
+      const images = form.images.filter(u => u.trim())
+      const res = await fetch('/api/spaces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, images }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'حدث خطأ')
+        return
+      }
+
+      router.push('/seller/spaces')
+    } catch {
+      setError('حدث خطأ في الاتصال')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const steps = [
+    { num: 1, label: 'المعلومات الأساسية' },
+    { num: 2, label: 'الصور والمرافق' },
+    { num: 3, label: 'السعر والنشر' },
+  ]
+
+  return (
+    <div className="p-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">إضافة مساحة جديدة</h1>
+          <p className="text-gray-500 text-sm mt-1">أدخل معلومات مساحتك في ثلاث خطوات</p>
+        </div>
+
+        {/* Steps indicator */}
+        <div className="flex items-center gap-2 mb-8">
+          {steps.map((s, i) => (
+            <div key={s.num} className="flex items-center gap-2">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+                step >= s.num ? 'bg-[#1B3A2D] text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                {step > s.num ? '✓' : s.num}
+              </div>
+              <span className={`text-sm hidden sm:block ${step >= s.num ? 'text-[#1B3A2D] font-medium' : 'text-gray-400'}`}>
+                {s.label}
+              </span>
+              {i < steps.length - 1 && <div className="flex-1 h-px bg-gray-200 mx-2 hidden sm:block" style={{ minWidth: 20 }} />}
+            </div>
+          ))}
+        </div>
+
+        <Card>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
+          {/* Step 1: Basic Info */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">المعلومات الأساسية</h2>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المساحة *</label>
+                <input
+                  value={form.name}
+                  onChange={e => update('name', e.target.value)}
+                  placeholder="مكتب الإبداع، قاعة النجاح..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">نوع المساحة *</label>
+                <select
+                  value={form.typeId}
+                  onChange={e => update('typeId', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
+                >
+                  <option value="">اختر النوع</option>
+                  {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">الوصف</label>
+                <textarea
+                  value={form.description}
+                  onChange={e => update('description', e.target.value)}
+                  rows={3}
+                  placeholder="وصف مختصر عن المساحة..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">المدينة *</label>
+                  <input
+                    value={form.city}
+                    onChange={e => update('city', e.target.value)}
+                    placeholder="الرياض"
+                    className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">الحي</label>
+                  <input
+                    value={form.district}
+                    onChange={e => update('district', e.target.value)}
+                    placeholder="العليا"
+                    className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">العنوان التفصيلي</label>
+                <input
+                  value={form.address}
+                  onChange={e => update('address', e.target.value)}
+                  placeholder="شارع الملك فهد، برج..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">الطاقة الاستيعابية</label>
+                <input
+                  type="number"
+                  value={form.capacity}
+                  onChange={e => update('capacity', e.target.value)}
+                  placeholder="عدد الأشخاص"
+                  min={1}
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                />
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!form.name || !form.typeId || !form.city) {
+                      setError('يرجى إدخال الاسم والنوع والمدينة')
+                      return
+                    }
+                    setError('')
+                    setStep(2)
+                  }}
+                  className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Images & Amenities */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">الصور والمرافق</h2>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">صور المساحة</label>
+                <p className="text-xs text-gray-500 mb-3">أدخل روابط صور المساحة (URL)</p>
+                {form.images.map((url, i) => (
+                  <div key={i} className="flex gap-2 mb-2">
+                    <input
+                      value={url}
+                      onChange={e => {
+                        const imgs = [...form.images]
+                        imgs[i] = e.target.value
+                        update('images', imgs)
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      className="flex-1 px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                    />
+                    {form.images.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => update('images', form.images.filter((_, j) => j !== i))}
+                        className="px-3 py-2.5 text-red-500 border border-red-200 rounded-lg hover:bg-red-50 text-sm"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => update('images', [...form.images, ''])}
+                  className="text-[#1B3A2D] text-sm font-medium hover:underline mt-1"
+                >
+                  + إضافة صورة أخرى
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">المرافق والخدمات</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {amenities.map(a => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => toggleAmenity(a.id)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        form.amenityIds.includes(a.id)
+                          ? 'bg-[#1B3A2D] text-white border-[#1B3A2D]'
+                          : 'bg-white text-gray-600 border-[#E8E3D8] hover:border-[#1B3A2D]'
+                      }`}
+                    >
+                      {a.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="px-6 py-2.5 rounded-lg text-sm font-medium border border-[#E8E3D8] text-gray-600 hover:bg-gray-50"
+                >
+                  السابق
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setError(''); setStep(3) }}
+                  className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Price & Submit */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">السعر والنشر</h2>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">السعر (ر.س) *</label>
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={e => update('price', e.target.value)}
+                  placeholder="100"
+                  min={0}
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">الفترة</label>
+                <div className="flex gap-3">
+                  {[{ val: 'hour', label: 'بالساعة' }, { val: 'day', label: 'باليوم' }].map(opt => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => update('pricePeriod', opt.val)}
+                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium border-2 transition-colors ${
+                        form.pricePeriod === opt.val
+                          ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white'
+                          : 'border-[#E8E3D8] text-gray-600 hover:border-[#1B3A2D]'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                <p className="font-medium mb-1">ملاحظة مهمة</p>
+                <p className="text-xs">بعد إضافة المساحة، ستخضع لمراجعة الإدارة قبل نشرها للعملاء.</p>
+              </div>
+
+              <div className="flex justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="px-6 py-2.5 rounded-lg text-sm font-medium border border-[#E8E3D8] text-gray-600 hover:bg-gray-50"
+                >
+                  السابق
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!form.price) {
+                      setError('يرجى إدخال السعر')
+                      return
+                    }
+                    handleSubmit()
+                  }}
+                  disabled={loading}
+                  className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] disabled:opacity-60 flex items-center gap-2"
+                >
+                  {loading && (
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  )}
+                  {loading ? 'جاري الحفظ...' : 'نشر المساحة'}
+                </button>
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  )
+}
