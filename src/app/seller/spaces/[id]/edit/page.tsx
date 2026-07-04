@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
+import ImageUploader from '@/components/ui/ImageUploader'
 
 type SpaceType = { id: string; name: string }
 type Amenity = { id: string; name: string }
@@ -27,7 +28,7 @@ export default function EditSpacePage() {
     capacity: '',
     price: '',
     pricePeriod: 'hour',
-    images: [''],
+    images: [] as string[],
     amenityIds: [] as string[],
   })
 
@@ -48,7 +49,7 @@ export default function EditSpacePage() {
           capacity: s.capacity?.toString() || '',
           price: s.price.toString(),
           pricePeriod: s.pricePeriod,
-          images: s.images.length ? s.images.map((img: { url: string }) => img.url) : [''],
+          images: s.images.length ? s.images.map((img: { url: string }) => img.url) : [],
           amenityIds: s.amenities.map((a: { amenity: { id: string } }) => a.amenity.id),
         })
       }
@@ -77,7 +78,7 @@ export default function EditSpacePage() {
     setSaving(true)
 
     try {
-      const images = form.images.filter(u => u.trim())
+      const images = form.images
       const res = await fetch(`/api/spaces/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -173,25 +174,10 @@ export default function EditSpacePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">الصور</label>
-              {form.images.map((url, i) => (
-                <div key={i} className="flex gap-2 mb-2">
-                  <input value={url}
-                    onChange={e => {
-                      const imgs = [...form.images]
-                      imgs[i] = e.target.value
-                      update('images', imgs)
-                    }}
-                    placeholder="https://..."
-                    className="flex-1 px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                  />
-                  {form.images.length > 1 && (
-                    <button type="button" onClick={() => update('images', form.images.filter((_, j) => j !== i))}
-                      className="px-3 text-red-500 border border-red-200 rounded-lg hover:bg-red-50 text-sm">✕</button>
-                  )}
-                </div>
-              ))}
-              <button type="button" onClick={() => update('images', [...form.images, ''])}
-                className="text-[#1B3A2D] text-sm font-medium hover:underline">+ إضافة صورة</button>
+              <ImageUploader
+                images={form.images}
+                onChange={urls => update('images', urls)}
+              />
             </div>
 
             <div>
