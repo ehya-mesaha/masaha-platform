@@ -3,17 +3,28 @@ import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 
-export default async function AdminUsersPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
+  const { filter } = await searchParams
   let users: UserType[] = []
+  let pendingCount = 0
 
   try {
+    const where = filter === 'pending' ? { status: 'PENDING_APPROVAL' as const } : {}
     users = await prisma.user.findMany({
+      where,
       select: {
         id: true, name: true, email: true, role: true, status: true, createdAt: true,
         _count: { select: { spaces: true, bookings: true } },
       },
       orderBy: { createdAt: 'desc' },
     }) as UserType[]
+    if (!filter) {
+      pendingCount = users.filter(u => u.status === 'PENDING_APPROVAL').length
+    } else {
+      pendingCount = users.length
+    }
   } catch {
     // DB not connected
   }
@@ -28,12 +39,23 @@ export default async function AdminUsersPage() {
     SELLER: 'bg-[#1B3A2D]/10 text-[#1B3A2D] border-[#1B3A2D]/20',
     BUYER: 'bg-blue-50 text-blue-700 border-blue-200',
   }
+  const statusLabel: Record<string, string> = {
+    ACTIVE: 'نشط',
+    SUSPENDED: 'موقوف',
+    PENDING_APPROVAL: 'بانتظار الاعتماد',
+  }
+  const statusVariant: Record<string, 'success' | 'danger' | 'warning'> = {
+    ACTIVE: 'success',
+    SUSPENDED: 'danger',
+    PENDING_APPROVAL: 'warning',
+  }
 
+  const allUsers = users
   const stats = {
-    total: users.length,
-    admins: users.filter(u => u.role === 'ADMIN').length,
-    sellers: users.filter(u => u.role === 'SELLER').length,
-    buyers: users.filter(u => u.role === 'BUYER').length,
+    total: allUsers.length,
+    admins: allUsers.filter(u => u.role === 'ADMIN').length,
+    sellers: allUsers.filter(u => u.role === 'SELLER').length,
+    buyers: allUsers.filter(u => u.role === 'BUYER').length,
   }
 
   return (
@@ -44,12 +66,13 @@ export default async function AdminUsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {[
           { label: 'إجمالي المستخدمين', value: stats.total, tone: 'text-[#14201A]' },
           { label: 'المديرون', value: stats.admins, tone: 'text-[#C49A3C]' },
           { label: 'أصحاب المساحات', value: stats.sellers, tone: 'text-[#1B3A2D]' },
           { label: 'المستأجرون', value: stats.buyers, tone: 'text-blue-700' },
+          { label: 'بانتظار الاعتماد', value: pendingCount, tone: 'text-amber-600' },
         ].map(s => (
           <div key={s.label} className="card-elevated p-5">
             <div className="text-[11px] font-bold text-[#6B7566] tracking-wide mb-1">{s.label}</div>
@@ -58,9 +81,38 @@ export default async function AdminUsersPage() {
         ))}
       </div>
 
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-4">
+        <Link
+          href="/admin/users"
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            !filter ? 'bg-[#1B3A2D] text-white' : 'bg-white text-[#4A554D] border border-[#ECE6D8] hover:bg-[#F7F3EB]'
+          }`}
+        >
+          الكل
+        </Link>
+        <Link
+          href="/admin/users?filter=pending"
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+            filter === 'pending' ? 'bg-[#1B3A2D] text-white' : 'bg-white text-[#4A554D] border border-[#ECE6D8] hover:bg-[#F7F3EB]'
+          }`}
+        >
+          بانتظار الاعتماد
+          {pendingCount > 0 && (
+            <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+              filter === 'pending' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'
+            }`}>
+              {pendingCount}
+            </span>
+          )}
+        </Link>
+      </div>
+
       <Card padding={false}>
-        <div className="px-6 py-4 border-b border-[#ECE6D8] flex items-center justify-between">
-          <h3 className="font-semibold text-[#14201A]">جميع المستخدمين</h3>
+        <div className="px-6 py-4 border-b border-[#ECE6D8]">
+          <h3 className="font-semibold text-[#14201A]">
+            {filter === 'pending' ? 'البائعون بانتظار الاعتماد' : 'جميع المستخدمين'}
+          </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -97,8 +149,8 @@ export default async function AdminUsersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <Badge variant={u.status === 'ACTIVE' ? 'success' : 'danger'}>
-                      {u.status === 'ACTIVE' ? 'نشط' : 'موقوف'}
+                    <Badge variant={statusVariant[u.status] || 'gray'}>
+                      {statusLabel[u.status] || u.status}
                     </Badge>
                   </td>
                   <td className="px-6 py-4 text-[#4A554D] font-medium">{u._count.spaces}</td>

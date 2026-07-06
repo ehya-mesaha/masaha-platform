@@ -21,11 +21,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'تم تعليق حسابك. يرجى التواصل مع الإدارة' }, { status: 403 })
     }
 
+    if (user.status === 'PENDING_APPROVAL') {
+      return NextResponse.json({ error: 'حسابك قيد المراجعة. سيتم إشعارك عند التفعيل' }, { status: 403 })
+    }
+
     const token = await signToken({
       id: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
+      status: user.status,
     })
 
     const res = NextResponse.json({

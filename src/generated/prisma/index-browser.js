@@ -132,6 +132,14 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.UserDocumentScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  fileUrl: 'fileUrl',
+  uploadedAt: 'uploadedAt',
+  userId: 'userId'
+};
+
 exports.Prisma.SpaceTypeScalarFieldEnum = {
   id: 'id',
   name: 'name'
@@ -140,7 +148,8 @@ exports.Prisma.SpaceTypeScalarFieldEnum = {
 exports.Prisma.AmenityScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  icon: 'icon'
+  icon: 'icon',
+  category: 'category'
 };
 
 exports.Prisma.SpaceScalarFieldEnum = {
@@ -157,6 +166,15 @@ exports.Prisma.SpaceScalarFieldEnum = {
   adminNotes: 'adminNotes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  streetName: 'streetName',
+  buildingNumber: 'buildingNumber',
+  postalCode: 'postalCode',
+  landmarks: 'landmarks',
+  minBookingHours: 'minBookingHours',
+  maxAdvanceBookingDays: 'maxAdvanceBookingDays',
+  cancellationPolicy: 'cancellationPolicy',
   typeId: 'typeId',
   sellerId: 'sellerId'
 };
@@ -171,6 +189,31 @@ exports.Prisma.SpaceImageScalarFieldEnum = {
 exports.Prisma.SpaceAmenityScalarFieldEnum = {
   spaceId: 'spaceId',
   amenityId: 'amenityId'
+};
+
+exports.Prisma.SpaceWorkingHoursScalarFieldEnum = {
+  id: 'id',
+  dayOfWeek: 'dayOfWeek',
+  isOpen: 'isOpen',
+  openTime: 'openTime',
+  closeTime: 'closeTime',
+  spaceId: 'spaceId'
+};
+
+exports.Prisma.SpaceServiceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  price: 'price',
+  pricingType: 'pricingType',
+  spaceId: 'spaceId'
+};
+
+exports.Prisma.SpaceRuleScalarFieldEnum = {
+  id: 'id',
+  rule: 'rule',
+  isDefault: 'isDefault',
+  spaceId: 'spaceId'
 };
 
 exports.Prisma.BookingScalarFieldEnum = {
@@ -210,7 +253,13 @@ exports.Role = exports.$Enums.Role = {
 
 exports.UserStatus = exports.$Enums.UserStatus = {
   ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED'
+  SUSPENDED: 'SUSPENDED',
+  PENDING_APPROVAL: 'PENDING_APPROVAL'
+};
+
+exports.DocumentType = exports.$Enums.DocumentType = {
+  NATIONAL_ID: 'NATIONAL_ID',
+  COMMERCIAL_REGISTER: 'COMMERCIAL_REGISTER'
 };
 
 exports.SpaceStatus = exports.$Enums.SpaceStatus = {
@@ -219,6 +268,12 @@ exports.SpaceStatus = exports.$Enums.SpaceStatus = {
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
   INACTIVE: 'INACTIVE'
+};
+
+exports.CancellationPolicy = exports.$Enums.CancellationPolicy = {
+  FLEXIBLE: 'FLEXIBLE',
+  MODERATE: 'MODERATE',
+  STRICT: 'STRICT'
 };
 
 exports.BookingStatus = exports.$Enums.BookingStatus = {
@@ -231,11 +286,15 @@ exports.BookingStatus = exports.$Enums.BookingStatus = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  UserDocument: 'UserDocument',
   SpaceType: 'SpaceType',
   Amenity: 'Amenity',
   Space: 'Space',
   SpaceImage: 'SpaceImage',
   SpaceAmenity: 'SpaceAmenity',
+  SpaceWorkingHours: 'SpaceWorkingHours',
+  SpaceService: 'SpaceService',
+  SpaceRule: 'SpaceRule',
   Booking: 'Booking'
 };
 

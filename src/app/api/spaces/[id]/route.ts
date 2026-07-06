@@ -12,6 +12,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         seller: { select: { name: true, email: true, phone: true } },
         images: { orderBy: { order: 'asc' } },
         amenities: { include: { amenity: true } },
+        workingHours: { orderBy: { dayOfWeek: 'asc' } },
+        services: true,
+        rules: true,
       },
     })
 
@@ -40,11 +43,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const body = await req.json()
-    const { name, typeId, description, city, district, address, capacity, price, pricePeriod, images, amenityIds } = body
+    const {
+      name, typeId, description, city, district, address, capacity,
+      price, pricePeriod, images, amenityIds,
+      streetName, buildingNumber, postalCode, landmarks,
+      latitude, longitude,
+      workingHours, services, rules,
+      minBookingHours, maxAdvanceBookingDays, cancellationPolicy,
+    } = body
 
-    // Delete old images and amenities
     await prisma.spaceImage.deleteMany({ where: { spaceId: id } })
     await prisma.spaceAmenity.deleteMany({ where: { spaceId: id } })
+    await prisma.spaceWorkingHours.deleteMany({ where: { spaceId: id } })
+    await prisma.spaceService.deleteMany({ where: { spaceId: id } })
+    await prisma.spaceRule.deleteMany({ where: { spaceId: id } })
 
     const updated = await prisma.space.update({
       where: { id },
@@ -55,9 +67,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         city,
         district,
         address,
+        streetName: streetName || null,
+        buildingNumber: buildingNumber || null,
+        postalCode: postalCode || null,
+        landmarks: landmarks || null,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
         capacity: capacity ? Number(capacity) : null,
         price: Number(price),
         pricePeriod: pricePeriod || 'hour',
+        minBookingHours: minBookingHours ? Number(minBookingHours) : null,
+        maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null,
+        cancellationPolicy: cancellationPolicy || 'FLEXIBLE',
         status: user.role === 'ADMIN' ? space.status : 'PENDING_REVIEW',
         images: images?.length
           ? { create: images.map((url: string, i: number) => ({ url, order: i })) }
@@ -65,8 +86,40 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         amenities: amenityIds?.length
           ? { create: amenityIds.map((amenityId: string) => ({ amenityId })) }
           : undefined,
+        workingHours: workingHours?.length
+          ? {
+              create: workingHours
+                .filter((wh: { isOpen: boolean }) => wh.isOpen)
+                .map((wh: { dayOfWeek: number; openTime: string; closeTime: string }) => ({
+                  dayOfWeek: wh.dayOfWeek,
+                  isOpen: true,
+                  openTime: wh.openTime,
+                  closeTime: wh.closeTime,
+                })),
+            }
+          : undefined,
+        services: services?.length
+          ? {
+              create: services.map((s: { name: string; description: string; price: string; pricingType: string }) => ({
+                name: s.name,
+                description: s.description || null,
+                price: Number(s.price),
+                pricingType: s.pricingType || 'PER_BOOKING',
+              })),
+            }
+          : undefined,
+        rules: rules?.length
+          ? {
+              create: rules
+                .filter((r: { isDefault: boolean }) => r.isDefault)
+                .map((r: { rule: string; isDefault: boolean }) => ({
+                  rule: r.rule,
+                  isDefault: r.isDefault,
+                })),
+            }
+          : undefined,
       },
-      include: { type: true, images: true },
+      include: { type: true, images: true, workingHours: true, services: true, rules: true },
     })
 
     return NextResponse.json({ space: updated })

@@ -32,4 +32,5 @@ export type TokenPayload = {
   email: string
   role: 'ADMIN' | 'SELLER' | 'BUYER'
   name: string
+  status: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'
 }

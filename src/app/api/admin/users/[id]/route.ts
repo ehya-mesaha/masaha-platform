@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       include: {
         spaces: { include: { type: true }, orderBy: { createdAt: 'desc' } },
         bookings: { include: { space: true }, orderBy: { createdAt: 'desc' }, take: 10 },
+        documents: { orderBy: { uploadedAt: 'desc' } },
       },
     })
 
@@ -35,9 +36,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id } = await params
     const body = await req.json()
-    const { status, role } = body as { status?: 'ACTIVE' | 'SUSPENDED'; role?: 'ADMIN' | 'SELLER' | 'BUYER' }
+    const { status, role } = body as { status?: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'; role?: 'ADMIN' | 'SELLER' | 'BUYER' }
 
-    const data: { status?: 'ACTIVE' | 'SUSPENDED'; role?: 'ADMIN' | 'SELLER' | 'BUYER' } = {}
+    const data: { status?: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'; role?: 'ADMIN' | 'SELLER' | 'BUYER' } = {}
     if (status) data.status = status
     if (role) {
       // Prevent an admin from demoting themselves (avoid lockout)

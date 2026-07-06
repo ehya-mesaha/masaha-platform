@@ -2,33 +2,26 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Card from '@/components/ui/Card'
-import ImageUploader from '@/components/ui/ImageUploader'
-
-type SpaceType = { id: string; name: string }
-type Amenity = { id: string; name: string }
+import { SpaceFormData, SpaceType, Amenity, getInitialForm } from '@/components/spaces/create/types'
+import StepIndicator from '@/components/spaces/create/StepIndicator'
+import StepBasicInfo from '@/components/spaces/create/StepBasicInfo'
+import StepLocation from '@/components/spaces/create/StepLocation'
+import StepPhotos from '@/components/spaces/create/StepPhotos'
+import StepAmenities from '@/components/spaces/create/StepAmenities'
+import StepServices from '@/components/spaces/create/StepServices'
+import StepSchedule from '@/components/spaces/create/StepSchedule'
+import StepPricing from '@/components/spaces/create/StepPricing'
+import StepTerms from '@/components/spaces/create/StepTerms'
+import StepReview from '@/components/spaces/create/StepReview'
 
 export default function NewSpacePage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [form, setForm] = useState<SpaceFormData>(getInitialForm)
   const [types, setTypes] = useState<SpaceType[]>([])
   const [amenities, setAmenities] = useState<Amenity[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const [form, setForm] = useState({
-    name: '',
-    typeId: '',
-    description: '',
-    city: '',
-    district: '',
-    address: '',
-    capacity: '',
-    price: '',
-    pricePeriod: 'hour',
-    images: [] as string[],
-    amenityIds: [] as string[],
-  })
 
   useEffect(() => {
     fetch('/api/admin/categories')
@@ -43,33 +36,42 @@ export default function NewSpacePage() {
     setForm(p => ({ ...p, [field]: value }))
   }
 
-  function toggleAmenity(id: string) {
-    setForm(p => ({
-      ...p,
-      amenityIds: p.amenityIds.includes(id)
-        ? p.amenityIds.filter(a => a !== id)
-        : [...p.amenityIds, id],
-    }))
+  function next() {
+    if (step === 1 && (!form.name || !form.typeId)) {
+      setError('يرجى إدخال اسم المساحة والتصنيف')
+      return
+    }
+    if (step === 2 && !form.city) {
+      setError('يرجى اختيار المدينة')
+      return
+    }
+    if (step === 7 && !form.price) {
+      setError('يرجى إدخال السعر')
+      return
+    }
+    setError('')
+    setStep(s => Math.min(s + 1, 9))
+  }
+
+  function prev() {
+    setError('')
+    setStep(s => Math.max(s - 1, 1))
   }
 
   async function handleSubmit() {
     setError('')
     setLoading(true)
-
     try {
-      const images = form.images
       const res = await fetch('/api/spaces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, images }),
+        body: JSON.stringify(form),
       })
       const data = await res.json()
-
       if (!res.ok) {
         setError(data.error || 'حدث خطأ')
         return
       }
-
       router.push('/seller/spaces')
     } catch {
       setError('حدث خطأ في الاتصال')
@@ -78,270 +80,104 @@ export default function NewSpacePage() {
     }
   }
 
-  const steps = [
-    { num: 1, label: 'المعلومات الأساسية' },
-    { num: 2, label: 'الصور والمرافق' },
-    { num: 3, label: 'السعر والنشر' },
-  ]
+  const stepProps = { form, update, types, amenities }
+
+  const StepComponent = [
+    StepBasicInfo,
+    StepLocation,
+    StepPhotos,
+    StepAmenities,
+    StepServices,
+    StepSchedule,
+    StepPricing,
+    StepTerms,
+    StepReview,
+  ][step - 1]
 
   return (
-    <div className="p-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">إضافة مساحة جديدة</h1>
-          <p className="text-gray-500 text-sm mt-1">أدخل معلومات مساحتك في ثلاث خطوات</p>
+    <div className="p-6 lg:p-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6">
+          <h1 className="font-display text-2xl font-extrabold text-[#14201A]">إضافة مساحة جديدة</h1>
+          <p className="text-[#6B7566] text-sm mt-1">أدخل معلومات مساحتك في 9 خطوات</p>
         </div>
 
-        {/* Steps indicator */}
-        <div className="flex items-center gap-2 mb-8">
-          {steps.map((s, i) => (
-            <div key={s.num} className="flex items-center gap-2">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-                step >= s.num ? 'bg-[#1B3A2D] text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                {step > s.num ? '✓' : s.num}
-              </div>
-              <span className={`text-sm hidden sm:block ${step >= s.num ? 'text-[#1B3A2D] font-medium' : 'text-gray-400'}`}>
-                {s.label}
-              </span>
-              {i < steps.length - 1 && <div className="flex-1 h-px bg-gray-200 mx-2 hidden sm:block" style={{ minWidth: 20 }} />}
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+          <div className="hidden lg:block">
+            <div className="sticky top-8">
+              <StepIndicator current={step} onStepClick={setStep} />
             </div>
-          ))}
+          </div>
+
+          <div>
+            {/* Mobile step indicator */}
+            <div className="lg:hidden flex items-center gap-2 mb-4 overflow-x-auto pb-2">
+              {Array.from({ length: 9 }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => i + 1 < step && setStep(i + 1)}
+                  className={`w-8 h-8 rounded-full flex-shrink-0 text-xs font-bold transition-colors ${
+                    step === i + 1
+                      ? 'bg-[#1B3A2D] text-white'
+                      : step > i + 1
+                      ? 'bg-[#1B3A2D]/10 text-[#1B3A2D]'
+                      : 'bg-[#F7F3EB] text-[#6B7566]'
+                  }`}
+                >
+                  {step > i + 1 ? '✓' : i + 1}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-[#ECE6D8] p-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">
+                  {error}
+                </div>
+              )}
+
+              <StepComponent {...stepProps} />
+
+              <div className="flex justify-between mt-8 pt-6 border-t border-[#ECE6D8]">
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={prev}
+                    className="px-6 py-2.5 rounded-xl text-sm font-medium border border-[#E8E3D8] text-[#4A554D] hover:bg-[#F7F3EB] transition-colors"
+                  >
+                    السابق
+                  </button>
+                ) : <span />}
+
+                {step < 9 ? (
+                  <button
+                    type="button"
+                    onClick={next}
+                    className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-[#1B3A2D] text-white hover:bg-[#0F2219] transition-colors"
+                  >
+                    التالي
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-[#C49A3C] text-white hover:bg-[#A3802F] disabled:opacity-60 transition-colors flex items-center gap-2"
+                  >
+                    {loading && (
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    )}
+                    {loading ? 'جاري الحفظ...' : 'نشر المساحة'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-
-        <Card>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">
-              {error}
-            </div>
-          )}
-
-          {/* Step 1: Basic Info */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">المعلومات الأساسية</h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المساحة *</label>
-                <input
-                  value={form.name}
-                  onChange={e => update('name', e.target.value)}
-                  placeholder="مكتب الإبداع، قاعة النجاح..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">نوع المساحة *</label>
-                <select
-                  value={form.typeId}
-                  onChange={e => update('typeId', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
-                >
-                  <option value="">اختر النوع</option>
-                  {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">الوصف</label>
-                <textarea
-                  value={form.description}
-                  onChange={e => update('description', e.target.value)}
-                  rows={3}
-                  placeholder="وصف مختصر عن المساحة..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] resize-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">المدينة *</label>
-                  <input
-                    value={form.city}
-                    onChange={e => update('city', e.target.value)}
-                    placeholder="الرياض"
-                    className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">الحي</label>
-                  <input
-                    value={form.district}
-                    onChange={e => update('district', e.target.value)}
-                    placeholder="العليا"
-                    className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">العنوان التفصيلي</label>
-                <input
-                  value={form.address}
-                  onChange={e => update('address', e.target.value)}
-                  placeholder="شارع الملك فهد، برج..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">الطاقة الاستيعابية</label>
-                <input
-                  type="number"
-                  value={form.capacity}
-                  onChange={e => update('capacity', e.target.value)}
-                  placeholder="عدد الأشخاص"
-                  min={1}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                />
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!form.name || !form.typeId || !form.city) {
-                      setError('يرجى إدخال الاسم والنوع والمدينة')
-                      return
-                    }
-                    setError('')
-                    setStep(2)
-                  }}
-                  className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
-                >
-                  التالي
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Images & Amenities */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">الصور والمرافق</h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">صور المساحة</label>
-                <ImageUploader
-                  images={form.images}
-                  onChange={urls => update('images', urls)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">المرافق والخدمات</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {amenities.map(a => (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => toggleAmenity(a.id)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
-                        form.amenityIds.includes(a.id)
-                          ? 'bg-[#1B3A2D] text-white border-[#1B3A2D]'
-                          : 'bg-white text-gray-600 border-[#E8E3D8] hover:border-[#1B3A2D]'
-                      }`}
-                    >
-                      {a.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-6 py-2.5 rounded-lg text-sm font-medium border border-[#E8E3D8] text-gray-600 hover:bg-gray-50"
-                >
-                  السابق
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setError(''); setStep(3) }}
-                  className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
-                >
-                  التالي
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Price & Submit */}
-          {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">السعر والنشر</h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">السعر (ر.س) *</label>
-                <input
-                  type="number"
-                  value={form.price}
-                  onChange={e => update('price', e.target.value)}
-                  placeholder="100"
-                  min={0}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">الفترة</label>
-                <div className="flex gap-3">
-                  {[{ val: 'hour', label: 'بالساعة' }, { val: 'day', label: 'باليوم' }].map(opt => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => update('pricePeriod', opt.val)}
-                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium border-2 transition-colors ${
-                        form.pricePeriod === opt.val
-                          ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white'
-                          : 'border-[#E8E3D8] text-gray-600 hover:border-[#1B3A2D]'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                <p className="font-medium mb-1">ملاحظة مهمة</p>
-                <p className="text-xs">بعد إضافة المساحة، ستخضع لمراجعة الإدارة قبل نشرها للعملاء.</p>
-              </div>
-
-              <div className="flex justify-between pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="px-6 py-2.5 rounded-lg text-sm font-medium border border-[#E8E3D8] text-gray-600 hover:bg-gray-50"
-                >
-                  السابق
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!form.price) {
-                      setError('يرجى إدخال السعر')
-                      return
-                    }
-                    handleSubmit()
-                  }}
-                  disabled={loading}
-                  className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] disabled:opacity-60 flex items-center gap-2"
-                >
-                  {loading && (
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  )}
-                  {loading ? 'جاري الحفظ...' : 'نشر المساحة'}
-                </button>
-              </div>
-            </div>
-          )}
-        </Card>
       </div>
     </div>
   )

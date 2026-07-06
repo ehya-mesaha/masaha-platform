@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 
+type UserDoc = { id: string; type: string; fileUrl: string; uploadedAt: string }
 type User = {
   id: string
   name: string
@@ -16,6 +17,7 @@ type User = {
   status: string
   createdAt: string
   spaces: { id: string; name: string; status: string; city: string }[]
+  documents: UserDoc[]
 }
 
 const roleLabel: Record<string, string> = { ADMIN: 'مدير النظام', SELLER: 'صاحب مساحة', BUYER: 'مستأجر' }
@@ -23,6 +25,20 @@ const roleColor: Record<string, string> = {
   ADMIN: 'bg-[#C49A3C]/10 text-[#8a6b1f] border-[#C49A3C]/30',
   SELLER: 'bg-[#1B3A2D]/10 text-[#1B3A2D] border-[#1B3A2D]/20',
   BUYER: 'bg-blue-50 text-blue-700 border-blue-200',
+}
+const statusLabel: Record<string, string> = {
+  ACTIVE: 'نشط',
+  SUSPENDED: 'موقوف',
+  PENDING_APPROVAL: 'بانتظار الاعتماد',
+}
+const statusVariant: Record<string, 'success' | 'danger' | 'warning'> = {
+  ACTIVE: 'success',
+  SUSPENDED: 'danger',
+  PENDING_APPROVAL: 'warning',
+}
+const docTypeLabel: Record<string, string> = {
+  NATIONAL_ID: 'الهوية الوطنية',
+  COMMERCIAL_REGISTER: 'السجل التجاري',
 }
 
 export default function AdminUserDetailPage() {
@@ -62,6 +78,8 @@ export default function AdminUserDetailPage() {
   if (loading) return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>
   if (!user) return <div className="p-8 text-center text-gray-500">المستخدم غير موجود</div>
 
+  const isPending = user.status === 'PENDING_APPROVAL'
+
   return (
     <div className="p-8">
       <Link href="/admin/users" className="text-[#6B7566] hover:text-[#1B3A2D] text-sm font-medium mb-6 inline-flex items-center gap-1">
@@ -81,6 +99,34 @@ export default function AdminUserDetailPage() {
         </div>
       )}
 
+      {/* Pending approval banner */}
+      {isPending && (
+        <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 p-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h3 className="font-bold text-amber-800 text-sm mb-1">هذا البائع بانتظار الاعتماد</h3>
+              <p className="text-xs text-amber-700">راجع المستندات المرفقة ثم اعتمد أو ارفض الحساب</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => updateUser({ status: 'ACTIVE' })}
+                disabled={actionLoading}
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#1B3A2D] text-white hover:bg-[#0F2219] disabled:opacity-50"
+              >
+                اعتماد البائع
+              </button>
+              <button
+                onClick={() => updateUser({ status: 'SUSPENDED' })}
+                disabled={actionLoading}
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50"
+              >
+                رفض
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="card-elevated p-6 mb-6 flex items-start justify-between gap-6 flex-wrap">
         <div className="flex items-center gap-4">
@@ -92,27 +138,29 @@ export default function AdminUserDetailPage() {
             <p className="text-[#6B7566] text-sm mt-0.5" dir="ltr">{user.email}</p>
             <div className="mt-2 flex items-center gap-2">
               <span className={`chip border ${roleColor[user.role]}`}>{roleLabel[user.role]}</span>
-              <Badge variant={user.status === 'ACTIVE' ? 'success' : 'danger'}>
-                {user.status === 'ACTIVE' ? 'نشط' : 'موقوف'}
+              <Badge variant={statusVariant[user.status] || 'gray'}>
+                {statusLabel[user.status] || user.status}
               </Badge>
             </div>
           </div>
         </div>
-        <button
-          onClick={() => updateUser({ status: user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' })}
-          disabled={actionLoading}
-          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-            user.status === 'ACTIVE'
-              ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
-              : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-          } disabled:opacity-50`}
-        >
-          {user.status === 'ACTIVE' ? 'تعليق الحساب' : 'تفعيل الحساب'}
-        </button>
+        {!isPending && (
+          <button
+            onClick={() => updateUser({ status: user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' })}
+            disabled={actionLoading}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              user.status === 'ACTIVE'
+                ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+            } disabled:opacity-50`}
+          >
+            {user.status === 'ACTIVE' ? 'تعليق الحساب' : 'تفعيل الحساب'}
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Info */}
+        {/* Info + Documents */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">معلومات الحساب</h3>
@@ -123,6 +171,41 @@ export default function AdminUserDetailPage() {
               <InfoRow label="تاريخ التسجيل" value={new Date(user.createdAt).toLocaleDateString('ar-SA')} />
             </div>
           </Card>
+
+          {/* Documents */}
+          {user.documents && user.documents.length > 0 && (
+            <Card>
+              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">المستندات المرفقة</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {user.documents.map(doc => (
+                  <a
+                    key={doc.id}
+                    href={doc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-4 rounded-xl border border-[#ECE6D8] hover:border-[#1B3A2D]/40 hover:bg-[#F7F3EB]/50 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#14201A] group-hover:text-[#1B3A2D]">
+                        {docTypeLabel[doc.type] || doc.type}
+                      </p>
+                      <p className="text-xs text-[#6B7566]">
+                        {new Date(doc.uploadedAt).toLocaleDateString('ar-SA')}
+                      </p>
+                    </div>
+                    <svg className="w-4 h-4 text-[#6B7566] group-hover:text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {user.spaces.length > 0 && (
             <Card padding={false}>

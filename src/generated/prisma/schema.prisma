@@ -16,6 +16,7 @@ enum Role {
 enum UserStatus {
   ACTIVE
   SUSPENDED
+  PENDING_APPROVAL
 }
 
 enum SpaceStatus {
@@ -34,6 +35,17 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+}
+
+enum DocumentType {
+  NATIONAL_ID
+  COMMERCIAL_REGISTER
+}
+
 model User {
   id        String     @id @default(cuid())
   name      String
@@ -45,8 +57,18 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  spaces   Space[]
-  bookings Booking[]
+  spaces    Space[]
+  bookings  Booking[]
+  documents UserDocument[]
+}
+
+model UserDocument {
+  id         String       @id @default(cuid())
+  type       DocumentType
+  fileUrl    String
+  uploadedAt DateTime     @default(now())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SpaceType {
@@ -56,10 +78,11 @@ model SpaceType {
 }
 
 model Amenity {
-  id     String         @id @default(cuid())
-  name   String         @unique
-  icon   String?
-  spaces SpaceAmenity[]
+  id       String         @id @default(cuid())
+  name     String         @unique
+  icon     String?
+  category String?
+  spaces   SpaceAmenity[]
 }
 
 model Space {
@@ -77,14 +100,28 @@ model Space {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
+  latitude       Float?
+  longitude      Float?
+  streetName     String?
+  buildingNumber String?
+  postalCode     String?
+  landmarks      String?
+
+  minBookingHours       Int?
+  maxAdvanceBookingDays Int?
+  cancellationPolicy    CancellationPolicy @default(FLEXIBLE)
+
   typeId   String
   type     SpaceType @relation(fields: [typeId], references: [id])
   sellerId String
   seller   User      @relation(fields: [sellerId], references: [id])
 
-  images    SpaceImage[]
-  amenities SpaceAmenity[]
-  bookings  Booking[]
+  images       SpaceImage[]
+  amenities    SpaceAmenity[]
+  bookings     Booking[]
+  workingHours SpaceWorkingHours[]
+  services     SpaceService[]
+  rules        SpaceRule[]
 }
 
 model SpaceImage {
@@ -102,6 +139,36 @@ model SpaceAmenity {
   amenity   Amenity @relation(fields: [amenityId], references: [id])
 
   @@id([spaceId, amenityId])
+}
+
+model SpaceWorkingHours {
+  id        String  @id @default(cuid())
+  dayOfWeek Int
+  isOpen    Boolean @default(true)
+  openTime  String  @default("08:00")
+  closeTime String  @default("22:00")
+  spaceId   String
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, dayOfWeek])
+}
+
+model SpaceService {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  pricingType String  @default("PER_BOOKING")
+  spaceId     String
+  space       Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+model SpaceRule {
+  id        String  @id @default(cuid())
+  rule      String
+  isDefault Boolean @default(false)
+  spaceId   String
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
