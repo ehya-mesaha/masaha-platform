@@ -8,10 +8,18 @@ export default async function BuyerSettingsPage() {
   const user = await getCurrentUser()
   if (!user) return null
 
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id as string },
-    select: { name: true, email: true, phone: true, avatarUrl: true, role: true, createdAt: true },
-  })
+  let userData = null
+  try {
+    userData = await prisma.user.findUnique({
+      where: { id: user.id as string },
+      select: { name: true, email: true, phone: true, avatarUrl: true, role: true, createdAt: true },
+    })
+  } catch {
+    userData = await prisma.user.findUnique({
+      where: { id: user.id as string },
+      select: { name: true, email: true, phone: true, role: true, createdAt: true },
+    })
+  }
 
   if (!userData) return null
 
@@ -21,7 +29,7 @@ export default async function BuyerSettingsPage() {
         name: userData.name,
         email: userData.email,
         phone: userData.phone,
-        avatarUrl: userData.avatarUrl,
+        avatarUrl: (userData as { avatarUrl?: string | null }).avatarUrl ?? null,
         role: userData.role,
         createdAt: userData.createdAt.toISOString(),
       }}

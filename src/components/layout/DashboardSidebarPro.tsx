@@ -9,6 +9,7 @@ type Role = 'SELLER' | 'BUYER' | 'ADMIN'
 interface SidebarProps {
   role: Role
   userName?: string
+  avatarUrl?: string | null
 }
 
 const iconClass = 'h-4 w-4'
@@ -77,11 +78,12 @@ const roleLabel: Record<Role, string> = {
   ADMIN: 'مدير النظام',
 }
 
-export default function DashboardSidebarPro({ role, userName }: SidebarProps) {
+export default function DashboardSidebarPro({ role, userName, avatarUrl }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const links = roleLinks[role]
   const [unreadConversations, setUnreadConversations] = useState(0)
+  const settingsHref = role === 'ADMIN' ? '/admin/settings' : role === 'SELLER' ? '/seller/settings' : '/buyer/settings'
 
   useEffect(() => {
     let cancelled = false
@@ -133,15 +135,19 @@ export default function DashboardSidebarPro({ role, userName }: SidebarProps) {
           </div>
         </Link>
 
-        <div className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-lg font-extrabold text-[#0F2219]">
-            {userName?.charAt(0) || '?'}
+        <Link href={settingsHref} className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3 transition-colors hover:bg-white/[0.08]">
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-lg font-extrabold text-[#0F2219]">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={userName || 'profile'} className="h-full w-full object-cover" />
+            ) : (
+              userName?.charAt(0) || '?'
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">{userName}</p>
             <p className="text-[11px] font-medium text-white/50">{roleLabel[role]}</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       <nav className="relative flex flex-1 flex-col gap-0.5 px-3 py-5">
