@@ -35,6 +35,11 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum ConversationType {
+  SPACE
+  ADMIN_SUPPORT
+}
+
 enum CancellationPolicy {
   FLEXIBLE
   MODERATE
@@ -60,6 +65,11 @@ model User {
   spaces    Space[]
   bookings  Booking[]
   documents UserDocument[]
+
+  buyerConversations  Conversation[]        @relation("BuyerConversations")
+  sellerConversations Conversation[]        @relation("SellerConversations")
+  adminConversations  Conversation[]        @relation("AdminConversations")
+  sentMessages        ConversationMessage[]
 }
 
 model UserDocument {
@@ -116,12 +126,13 @@ model Space {
   sellerId String
   seller   User      @relation(fields: [sellerId], references: [id])
 
-  images       SpaceImage[]
-  amenities    SpaceAmenity[]
-  bookings     Booking[]
-  workingHours SpaceWorkingHours[]
-  services     SpaceService[]
-  rules        SpaceRule[]
+  images        SpaceImage[]
+  amenities     SpaceAmenity[]
+  bookings      Booking[]
+  workingHours  SpaceWorkingHours[]
+  services      SpaceService[]
+  rules         SpaceRule[]
+  conversations Conversation[]
 }
 
 model SpaceImage {
@@ -187,4 +198,45 @@ model Booking {
   space   Space  @relation(fields: [spaceId], references: [id])
   buyerId String
   buyer   User   @relation(fields: [buyerId], references: [id])
+}
+
+model Conversation {
+  id            String           @id @default(cuid())
+  type          ConversationType @default(SPACE)
+  subject       String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  lastMessageAt DateTime?
+
+  buyerId  String?
+  buyer    User?   @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: SetNull)
+  sellerId String?
+  seller   User?   @relation("SellerConversations", fields: [sellerId], references: [id], onDelete: SetNull)
+  adminId  String?
+  admin    User?   @relation("AdminConversations", fields: [adminId], references: [id], onDelete: SetNull)
+  spaceId  String?
+  space    Space?  @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+
+  messages ConversationMessage[]
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([adminId])
+  @@index([spaceId])
+  @@index([type])
+}
+
+model ConversationMessage {
+  id        String   @id @default(cuid())
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
 }

@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer'
 import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
 import DatePickerCalendar from '@/components/ui/DatePickerCalendar'
+import StartConversationButton from '@/components/chat/StartConversationButton'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -39,7 +40,7 @@ type Space = {
   maxAdvanceBookingDays: number | null
   cancellationPolicy: string
   type: { name: string }
-  seller: { name: string; email: string; phone: string | null }
+  seller: { id: string; name: string; email: string; phone: string | null }
   images: { id: string; url: string; order: number }[]
   amenities: { amenity: { id: string; name: string; icon: string | null } }[]
   workingHours: WorkingHour[]
@@ -57,6 +58,7 @@ export default function SpaceDetailPage() {
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState(false)
+  const [hasSentBooking, setHasSentBooking] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
   const [todayValue] = useState(() => new Date().toISOString().split('T')[0])
 
@@ -65,6 +67,18 @@ export default function SpaceDetailPage() {
       .then(r => r.json())
       .then(data => { setSpace(data.space); setLoading(false) })
       .catch(() => setLoading(false))
+  }, [id])
+
+  useEffect(() => {
+    fetch('/api/bookings?role=buyer')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        const sent = data?.bookings?.some((booking: { status: string; space?: { id?: string } }) =>
+          booking.space?.id === id && ['PENDING', 'ACCEPTED'].includes(booking.status)
+        )
+        setHasSentBooking(Boolean(sent))
+      })
+      .catch(() => undefined)
   }, [id])
 
   async function handleBooking(e: React.FormEvent) {
@@ -88,6 +102,7 @@ export default function SpaceDetailPage() {
         return
       }
       setBookingSuccess(true)
+      setHasSentBooking(true)
     } catch {
       setBookingError('حدث خطأ في الاتصال')
     } finally {
@@ -347,10 +362,29 @@ export default function SpaceDetailPage() {
                 <span className="text-[#6B7566] text-sm me-1"> ر.س / {priceLabel}</span>
               </div>
 
-              <button onClick={() => setBookingOpen(true)}
-                className="w-full bg-[#1B3A2D] text-white py-3.5 rounded-xl text-sm font-semibold hover:bg-[#0F2219] transition-colors mb-4">
-                طلب حجز
+              <button onClick={() => !hasSentBooking && setBookingOpen(true)}
+                disabled={hasSentBooking}
+                className="w-full bg-[#1B3A2D] text-white py-3.5 rounded-xl text-sm font-semibold hover:bg-[#0F2219] transition-colors mb-3 disabled:cursor-default disabled:bg-[#1B3A2D]/75">
+                {hasSentBooking ? 'تم إرسال طلب الحجز' : 'طلب حجز'}
               </button>
+
+              {hasSentBooking && (
+                <div className="mb-3 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-center text-xs font-semibold text-green-700">
+                  طلبك ظاهر الآن في حجوزاتك وينتظر رد صاحب المساحة.
+                </div>
+              )}
+
+              <div className="mb-4 space-y-2">
+                <StartConversationButton
+                  sellerId={space.seller.id}
+                  spaceId={space.id}
+                  label="محادثة صاحب المساحة"
+                />
+                <StartConversationButton
+                  admin
+                  label="محادثة الإدارة"
+                />
+              </div>
 
               {/* Cancellation Policy */}
               <div className={`p-3 rounded-xl border text-center mb-4 ${policy.color}`}>

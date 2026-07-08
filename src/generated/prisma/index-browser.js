@@ -231,6 +231,28 @@ exports.Prisma.BookingScalarFieldEnum = {
   buyerId: 'buyerId'
 };
 
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  subject: 'subject',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastMessageAt: 'lastMessageAt',
+  buyerId: 'buyerId',
+  sellerId: 'sellerId',
+  adminId: 'adminId',
+  spaceId: 'spaceId'
+};
+
+exports.Prisma.ConversationMessageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  isRead: 'isRead',
+  createdAt: 'createdAt',
+  conversationId: 'conversationId',
+  senderId: 'senderId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -284,6 +306,11 @@ exports.BookingStatus = exports.$Enums.BookingStatus = {
   COMPLETED: 'COMPLETED'
 };
 
+exports.ConversationType = exports.$Enums.ConversationType = {
+  SPACE: 'SPACE',
+  ADMIN_SUPPORT: 'ADMIN_SUPPORT'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   UserDocument: 'UserDocument',
@@ -295,7 +322,9 @@ exports.Prisma.ModelName = {
   SpaceWorkingHours: 'SpaceWorkingHours',
   SpaceService: 'SpaceService',
   SpaceRule: 'SpaceRule',
-  Booking: 'Booking'
+  Booking: 'Booking',
+  Conversation: 'Conversation',
+  ConversationMessage: 'ConversationMessage'
 };
 
 /**

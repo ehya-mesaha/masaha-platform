@@ -9,7 +9,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       where: { id },
       include: {
         type: true,
-        seller: { select: { name: true, email: true, phone: true } },
+        seller: { select: { id: true, name: true, email: true, phone: true } },
         images: { orderBy: { order: 'asc' } },
         amenities: { include: { amenity: true } },
         workingHours: { orderBy: { dayOfWeek: 'asc' } },
