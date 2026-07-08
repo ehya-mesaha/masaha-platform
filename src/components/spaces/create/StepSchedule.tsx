@@ -3,6 +3,13 @@
 import { StepProps, DAY_NAMES } from './types'
 
 export default function StepSchedule({ form, update }: StepProps) {
+  const nextDays = Array.from({ length: 14 }, (_, index) => {
+    const date = new Date()
+    date.setDate(date.getDate() + index)
+    const hours = form.workingHours.find(wh => wh.dayOfWeek === date.getDay())
+    return { date, hours }
+  })
+
   function toggleDay(dayOfWeek: number) {
     const updated = form.workingHours.map(wh =>
       wh.dayOfWeek === dayOfWeek ? { ...wh, isOpen: !wh.isOpen } : wh,
@@ -77,6 +84,41 @@ export default function StepSchedule({ form, update }: StepProps) {
             )}
           </div>
         ))}
+      </div>
+
+      <div className="rounded-2xl border border-[#E8E3D8] bg-white p-4 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 className="text-sm font-extrabold text-[#14201A]">معاينة التقويم</h3>
+            <p className="text-xs text-[#6B7566] mt-1">هذه الأيام هي التي سيستطيع المستأجر اختيارها عند طلب الحجز.</p>
+          </div>
+          <span className="rounded-full bg-[#1B3A2D]/10 px-3 py-1 text-xs font-bold text-[#1B3A2D]">الأسبوعان القادمان</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+          {nextDays.map(({ date, hours }) => {
+            const isOpen = Boolean(hours?.isOpen)
+            return (
+              <div
+                key={date.toISOString()}
+                className={`rounded-xl border p-3 text-center ${
+                  isOpen
+                    ? 'border-[#1B3A2D]/15 bg-[#1B3A2D]/5'
+                    : 'border-[#E8E3D8] bg-[#F7F3EB]/60'
+                }`}
+              >
+                <p className={`text-xs font-bold ${isOpen ? 'text-[#1B3A2D]' : 'text-[#6B7566]'}`}>
+                  {DAY_NAMES[date.getDay()]}
+                </p>
+                <p className="text-lg font-extrabold text-[#14201A] mt-1">
+                  {date.getDate().toLocaleString('ar-SA')}
+                </p>
+                <p className={`text-[11px] mt-1 ${isOpen ? 'text-[#1B3A2D]' : 'text-[#9A9488]'}`}>
+                  {isOpen && hours ? `${hours.openTime} - ${hours.closeTime}` : 'مغلق'}
+                </p>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Booking rules */}

@@ -178,30 +178,7 @@ export default function AdminUserDetailPage() {
               <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">المستندات المرفقة</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {user.documents.map(doc => (
-                  <a
-                    key={doc.id}
-                    href={doc.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-4 rounded-xl border border-[#ECE6D8] hover:border-[#1B3A2D]/40 hover:bg-[#F7F3EB]/50 transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#14201A] group-hover:text-[#1B3A2D]">
-                        {docTypeLabel[doc.type] || doc.type}
-                      </p>
-                      <p className="text-xs text-[#6B7566]">
-                        {new Date(doc.uploadedAt).toLocaleDateString('ar-SA')}
-                      </p>
-                    </div>
-                    <svg className="w-4 h-4 text-[#6B7566] group-hover:text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                    </svg>
-                  </a>
+                  <DocLink key={doc.id} doc={doc} />
                 ))}
               </div>
             </Card>
@@ -273,6 +250,59 @@ export default function AdminUserDetailPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function DocLink({ doc }: { doc: UserDoc }) {
+  const [loading, setLoading] = useState(false)
+
+  async function openDoc() {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/documents/${doc.id}`)
+      const data = await res.json()
+      if (res.ok && data.url) {
+        window.open(data.url, '_blank')
+      } else {
+        window.open(doc.fileUrl, '_blank')
+      }
+    } catch {
+      window.open(doc.fileUrl, '_blank')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={openDoc}
+      disabled={loading}
+      className="flex items-center gap-3 p-4 rounded-xl border border-[#ECE6D8] hover:border-[#1B3A2D]/40 hover:bg-[#F7F3EB]/50 transition-all group text-start w-full disabled:opacity-60"
+    >
+      <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+        {loading ? (
+          <svg className="animate-spin w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-[#14201A] group-hover:text-[#1B3A2D]">
+          {docTypeLabel[doc.type] || doc.type}
+        </p>
+        <p className="text-xs text-[#6B7566]">
+          {new Date(doc.uploadedAt).toLocaleDateString('ar-SA')}
+        </p>
+      </div>
+      <svg className="w-4 h-4 text-[#6B7566] group-hover:text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+      </svg>
+    </button>
   )
 }
 

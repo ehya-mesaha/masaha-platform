@@ -281,22 +281,6 @@ export default function SettingsClient({ user }: { user: UserData }) {
             </div>
           </div>
 
-          {/* Danger Zone */}
-          <div className="bg-white rounded-2xl border border-red-200 p-6">
-            <h2 className="text-sm font-bold text-red-700 mb-2 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              منطقة الخطر
-            </h2>
-            <p className="text-xs text-[#6B7566] mb-3">هذه الإجراءات لا يمكن التراجع عنها. يرجى التأكد قبل المتابعة.</p>
-            <button
-              disabled
-              className="px-5 py-2 rounded-xl text-xs font-semibold border border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
-            >
-              حذف الحساب نهائياً (قريباً)
-            </button>
-          </div>
         </div>
       </div>
     </div>

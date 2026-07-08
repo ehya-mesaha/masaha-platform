@@ -38,6 +38,9 @@ export default async function SellerSpaceDetailPage({
   if (!space) return notFound()
 
   const { variant, label } = getSpaceStatusBadge(space.status)
+  const mapHref = space.latitude && space.longitude
+    ? `https://www.google.com/maps/search/?api=1&query=${space.latitude},${space.longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([space.district, space.city].filter(Boolean).join(', '))}`
 
   return (
     <div className="p-8">
@@ -53,6 +56,28 @@ export default async function SellerSpaceDetailPage({
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{space.name}</h1>
           <p className="text-gray-500 text-sm mt-1">{space.type.name} · {space.city}</p>
+          <Card>
+            <h3 className="font-semibold text-gray-900 mb-3">الموقع</h3>
+            <p className="text-sm text-gray-600 mb-3">{[space.district, space.city].filter(Boolean).join('، ')}</p>
+            {space.latitude && space.longitude && (
+              <div className="rounded-xl overflow-hidden border border-[#E8E3D8] mb-3">
+                <iframe
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${space.longitude - 0.01},${space.latitude - 0.01},${space.longitude + 0.01},${space.latitude + 0.01}&layer=mapnik&marker=${space.latitude},${space.longitude}`}
+                  className="w-full h-56"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <a
+              href={mapHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-[#1B3A2D] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0F2219] transition-colors"
+            >
+              فتح الموقع في الخرائط
+            </a>
+          </Card>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant={variant}>{label}</Badge>
@@ -158,6 +183,8 @@ type SpaceType = {
   price: number
   pricePeriod: string
   capacity: number | null
+  latitude: number | null
+  longitude: number | null
   adminNotes: string | null
   type: { name: string }
   images: { url: string; order: number }[]
