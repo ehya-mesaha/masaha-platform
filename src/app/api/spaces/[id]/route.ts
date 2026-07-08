@@ -15,15 +15,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         workingHours: { orderBy: { dayOfWeek: 'asc' } },
         services: true,
         rules: true,
-        reviews: {
-          where: { isVisible: true },
-          include: {
-            buyer: { select: { id: true, name: true } },
-            booking: { select: { id: true, date: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 8,
-        },
       },
     })
 
@@ -31,19 +22,41 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'المساحة غير موجودة' }, { status: 404 })
     }
 
-    const reviewAggregate = await prisma.spaceReview.aggregate({
-      where: { spaceId: id, isVisible: true },
-      _avg: { rating: true },
-      _count: { id: true },
-    })
+    let reviews: Awaited<ReturnType<typeof prisma.spaceReview.findMany>> = []
+    let reviewSummary = { average: 0, count: 0 }
+
+    try {
+      const [reviewRows, reviewAggregate] = await Promise.all([
+        prisma.spaceReview.findMany({
+          where: { spaceId: id, isVisible: true },
+          include: {
+            buyer: { select: { id: true, name: true } },
+            booking: { select: { id: true, date: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 8,
+        }),
+        prisma.spaceReview.aggregate({
+          where: { spaceId: id, isVisible: true },
+          _avg: { rating: true },
+          _count: { id: true },
+        }),
+      ])
+
+      reviews = reviewRows
+      reviewSummary = {
+        average: reviewAggregate._avg.rating ? Number(reviewAggregate._avg.rating.toFixed(1)) : 0,
+        count: reviewAggregate._count.id,
+      }
+    } catch (reviewErr) {
+      console.error('Failed to load space reviews', reviewErr)
+    }
 
     return NextResponse.json({
       space: {
         ...space,
-        reviewSummary: {
-          average: reviewAggregate._avg.rating ? Number(reviewAggregate._avg.rating.toFixed(1)) : 0,
-          count: reviewAggregate._count.id,
-        },
+        reviews,
+        reviewSummary,
       },
     })
   } catch (err) {

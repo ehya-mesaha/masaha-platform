@@ -149,6 +149,22 @@ export default function SellerBookingDetailPage() {
               <p className="text-gray-700 text-sm">{booking.sellerNote}</p>
             </Card>
           )}
+
+          {booking.status === 'ACCEPTED' && (
+            <Card>
+              <h3 className="font-semibold text-gray-900 mb-2">إنهاء الحجز</h3>
+              <p className="text-gray-500 text-sm mb-4">
+                بعد اكتمال استخدام المساحة، علّم الحجز كمكتمل ليتمكن المستأجر من إضافة تقييمه.
+              </p>
+              <button
+                onClick={() => handleAction('COMPLETED')}
+                disabled={actionLoading}
+                className="w-full rounded-xl bg-[#1B3A2D] py-3 text-sm font-semibold text-white hover:bg-[#0F2219] disabled:opacity-60"
+              >
+                {actionLoading ? 'جاري التحديث...' : 'تمييز الحجز كمكتمل'}
+              </button>
+            </Card>
+          )}
         </div>
       </div>
     </div>

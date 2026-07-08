@@ -13,7 +13,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       include: {
         space: { include: { type: true, images: { take: 1, orderBy: { order: 'asc' } } } },
         buyer: { select: { name: true, email: true, phone: true } },
-        review: true,
       },
     })
 
@@ -25,7 +24,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       booking.space.sellerId === user.id
     if (!canView) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
 
-    return NextResponse.json({ booking })
+    let review = null
+    try {
+      review = await prisma.spaceReview.findUnique({ where: { bookingId: id } })
+    } catch (reviewErr) {
+      console.error('Failed to load booking review', reviewErr)
+    }
+
+    return NextResponse.json({ booking: { ...booking, review } })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })
