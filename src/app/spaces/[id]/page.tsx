@@ -229,6 +229,26 @@ export default function SpaceDetailPage() {
               </p>
               {space.description && <p className="text-[#4A554D] text-sm leading-relaxed mb-4">{space.description}</p>}
 
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                  <p className="text-[11px] font-bold text-[#6B7566]">السعر</p>
+                  <p className="mt-1 text-lg font-extrabold text-[#1B3A2D]">
+                    {space.price.toLocaleString('ar-SA')} ر.س
+                    <span className="text-xs font-semibold text-[#6B7566]"> / {priceLabel}</span>
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                  <p className="text-[11px] font-bold text-[#6B7566]">نوع المساحة</p>
+                  <p className="mt-1 text-sm font-extrabold text-[#14201A]">{space.type.name}</p>
+                </div>
+                <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                  <p className="text-[11px] font-bold text-[#6B7566]">السعة</p>
+                  <p className="mt-1 text-sm font-extrabold text-[#14201A]">
+                    {space.capacity ? `${space.capacity.toLocaleString('ar-SA')} شخص` : 'غير محددة'}
+                  </p>
+                </div>
+              </div>
+
               <div className="flex flex-wrap gap-4 pt-4 border-t border-[#E8E3D8]">
                 {space.capacity && (
                   <div className="flex items-center gap-2 text-sm text-[#4A554D]">

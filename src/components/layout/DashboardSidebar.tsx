@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 type Role = 'SELLER' | 'BUYER' | 'ADMIN'
@@ -74,6 +75,33 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const links = roleLinks[role]
+  const [unreadConversations, setUnreadConversations] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadUnread() {
+      try {
+        const res = await fetch('/api/conversations')
+        if (!res.ok) return
+        const data = await res.json()
+        const count = (data.conversations || []).reduce(
+          (total: number, conversation: { unreadCount?: number }) => total + (conversation.unreadCount || 0),
+          0
+        )
+        if (!cancelled) setUnreadConversations(count)
+      } catch {
+        if (!cancelled) setUnreadConversations(0)
+      }
+    }
+
+    loadUnread()
+    const timer = window.setInterval(loadUnread, 30000)
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+    }
+  }, [])
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -116,6 +144,7 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
       <nav className="relative flex-1 px-3 py-5 flex flex-col gap-0.5">
         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-3 mb-2">القائمة</p>
         {links.map((link) => {
+          const isConversations = link.href.includes('/conversations')
           const isActive =
             pathname === link.href ||
             (link.href !== '/spaces' &&
@@ -135,8 +164,15 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
                 <SvgIcon d={link.icon} />
               </span>
               <span>{link.label}</span>
+              {isConversations && unreadConversations > 0 && (
+                <span className={`ms-auto flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-extrabold ${
+                  isActive ? 'bg-[#C49A3C] text-[#14201A]' : 'bg-[#C49A3C] text-[#0F2219]'
+                }`}>
+                  {unreadConversations > 9 ? '9+' : unreadConversations}
+                </span>
+              )}
               {isActive && (
-                <svg className="w-3.5 h-3.5 ms-auto rotate-180" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <svg className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} w-3.5 h-3.5 rotate-180`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               )}

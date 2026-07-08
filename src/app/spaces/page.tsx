@@ -2,12 +2,21 @@ import { prisma } from '@/lib/prisma'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import SpaceGrid from '@/components/spaces/SpaceGrid'
-import Link from 'next/link'
+import SpacesFilters from '@/components/spaces/SpacesFilters'
 
 interface SearchParams {
   city?: string
   typeId?: string
   type?: string
+  minPrice?: string
+  maxPrice?: string
+  capacity?: string
+  date?: string
+  startTime?: string
+  endTime?: string
+  days?: string
+  pricePeriod?: string
+  sort?: string
 }
 
 export default async function SpacesPage({
@@ -41,54 +50,8 @@ export default async function SpacesPage({
         </div>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <div className="premium-card p-5 sticky top-20 animate-in">
-              <h3 className="font-semibold text-gray-900 mb-4">فلترة النتائج</h3>
-
-              <form method="get">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">المدينة</label>
-                    <input
-                      name="city"
-                      defaultValue={params.city}
-                      placeholder="الرياض، جدة..."
-                    className="field"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">نوع المساحة</label>
-                    <select
-                      name="typeId"
-                      defaultValue={params.typeId}
-                      className="field bg-white"
-                    >
-                      <option value="">جميع الأنواع</option>
-                      {types.map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="btn-primary w-full py-2.5 rounded-xl text-sm font-semibold"
-                  >
-                    تطبيق الفلتر
-                  </button>
-
-                  {(params.city || params.typeId) && (
-                    <Link
-                      href="/spaces"
-                      className="block w-full text-center text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      مسح الفلتر
-                    </Link>
-                  )}
-                </div>
-              </form>
-            </div>
+          <aside className="lg:w-80 flex-shrink-0">
+            <SpacesFilters types={types} params={params} />
           </aside>
 
           {/* Main content */}
@@ -114,7 +77,15 @@ async function getSpaces(params: SearchParams) {
   const where: Record<string, unknown> = { status: 'APPROVED' }
   if (params.city) where.city = { contains: params.city, mode: 'insensitive' }
   if (params.typeId) where.typeId = params.typeId
-  else if (params.type) {
+  if (params.pricePeriod) where.pricePeriod = params.pricePeriod
+  if (params.minPrice || params.maxPrice) {
+    where.price = {
+      ...(params.minPrice ? { gte: Number(params.minPrice) } : {}),
+      ...(params.maxPrice ? { lte: Number(params.maxPrice) } : {}),
+    }
+  }
+  if (params.capacity) where.capacity = { gte: Number(params.capacity) }
+  if (!params.typeId && params.type) {
     const matchedTypes = await prisma.spaceType.findMany({
       where: { name: { contains: params.type, mode: 'insensitive' } },
       select: { id: true },
@@ -122,12 +93,43 @@ async function getSpaces(params: SearchParams) {
     where.typeId = { in: matchedTypes.map(type => type.id) }
   }
 
+  const workingHourFilter: Record<string, unknown> = { isOpen: true }
+  const selectedDays = (params.days || '').split(',').filter(Boolean).map(Number)
+  if (params.date) selectedDays.push(new Date(`${params.date}T00:00:00`).getDay())
+  const uniqueDays = Array.from(new Set(selectedDays.filter(day => Number.isInteger(day) && day >= 0 && day <= 6)))
+  if (uniqueDays.length > 0) workingHourFilter.dayOfWeek = { in: uniqueDays }
+  if (params.startTime) workingHourFilter.closeTime = { gte: params.startTime }
+  if (params.endTime) workingHourFilter.openTime = { lte: params.endTime }
+  if (uniqueDays.length > 0 || params.startTime || params.endTime) {
+    where.workingHours = { some: workingHourFilter }
+  }
+
+  if (params.date && params.startTime && params.endTime) {
+    where.bookings = {
+      none: {
+        date: params.date,
+        status: { in: ['PENDING', 'ACCEPTED'] },
+        startTime: { lt: params.endTime },
+        endTime: { gt: params.startTime },
+      },
+    }
+  }
+
+  const orderBy =
+    params.sort === 'priceAsc'
+      ? { price: 'asc' as const }
+      : params.sort === 'priceDesc'
+        ? { price: 'desc' as const }
+        : params.sort === 'capacityDesc'
+          ? { capacity: 'desc' as const }
+          : { createdAt: 'desc' as const }
+
   return prisma.space.findMany({
     where,
     include: {
       type: true,
       images: { orderBy: { order: 'asc' }, take: 1 },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy,
   })
 }
