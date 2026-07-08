@@ -28,25 +28,29 @@ export default async function BuyerBookingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">حجوزاتي</h1>
-          <p className="text-gray-500 text-sm mt-1">متابعة جميع طلبات الحجز</p>
+    <div className="dashboard-page">
+      <div className="page-hero mb-6 p-6 animate-in">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-[#C49A3C] mb-2">مركز الحجوزات</p>
+            <h1 className="text-2xl font-extrabold text-white">حجوزاتي</h1>
+            <p className="text-white/65 text-sm mt-1">متابعة الطلبات، حالات القبول، والتقييم بعد اكتمال التجربة</p>
+          </div>
+          <Link
+            href="/spaces"
+            className="inline-flex items-center justify-center rounded-xl bg-[#C49A3C] px-5 py-2.5 text-sm font-bold text-[#14201A] transition-transform hover:-translate-y-0.5"
+          >
+            تصفح المساحات
+          </Link>
         </div>
-        <Link
-          href="/spaces"
-          className="bg-[#1B3A2D] text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
-        >
-          تصفح المساحات
-        </Link>
       </div>
 
       {bookings.length === 0 ? (
         <Card>
-          <div className="text-center py-12">
-            <div className="text-5xl mb-4">📋</div>
-            <p className="text-gray-500 mb-4">لا توجد حجوزات بعد</p>
+          <div className="text-center py-14">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F3EB] text-3xl floating">📋</div>
+            <p className="text-gray-900 font-bold mb-1">لا توجد حجوزات بعد</p>
+            <p className="text-gray-500 text-sm mb-5">ابدأ باستكشاف المساحات المناسبة لاجتماعك أو فعاليتك.</p>
             <Link
               href="/spaces"
               className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
@@ -56,13 +60,13 @@ export default async function BuyerBookingsPage() {
           </div>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 motion-list">
           {bookings.map((b) => {
             const { variant, label } = getBookingStatusBadge(b.status)
             return (
-              <Card key={b.id} padding={false}>
-                <div className="flex gap-4 p-4">
-                  <div className="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+              <Card key={b.id} padding={false} className="overflow-hidden">
+                <div className="flex gap-4 p-4 transition-colors hover:bg-[#FBFAF7]">
+                  <div className="w-24 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100">
                     {b.space.images[0]?.url ? (
                       <img src={b.space.images[0].url} alt={b.space.name} className="w-full h-full object-cover" />
                     ) : (

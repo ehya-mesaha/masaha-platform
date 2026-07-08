@@ -70,18 +70,24 @@ export default function SellerBookingDetailPage() {
   const { variant, label } = getBookingStatusBadge(booking.status)
 
   return (
-    <div className="p-8">
+    <div className="dashboard-page">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/seller/bookings" className="text-gray-400 hover:text-gray-600 text-sm">← طلبات الحجز</Link>
       </div>
 
       <div className="max-w-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">تفاصيل الحجز</h1>
-          <Badge variant={variant}>{label}</Badge>
+        <div className="page-hero mb-6 p-6 animate-in">
+          <div className="relative flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold text-[#C49A3C] mb-2">طلب حجز</p>
+              <h1 className="text-2xl font-extrabold text-white">تفاصيل الحجز</h1>
+              <p className="mt-1 text-sm text-white/65">{booking.space.name}</p>
+            </div>
+            <Badge variant={variant}>{label}</Badge>
+          </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 motion-list">
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}

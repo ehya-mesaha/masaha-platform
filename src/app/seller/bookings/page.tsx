@@ -24,10 +24,13 @@ export default async function SellerBookingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">طلبات الحجز</h1>
-        <p className="text-gray-500 text-sm mt-1">إدارة جميع طلبات حجز مساحاتك</p>
+    <div className="dashboard-page">
+      <div className="page-hero mb-6 p-6 animate-in">
+        <div className="relative">
+          <p className="text-xs font-bold text-[#C49A3C] mb-2">إدارة الطلبات</p>
+          <h1 className="text-2xl font-extrabold text-white">طلبات الحجز</h1>
+          <p className="text-white/65 text-sm mt-1">راجع الطلبات، اقبل المناسب، وأكمل الحجز بعد انتهاء التجربة.</p>
+        </div>
       </div>
 
       {bookings.length === 0 ? (
@@ -55,7 +58,7 @@ export default async function SellerBookingsPage() {
                 {bookings.map((b) => {
                   const { variant, label } = getBookingStatusBadge(b.status)
                   return (
-                    <tr key={b.id} className="hover:bg-gray-50">
+                    <tr key={b.id} className="transition-colors hover:bg-[#FBFAF7]">
                       <td className="px-5 py-4">
                         <p className="font-medium text-gray-900">{b.buyer.name}</p>
                         <p className="text-gray-400 text-xs">{b.buyer.email}</p>

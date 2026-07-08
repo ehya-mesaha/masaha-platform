@@ -98,20 +98,26 @@ export default function BuyerBookingDetailPage() {
   const { variant, label } = getBookingStatusBadge(booking.status)
 
   return (
-    <div className="p-8">
+    <div className="dashboard-page">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/buyer/bookings" className="text-gray-400 hover:text-gray-600 text-sm">← حجوزاتي</Link>
       </div>
 
-      <div className="max-w-xl">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">تفاصيل الحجز</h1>
-          <Badge variant={variant}>{label}</Badge>
+      <div className="max-w-2xl">
+        <div className="page-hero mb-6 p-6 animate-in">
+          <div className="relative flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold text-[#C49A3C] mb-2">حجز موثق</p>
+              <h1 className="text-2xl font-extrabold text-white">تفاصيل الحجز</h1>
+              <p className="mt-1 text-sm text-white/65">{booking.space.name}</p>
+            </div>
+            <Badge variant={variant}>{label}</Badge>
+          </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 motion-list">
           {booking.space.images[0]?.url && (
-            <div className="h-40 rounded-2xl overflow-hidden">
+            <div className="h-52 rounded-2xl overflow-hidden shadow-[0_24px_70px_-44px_rgba(15,34,25,0.7)]">
               <img src={booking.space.images[0].url} alt={booking.space.name} className="w-full h-full object-cover" />
             </div>
           )}
@@ -152,7 +158,7 @@ export default function BuyerBookingDetailPage() {
             <Card>
               <h3 className="font-semibold text-gray-900 mb-2">تقييم تجربتك</h3>
               {booking.review ? (
-                <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                <div className="rounded-2xl border border-green-200 bg-green-50 p-5 animate-in">
                   <div className="mb-2 flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
                       <span key={star} className={star <= booking.review!.rating ? 'text-[#C49A3C] text-xl' : 'text-[#D8CFBE] text-xl'}>
@@ -180,9 +186,9 @@ export default function BuyerBookingDetailPage() {
                           key={star}
                           type="button"
                           onClick={() => setReviewRating(star)}
-                          className={`h-10 w-10 rounded-xl border text-2xl transition-colors ${
+                          className={`h-12 w-12 rounded-2xl border text-2xl transition-all hover:-translate-y-0.5 ${
                             star <= reviewRating
-                              ? 'border-[#C49A3C] bg-[#F7F3EB] text-[#C49A3C]'
+                              ? 'border-[#C49A3C] bg-[#F7F3EB] text-[#C49A3C] shadow-sm'
                               : 'border-[#E8E3D8] bg-white text-[#D8CFBE] hover:border-[#C49A3C]'
                           }`}
                           aria-label={`${star} نجوم`}

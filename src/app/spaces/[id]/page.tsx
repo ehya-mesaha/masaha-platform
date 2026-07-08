@@ -167,16 +167,16 @@ export default function SpaceDetailPage() {
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || space.city)}`
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-paper">
       <PublicNavbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 animate-in">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-4">
             {/* Image Gallery */}
             <div className="mb-2">
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
+              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-[0_26px_80px_-45px_rgba(15,34,25,0.65)]">
                 {sortedImages.length > 0 ? (
                   <img src={sortedImages[activeImage]?.url} alt={space.name} className="w-full h-full object-cover" />
                 ) : (
@@ -200,7 +200,7 @@ export default function SpaceDetailPage() {
             </div>
 
             {/* Space Info */}
-            <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+            <div className="premium-card p-6">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{space.name}</h1>
@@ -251,7 +251,7 @@ export default function SpaceDetailPage() {
 
             {/* Working Hours */}
             {openDays.length > 0 && (
-              <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="premium-card p-6">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -278,7 +278,7 @@ export default function SpaceDetailPage() {
 
             {/* Amenities */}
             {space.amenities.length > 0 && (
-              <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="premium-card p-6">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -297,7 +297,7 @@ export default function SpaceDetailPage() {
 
             {/* Extra Services */}
             {space.services && space.services.length > 0 && (
-              <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="premium-card p-6">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -323,7 +323,7 @@ export default function SpaceDetailPage() {
 
             {/* Rules */}
             {space.rules && space.rules.length > 0 && (
-              <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="premium-card p-6">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -344,7 +344,7 @@ export default function SpaceDetailPage() {
             )}
 
             {/* Reviews */}
-            <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+            <div className="premium-card p-6 overflow-hidden">
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="font-display font-extrabold text-[#14201A] text-base flex items-center gap-2">
@@ -357,7 +357,7 @@ export default function SpaceDetailPage() {
                     آراء المستأجرين الذين أكملوا حجوزاتهم.
                   </p>
                 </div>
-                <div className="rounded-xl bg-[#F7F3EB] px-4 py-3 text-center">
+                <div className="rounded-2xl border border-[#E8E3D8] bg-[#F7F3EB] px-5 py-4 text-center shadow-inner">
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-2xl font-extrabold text-[#1B3A2D]">
                       {space.reviewSummary.count > 0 ? space.reviewSummary.average.toLocaleString('ar-SA') : '-'}
@@ -373,14 +373,14 @@ export default function SpaceDetailPage() {
               </div>
 
               {space.reviews.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-6 text-center">
+                <div className="rounded-2xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-8 text-center animate-in">
                   <p className="text-sm font-semibold text-[#14201A]">لا توجد تقييمات لهذه المساحة حتى الآن</p>
                   <p className="mt-1 text-xs text-[#6B7566]">ستظهر التقييمات هنا بعد أن يكمل المستأجرون حجوزاتهم.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 motion-list">
                   {space.reviews.map(review => (
-                    <div key={review.id} className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                    <div key={review.id} className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4 hover-lift">
                       <div className="mb-2 flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-bold text-[#14201A]">{review.buyer.name}</p>
@@ -401,7 +401,7 @@ export default function SpaceDetailPage() {
 
             {/* Map */}
             {space.latitude && space.longitude && (
-              <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="premium-card p-6">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -431,7 +431,7 @@ export default function SpaceDetailPage() {
               </div>
             )}
             {(!space.latitude || !space.longitude) && (
-              <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="premium-card p-6">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-2">الموقع</h3>
                 <p className="text-sm text-[#6B7566] mb-4">{fullAddress || space.city}</p>
                 <a
@@ -449,7 +449,7 @@ export default function SpaceDetailPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-4">
             {/* Pricing & Book */}
-            <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6 sticky top-20">
+            <div className="premium-card p-6 sticky top-20">
               <div className="mb-4">
                 <span className="text-3xl font-extrabold text-[#1B3A2D]">{space.price.toLocaleString('ar-SA')}</span>
                 <span className="text-[#6B7566] text-sm me-1"> ر.س / {priceLabel}</span>

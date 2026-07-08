@@ -26,7 +26,7 @@ export default function SpaceCard({
   const priceLabel = pricePeriod === 'day' ? 'يوم' : 'ساعة'
 
   return (
-    <Link href={`/spaces/${id}`} className="card-elevated overflow-hidden group block">
+    <Link href={`/spaces/${id}`} className="card-elevated hover-lift overflow-hidden group block">
       {/* Image */}
       <div className="relative h-52 bg-gradient-to-br from-[#F7F3EB] to-[#ECE6D8] overflow-hidden">
         {imageUrl ? (
@@ -34,7 +34,7 @@ export default function SpaceCard({
           <img
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -45,7 +45,7 @@ export default function SpaceCard({
         )}
 
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2219]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2219]/55 via-[#0F2219]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Type badge */}
         <div className="absolute top-3 end-3">
@@ -68,7 +68,7 @@ export default function SpaceCard({
       </div>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#fffdf9_100%)]">
         <h3 className="font-display font-extrabold text-[#14201A] text-lg mb-1.5 line-clamp-1 group-hover:text-[#1B3A2D]">
           {name}
         </h3>
@@ -92,7 +92,7 @@ export default function SpaceCard({
               لكل {priceLabel}
             </div>
           </div>
-          <div className="flex items-center gap-1 text-[#1B3A2D] text-xs font-semibold group-hover:gap-2 transition-all">
+          <div className="flex items-center gap-1 text-[#1B3A2D] text-xs font-semibold group-hover:gap-2 transition-all duration-300">
             <span>عرض التفاصيل</span>
             <svg className="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

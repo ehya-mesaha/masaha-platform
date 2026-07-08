@@ -34,21 +34,19 @@ async function getTypes() {
 
 export default async function HomePage() {
   const [spaces, types] = await Promise.all([getFeaturedSpaces(), getTypes()])
+  const heroImageUrl = spaces[0]?.images[0]?.url
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F3EB]">
       <PublicNavbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden hero-pattern text-white">
-        {/* Decorative shapes */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-24 -start-20 w-72 h-72 rounded-full bg-[#C49A3C]/20 blur-3xl" />
-          <div className="absolute -bottom-32 -end-20 w-[500px] h-[500px] rounded-full bg-[#C49A3C]/10 blur-3xl" />
-          <svg className="absolute top-0 end-0 w-64 h-64 text-[#C49A3C]/10" viewBox="0 0 100 100" fill="currentColor">
-            <circle cx="50" cy="50" r="1" />
-          </svg>
-        </div>
+      <section
+        className="relative overflow-hidden hero-pattern text-white"
+        style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(15,34,25,0.96) 0%, rgba(27,58,45,0.86) 48%, rgba(15,34,25,0.46) 100%), url(${heroImageUrl})` } : undefined}
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,34,25,0)_0%,rgba(15,34,25,0.82)_100%)] pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#C49A3C]/60 to-transparent" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-28 pb-24 lg:pb-36">
           <div className="max-w-3xl fade-up">
@@ -68,7 +66,7 @@ export default async function HomePage() {
             </p>
 
             {/* Search Bar */}
-            <div className="bg-white rounded-2xl p-2 shadow-2xl border border-white/20 max-w-4xl">
+            <div className="bg-white/96 backdrop-blur rounded-2xl p-2 shadow-2xl border border-white/35 max-w-4xl hover-lift">
               <form action="/spaces" method="get" className="flex flex-col md:flex-row gap-1 md:gap-0 md:divide-x md:divide-x-reverse divide-[#ECE6D8]">
                 <div className="flex-1 px-4 py-3 md:py-2">
                   <label className="block text-[11px] text-[#6B7566] mb-1 font-bold tracking-wider uppercase">
@@ -115,20 +113,6 @@ export default async function HomePage() {
                 </div>
               </form>
             </div>
-
-            {/* Stats strip */}
-            <div className="grid grid-cols-3 gap-6 mt-10 max-w-2xl">
-              {[
-                { value: '+500', label: 'مساحة متاحة' },
-                { value: '+50', label: 'مدينة' },
-                { value: '24/7', label: 'دعم متواصل' },
-              ].map(s => (
-                <div key={s.label}>
-                  <div className="font-display text-2xl lg:text-3xl font-extrabold text-[#C49A3C]">{s.value}</div>
-                  <div className="text-white/70 text-xs mt-1">{s.label}</div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
@@ -139,7 +123,7 @@ export default async function HomePage() {
       {/* Category tabs */}
       {types.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10">
-          <div className="bg-white border border-[#ECE6D8] rounded-2xl p-3 flex gap-2 overflow-x-auto shadow-sm">
+          <div className="bg-white/95 backdrop-blur border border-[#ECE6D8] rounded-2xl p-3 flex gap-2 overflow-x-auto shadow-[0_20px_70px_-45px_rgba(15,34,25,0.55)] animate-in">
             <Link
               href="/spaces"
               className="flex-shrink-0 px-4 py-2 rounded-xl bg-[#1B3A2D] text-white text-sm font-semibold whitespace-nowrap"
@@ -181,7 +165,7 @@ export default async function HomePage() {
         </div>
 
         {spaces.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger-grid">
             {spaces.map((space) => (
               <SpaceCard
                 key={space.id}
@@ -227,7 +211,7 @@ export default async function HomePage() {
             <p className="text-[#6B7566] mt-3 max-w-md mx-auto">ثلاث خطوات تفصلك عن مساحتك التالية</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 stagger-grid">
             {[
               {
                 step: '01',
@@ -259,7 +243,7 @@ export default async function HomePage() {
                   </svg>
                 ),
               },
-            ].map((item, i) => (
+            ].map((item) => (
               <div key={item.step} className="relative card-elevated p-8">
                 {/* Corner accent */}
                 <div className="absolute top-6 end-6 text-4xl font-display font-extrabold text-[#F7F3EB] leading-none">
@@ -278,14 +262,14 @@ export default async function HomePage() {
 
       {/* Trust / features strip */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 stagger-grid">
           {[
             { icon: '🛡️', title: 'مساحات موثقة', desc: 'مراجعة من فريق الإدارة' },
             { icon: '⚡', title: 'حجز سريع', desc: 'خلال دقائق فقط' },
             { icon: '💬', title: 'دعم فوري', desc: 'رد سريع على استفساراتك' },
             { icon: '📍', title: 'مواقع متعددة', desc: 'في أهم المدن السعودية' },
           ].map(f => (
-            <div key={f.title} className="flex items-start gap-4">
+            <div key={f.title} className="flex items-start gap-4 premium-card p-4">
               <div className="w-12 h-12 rounded-xl bg-[#F7F3EB] border border-[#ECE6D8] flex items-center justify-center text-2xl flex-shrink-0">
                 {f.icon}
               </div>
@@ -300,10 +284,7 @@ export default async function HomePage() {
 
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="relative overflow-hidden rounded-3xl hero-pattern p-10 lg:p-16 text-center text-white">
-          <div className="absolute inset-0 opacity-30 pointer-events-none">
-            <div className="absolute top-0 start-1/4 w-72 h-72 rounded-full bg-[#C49A3C] blur-3xl" />
-          </div>
+        <div className="relative overflow-hidden rounded-3xl hero-pattern p-10 lg:p-16 text-center text-white animate-in">
           <div className="relative max-w-2xl mx-auto">
             <div className="eyebrow mb-4 justify-center inline-flex"><span>لأصحاب المساحات</span></div>
             <h2 className="font-display text-3xl lg:text-4xl font-extrabold mb-4">

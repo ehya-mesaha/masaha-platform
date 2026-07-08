@@ -37,14 +37,33 @@ export default async function SellerDashboard() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">مرحباً بك في لوحة التحكم</h1>
-        <p className="text-gray-500 mt-1">إليك نظرة عامة على مساحاتك وطلبات الحجز</p>
+    <div className="dashboard-page">
+      <div className="page-hero mb-8 p-7 animate-in">
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold text-[#C49A3C] mb-2">لوحة صاحب المساحة</p>
+            <h1 className="text-3xl font-extrabold text-white">مرحباً بك في لوحة التحكم</h1>
+            <p className="text-white/65 mt-2">تابع المساحات، الطلبات الجديدة، وحالة الاعتماد من مكان واحد.</p>
+          </div>
+          <div className="flex gap-3">
+            <Link
+              href="/seller/spaces/new"
+              className="rounded-xl bg-[#C49A3C] px-5 py-2.5 text-sm font-bold text-[#14201A] transition-transform hover:-translate-y-0.5"
+            >
+              إضافة مساحة
+            </Link>
+            <Link
+              href="/seller/bookings"
+              className="rounded-xl border border-white/20 bg-white/8 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/12"
+            >
+              الطلبات
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-grid">
         {[
           { label: 'إجمالي المساحات', value: stats.total, icon: '🏢', color: 'text-blue-600' },
           { label: 'بانتظار المراجعة', value: stats.pending, icon: '⏳', color: 'text-amber-600' },
@@ -57,14 +76,14 @@ export default async function SellerDashboard() {
                 <p className="text-gray-500 text-sm">{stat.label}</p>
                 <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
               </div>
-              <div className="text-3xl">{stat.icon}</div>
+              <div className="text-3xl floating">{stat.icon}</div>
             </div>
           </Card>
         ))}
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-3 mb-8">
+      <div className="hidden">
         <Link
           href="/seller/spaces/new"
           className="bg-[#1B3A2D] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] transition-colors"
@@ -87,11 +106,11 @@ export default async function SellerDashboard() {
         {recentBookings.length === 0 ? (
           <div className="p-8 text-center text-gray-500">لا توجد طلبات حجز بعد</div>
         ) : (
-          <div className="divide-y divide-[#E8E3D8]">
+          <div className="divide-y divide-[#E8E3D8] motion-list">
             {recentBookings.map((b) => {
               const { variant, label } = getBookingStatusBadge(b.status)
               return (
-                <div key={b.id} className="px-6 py-4 flex items-center justify-between">
+                <div key={b.id} className="px-6 py-4 flex items-center justify-between transition-colors hover:bg-[#FBFAF7]">
                   <div>
                     <p className="font-medium text-gray-900 text-sm">{b.buyer.name}</p>
                     <p className="text-gray-500 text-xs mt-0.5">{b.space.name} · {b.date}</p>

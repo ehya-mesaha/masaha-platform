@@ -7,7 +7,7 @@ interface CardProps {
 export default function Card({ children, className = '', padding = true }: CardProps) {
   return (
     <div
-      className={`bg-white rounded-xl border border-[#E8E3D8] shadow-sm ${padding ? 'p-6' : ''} ${className}`}
+      className={`premium-card hover-lift ${padding ? 'p-6' : ''} ${className}`}
     >
       {children}
     </div>

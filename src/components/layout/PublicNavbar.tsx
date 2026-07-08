@@ -70,7 +70,7 @@ export default function PublicNavbar() {
               </svg>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-lg font-extrabold text-[#1B3A2D] tracking-tight">مساحة</span>
+              <span className="text-lg font-extrabold text-[#1B3A2D]">مساحة</span>
               <span className="text-[10px] text-[#6B7566] font-medium">MASAHA</span>
             </div>
           </Link>

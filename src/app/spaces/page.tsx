@@ -28,14 +28,21 @@ export default async function SpacesPage({
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-paper">
       <PublicNavbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1">
+        <div className="page-hero mb-8 p-7 animate-in">
+          <div className="relative">
+            <p className="text-xs font-bold text-[#C49A3C] mb-2">اكتشف المساحة المناسبة</p>
+            <h1 className="text-3xl font-extrabold text-white">المساحات المتاحة</h1>
+            <p className="mt-2 text-sm text-white/65">فلتر حسب المدينة والنوع، ثم افتح التفاصيل للحجز والتواصل مع صاحب المساحة.</p>
+          </div>
+        </div>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <aside className="lg:w-64 flex-shrink-0">
-            <div className="bg-white rounded-2xl border border-[#E8E3D8] p-5 sticky top-20">
+            <div className="premium-card p-5 sticky top-20 animate-in">
               <h3 className="font-semibold text-gray-900 mb-4">فلترة النتائج</h3>
 
               <form method="get">
@@ -46,7 +53,7 @@ export default async function SpacesPage({
                       name="city"
                       defaultValue={params.city}
                       placeholder="الرياض، جدة..."
-                      className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+                    className="field"
                     />
                   </div>
 
@@ -55,7 +62,7 @@ export default async function SpacesPage({
                     <select
                       name="typeId"
                       defaultValue={params.typeId}
-                      className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
+                      className="field bg-white"
                     >
                       <option value="">جميع الأنواع</option>
                       {types.map(t => (
@@ -66,7 +73,7 @@ export default async function SpacesPage({
 
                   <button
                     type="submit"
-                    className="w-full bg-[#1B3A2D] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] transition-colors"
+                    className="btn-primary w-full py-2.5 rounded-xl text-sm font-semibold"
                   >
                     تطبيق الفلتر
                   </button>
@@ -86,7 +93,7 @@ export default async function SpacesPage({
 
           {/* Main content */}
           <main className="flex-1">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 animate-in">
               <h1 className="text-xl font-bold text-gray-900">
                 المساحات المتاحة
                 <span className="text-gray-400 font-normal text-base me-2">({spaces.length})</span>

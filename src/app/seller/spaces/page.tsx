@@ -25,18 +25,21 @@ export default async function SellerSpacesPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">مساحاتي</h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة جميع مساحاتك</p>
+    <div className="dashboard-page">
+      <div className="page-hero mb-6 p-6 animate-in">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-[#C49A3C] mb-2">إدارة العرض</p>
+            <h1 className="text-2xl font-extrabold text-white">مساحاتي</h1>
+            <p className="text-white/65 text-sm mt-1">تابع حالة النشر والحجوزات لكل مساحة من مكان واحد.</p>
+          </div>
+          <Link
+            href="/seller/spaces/new"
+            className="inline-flex items-center justify-center rounded-xl bg-[#C49A3C] px-5 py-2.5 text-sm font-bold text-[#14201A] transition-transform hover:-translate-y-0.5"
+          >
+            + إضافة مساحة
+          </Link>
         </div>
-        <Link
-          href="/seller/spaces/new"
-          className="bg-[#1B3A2D] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] transition-colors"
-        >
-          + إضافة مساحة
-        </Link>
       </div>
 
       {spaces.length === 0 ? (
@@ -54,13 +57,13 @@ export default async function SellerSpacesPage() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-grid">
           {spaces.map((space) => {
             const { variant, label } = getSpaceStatusBadge(space.status)
             return (
-              <Card key={space.id} padding={false}>
-                <div className="flex gap-4 p-4">
-                  <div className="w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+              <Card key={space.id} padding={false} className="overflow-hidden">
+                <div className="flex gap-4 p-4 transition-colors hover:bg-[#FBFAF7]">
+                  <div className="w-28 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100">
                     {space.images[0]?.url ? (
                       <img src={space.images[0].url} alt={space.name} className="w-full h-full object-cover" />
                     ) : (
