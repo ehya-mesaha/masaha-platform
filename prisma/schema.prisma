@@ -35,6 +35,13 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum SpaceNeedStatus {
+  NEW
+  IN_REVIEW
+  MATCHED
+  CLOSED
+}
+
 enum ConversationType {
   SPACE
   ADMIN_SUPPORT
@@ -71,6 +78,7 @@ model User {
   adminConversations  Conversation[]        @relation("AdminConversations")
   sentMessages        ConversationMessage[]
   reviews             SpaceReview[]
+  spaceNeedRequests   SpaceNeedRequest[]
 }
 
 model UserDocument {
@@ -83,9 +91,10 @@ model UserDocument {
 }
 
 model SpaceType {
-  id     String  @id @default(cuid())
-  name   String  @unique
-  spaces Space[]
+  id           String             @id @default(cuid())
+  name         String             @unique
+  spaces       Space[]
+  needRequests SpaceNeedRequest[]
 }
 
 model Amenity {
@@ -202,6 +211,32 @@ model Booking {
   buyer   User   @relation(fields: [buyerId], references: [id])
 
   review SpaceReview?
+}
+
+model SpaceNeedRequest {
+  id           String          @id @default(cuid())
+  spaceType    String
+  city         String
+  district     String?
+  expectedDate String?
+  capacity     Int
+  budgetMin    Float?
+  budgetMax    Float?
+  details      String?
+  status       SpaceNeedStatus @default(NEW)
+  adminNote    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  buyerId String
+  buyer   User   @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  typeId  String?
+  type    SpaceType? @relation(fields: [typeId], references: [id], onDelete: SetNull)
+
+  @@index([buyerId, createdAt])
+  @@index([status, createdAt])
+  @@index([typeId])
+  @@index([city])
 }
 
 model Conversation {

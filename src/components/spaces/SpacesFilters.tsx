@@ -52,6 +52,8 @@ export default function SpacesFilters({ types, params }: Props) {
   const [pricePeriod, setPricePeriod] = useState(params.pricePeriod || '')
   const [sort, setSort] = useState(params.sort || 'newest')
   const [selectedDays, setSelectedDays] = useState(initialDays)
+  const minPercent = Math.max(0, Math.min(100, (minPrice / MAX_PRICE) * 100))
+  const maxPercent = Math.max(0, Math.min(100, (maxPrice / MAX_PRICE) * 100))
 
   function toggleDay(value: string) {
     setSelectedDays(prev => {
@@ -79,11 +81,11 @@ export default function SpacesFilters({ types, params }: Props) {
   }
 
   function updateMin(value: number) {
-    setMinPrice(Math.min(value, maxPrice))
+    setMinPrice(Math.max(0, Math.min(value, maxPrice)))
   }
 
   function updateMax(value: number) {
-    setMaxPrice(Math.max(value, minPrice))
+    setMaxPrice(Math.min(MAX_PRICE, Math.max(value, minPrice)))
   }
 
   return (

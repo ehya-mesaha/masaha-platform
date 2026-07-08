@@ -11,7 +11,7 @@ interface SidebarProps {
   userName?: string
 }
 
-const iconClass = 'w-4 h-4'
+const iconClass = 'h-4 w-4'
 const SvgIcon = ({ d }: { d: string }) => (
   <svg className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d={d} />
@@ -47,6 +47,7 @@ const sellerLinks = [
 const buyerLinks = [
   { href: '/buyer/bookings', label: 'حجوزاتي', icon: ICONS.bookings },
   { href: '/spaces', label: 'تصفح المساحات', icon: ICONS.search },
+  { href: '/buyer/space-needs', label: 'احتياج مساحة', icon: ICONS.needs },
   { href: '/buyer/conversations', label: 'المحادثات', icon: ICONS.messages },
   { href: '/buyer/settings', label: 'الإعدادات', icon: ICONS.settings },
   { href: '/policies', label: 'السياسات والأحكام', icon: ICONS.policies },
@@ -57,6 +58,8 @@ const adminLinks = [
   { href: '/admin/spaces', label: 'المساحات', icon: ICONS.spaces },
   { href: '/admin/users', label: 'المستخدمون', icon: ICONS.users },
   { href: '/admin/bookings', label: 'الحجوزات', icon: ICONS.bookings },
+  { href: '/admin/space-needs', label: 'احتياجات المساحات', icon: ICONS.needs },
+  { href: '/admin/reports', label: 'التقارير المالية', icon: ICONS.reports },
   { href: '/admin/conversations', label: 'المحادثات', icon: ICONS.messages },
   { href: '/admin/categories', label: 'التصنيفات', icon: ICONS.tags },
 ]
@@ -73,7 +76,7 @@ const roleLabel: Record<Role, string> = {
   ADMIN: 'مدير النظام',
 }
 
-export default function DashboardSidebar({ role, userName }: SidebarProps) {
+export default function DashboardSidebarPro({ role, userName }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const links = roleLinks[role]
@@ -112,17 +115,15 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219] flex flex-col relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute top-0 -end-16 w-64 h-64 rounded-full bg-[#C49A3C]/5 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 -start-16 w-64 h-64 rounded-full bg-[#C49A3C]/5 blur-3xl pointer-events-none" />
+    <aside className="relative flex min-h-screen w-64 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219]">
+      <div className="pointer-events-none absolute -end-16 top-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
+      <div className="pointer-events-none absolute -start-16 bottom-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
 
-      {/* Logo & user */}
-      <div className="relative px-5 py-5 border-b border-white/[0.06]">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-[#C49A3C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      <div className="relative border-b border-white/[0.06] px-5 py-5">
+        <Link href="/" className="group flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+            <svg className="h-5 w-5 text-[#C49A3C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d={ICONS.dashboard} />
             </svg>
           </div>
           <div className="flex flex-col leading-none">
@@ -131,20 +132,19 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
           </div>
         </Link>
 
-        <div className="mt-5 flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] flex items-center justify-center text-[#0F2219] font-extrabold text-lg">
+        <div className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-lg font-extrabold text-[#0F2219]">
             {userName?.charAt(0) || '?'}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-white text-sm font-semibold truncate">{userName}</p>
-            <p className="text-white/50 text-[11px] font-medium">{roleLabel[role]}</p>
+            <p className="truncate text-sm font-semibold text-white">{userName}</p>
+            <p className="text-[11px] font-medium text-white/50">{roleLabel[role]}</p>
           </div>
         </div>
       </div>
 
-      {/* Links */}
-      <nav className="relative flex-1 px-3 py-5 flex flex-col gap-0.5">
-        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-3 mb-2">القائمة</p>
+      <nav className="relative flex flex-1 flex-col gap-0.5 px-3 py-5">
+        <p className="mb-2 px-3 text-[10px] font-bold uppercase text-white/40">القائمة</p>
         {links.map((link) => {
           const isConversations = link.href.includes('/conversations')
           const isActive =
@@ -156,7 +156,7 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 isActive
                   ? 'bg-white text-[#1B3A2D] shadow-sm'
                   : 'text-white/70 hover:bg-white/[0.06] hover:text-white'
@@ -174,7 +174,7 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
                 </span>
               )}
               {isActive && (
-                <svg className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} w-3.5 h-3.5 rotate-180`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <svg className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} h-3.5 w-3.5 rotate-180`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               )}
@@ -183,11 +183,10 @@ export default function DashboardSidebar({ role, userName }: SidebarProps) {
         })}
       </nav>
 
-      {/* Bottom */}
-      <div className="relative px-3 py-4 border-t border-white/[0.06]">
+      <div className="relative border-t border-white/[0.06] px-3 py-4">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-red-500/15 hover:text-red-300 transition-colors"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-red-500/15 hover:text-red-300"
         >
           <span className="text-[#C49A3C]/80"><SvgIcon d={ICONS.logout} /></span>
           تسجيل الخروج

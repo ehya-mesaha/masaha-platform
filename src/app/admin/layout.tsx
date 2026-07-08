@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import DashboardSidebar from '@/components/layout/DashboardSidebar'
+import DashboardSidebar from '@/components/layout/DashboardSidebarPro'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
