@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import SettingsClient from '@/components/settings/SettingsClientPro'
+import SettingsClient from '@/components/settings/ProfileSettingsClient'
 
 export const dynamic = 'force-dynamic'
 
