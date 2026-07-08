@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import SettingsClient from '@/components/settings/SettingsClient'
+import SettingsClient from '@/components/settings/SettingsClientPro'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +10,7 @@ export default async function BuyerSettingsPage() {
 
   const userData = await prisma.user.findUnique({
     where: { id: user.id as string },
-    select: { name: true, email: true, phone: true, role: true, createdAt: true },
+    select: { name: true, email: true, phone: true, avatarUrl: true, role: true, createdAt: true },
   })
 
   if (!userData) return null
@@ -21,6 +21,7 @@ export default async function BuyerSettingsPage() {
         name: userData.name,
         email: userData.email,
         phone: userData.phone,
+        avatarUrl: userData.avatarUrl,
         role: userData.role,
         createdAt: userData.createdAt.toISOString(),
       }}

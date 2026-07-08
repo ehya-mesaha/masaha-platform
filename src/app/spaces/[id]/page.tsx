@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import Modal from '@/components/ui/Modal'
@@ -48,7 +49,7 @@ type Space = {
   maxAdvanceBookingDays: number | null
   cancellationPolicy: string
   type: { name: string }
-  seller: { id: string; name: string; email: string; phone: string | null }
+  seller: { id: string; name: string; email: string; phone: string | null; avatarUrl: string | null }
   images: { id: string; url: string; order: number }[]
   amenities: { amenity: { id: string; name: string; icon: string | null } }[]
   workingHours: WorkingHour[]
@@ -505,13 +506,20 @@ export default function SpaceDetailPage() {
               <div className="border-t border-[#E8E3D8] pt-4">
                 <h4 className="text-xs font-bold text-[#6B7566] mb-3">صاحب المساحة</h4>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] flex items-center justify-center text-[#C49A3C] font-bold text-lg">
-                    {space.seller.name.charAt(0)}
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] flex items-center justify-center text-[#C49A3C] font-bold text-lg overflow-hidden">
+                    {space.seller.avatarUrl ? (
+                      <img src={space.seller.avatarUrl} alt={space.seller.name} className="h-full w-full object-cover" />
+                    ) : (
+                      space.seller.name.charAt(0)
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[#14201A]">{space.seller.name}</p>
                     {space.seller.phone && <p className="text-xs text-[#6B7566]" dir="ltr">{space.seller.phone}</p>}
                     <p className="text-xs text-[#6B7566]" dir="ltr">{space.seller.email}</p>
+                    <Link href={`/sellers/${space.seller.id}`} className="mt-1 inline-flex text-xs font-bold text-[#1B3A2D] hover:text-[#C49A3C]">
+                      عرض ملف صاحب المساحة
+                    </Link>
                   </div>
                 </div>
               </div>

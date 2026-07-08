@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import SpaceGrid from '@/components/spaces/SpaceGrid'
-import SpacesFilters from '@/components/spaces/SpacesFilters'
+import SpacesFilters from '@/components/spaces/SpacesFiltersPro'
 
 interface SearchParams {
   city?: string

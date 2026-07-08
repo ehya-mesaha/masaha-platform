@@ -62,6 +62,7 @@ const adminLinks = [
   { href: '/admin/reports', label: 'التقارير المالية', icon: ICONS.reports },
   { href: '/admin/conversations', label: 'المحادثات', icon: ICONS.messages },
   { href: '/admin/categories', label: 'التصنيفات', icon: ICONS.tags },
+  { href: '/admin/settings', label: 'الإعدادات', icon: ICONS.settings },
 ]
 
 const roleLinks: Record<Role, typeof sellerLinks> = {

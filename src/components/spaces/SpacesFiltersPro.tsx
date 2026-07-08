@@ -38,7 +38,7 @@ const DAY_OPTIONS = [
 
 const MAX_PRICE = 5000
 
-export default function SpacesFilters({ types, params }: Props) {
+export default function SpacesFiltersPro({ types, params }: Props) {
   const router = useRouter()
   const initialDays = useMemo(() => new Set((params.days || '').split(',').filter(Boolean)), [params.days])
   const [city, setCity] = useState(params.city || '')
@@ -52,6 +52,9 @@ export default function SpacesFilters({ types, params }: Props) {
   const [pricePeriod, setPricePeriod] = useState(params.pricePeriod || '')
   const [sort, setSort] = useState(params.sort || 'newest')
   const [selectedDays, setSelectedDays] = useState(initialDays)
+
+  const minPercent = Math.max(0, Math.min(100, (minPrice / MAX_PRICE) * 100))
+  const maxPercent = Math.max(0, Math.min(100, (maxPrice / MAX_PRICE) * 100))
 
   function toggleDay(value: string) {
     setSelectedDays(prev => {
@@ -87,7 +90,7 @@ export default function SpacesFilters({ types, params }: Props) {
   }
 
   return (
-    <div className="premium-card p-5 sticky top-20 animate-in">
+    <div className="premium-card sticky top-20 p-5 animate-in">
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h3 className="font-extrabold text-[#14201A]">فلترة النتائج</h3>
@@ -100,7 +103,7 @@ export default function SpacesFilters({ types, params }: Props) {
 
       <div className="space-y-5">
         <div>
-          <label className="block text-xs font-bold text-[#4A554D] mb-1.5">المدينة أو الحي</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">المدينة أو الحي</label>
           <input
             value={city}
             onChange={e => setCity(e.target.value)}
@@ -110,7 +113,7 @@ export default function SpacesFilters({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#4A554D] mb-1.5">نوع المساحة</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">نوع المساحة</label>
           <select value={typeId} onChange={e => setTypeId(e.target.value)} className="field bg-white">
             <option value="">جميع الأنواع</option>
             {types.map(type => (
@@ -121,32 +124,39 @@ export default function SpacesFilters({ types, params }: Props) {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-xs font-bold text-[#4A554D]">السعر</label>
+            <label className="text-xs font-bold text-[#4A554D]">نطاق السعر للساعة</label>
             <span className="text-[11px] font-semibold text-[#1B3A2D]">
               {minPrice.toLocaleString('ar-SA')} - {maxPrice.toLocaleString('ar-SA')} ر.س
             </span>
           </div>
-          <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-3">
-            <input
-              type="range"
-              min={0}
-              max={MAX_PRICE}
-              step={50}
-              value={minPrice}
-              onChange={e => updateMin(Number(e.target.value))}
-              className="w-full accent-[#1B3A2D]"
-              aria-label="الحد الأدنى للسعر"
-            />
-            <input
-              type="range"
-              min={0}
-              max={MAX_PRICE}
-              step={50}
-              value={maxPrice}
-              onChange={e => updateMax(Number(e.target.value))}
-              className="mt-1 w-full accent-[#C49A3C]"
-              aria-label="الحد الأعلى للسعر"
-            />
+          <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] px-3 py-5">
+            <div className="relative h-8" dir="ltr">
+              <div className="absolute left-1 right-1 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#D8D1C4]" />
+              <div
+                className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#C49A3C]"
+                style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
+              />
+              <input
+                type="range"
+                min={0}
+                max={MAX_PRICE}
+                step={50}
+                value={minPrice}
+                onChange={e => updateMin(Number(e.target.value))}
+                className="dual-range-input"
+                aria-label="الحد الأدنى للسعر"
+              />
+              <input
+                type="range"
+                min={0}
+                max={MAX_PRICE}
+                step={50}
+                value={maxPrice}
+                onChange={e => updateMax(Number(e.target.value))}
+                className="dual-range-input"
+                aria-label="الحد الأعلى للسعر"
+              />
+            </div>
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <input
@@ -170,7 +180,7 @@ export default function SpacesFilters({ types, params }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-bold text-[#4A554D] mb-1.5">التسعير</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">التسعير</label>
             <select value={pricePeriod} onChange={e => setPricePeriod(e.target.value)} className="field bg-white">
               <option value="">الكل</option>
               <option value="hour">بالساعة</option>
@@ -178,7 +188,7 @@ export default function SpacesFilters({ types, params }: Props) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#4A554D] mb-1.5">السعة</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">السعة</label>
             <input
               type="number"
               min={1}
@@ -191,7 +201,7 @@ export default function SpacesFilters({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#4A554D] mb-2">الأيام المتاحة</label>
+          <label className="mb-2 block text-xs font-bold text-[#4A554D]">الأيام المتاحة</label>
           <div className="grid grid-cols-2 gap-2">
             {DAY_OPTIONS.map(day => {
               const active = selectedDays.has(day.value)
@@ -214,27 +224,27 @@ export default function SpacesFilters({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#4A554D] mb-1.5">تاريخ محدد</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">تاريخ محدد</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className="field" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-bold text-[#4A554D] mb-1.5">من</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">من</label>
             <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="field" />
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#4A554D] mb-1.5">إلى</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">إلى</label>
             <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="field" />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#4A554D] mb-1.5">الترتيب</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">الترتيب</label>
           <select value={sort} onChange={e => setSort(e.target.value)} className="field bg-white">
             <option value="newest">الأحدث</option>
-            <option value="priceAsc">الأقل سعراً</option>
-            <option value="priceDesc">الأعلى سعراً</option>
+            <option value="priceAsc">الأقل سعرا</option>
+            <option value="priceDesc">الأعلى سعرا</option>
             <option value="capacityDesc">الأكبر سعة</option>
           </select>
         </div>

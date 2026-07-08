@@ -125,6 +125,7 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   phone: 'phone',
+  avatarUrl: 'avatarUrl',
   password: 'password',
   role: 'role',
   status: 'status',
@@ -231,6 +232,24 @@ exports.Prisma.BookingScalarFieldEnum = {
   buyerId: 'buyerId'
 };
 
+exports.Prisma.SpaceNeedRequestScalarFieldEnum = {
+  id: 'id',
+  spaceType: 'spaceType',
+  city: 'city',
+  district: 'district',
+  expectedDate: 'expectedDate',
+  capacity: 'capacity',
+  budgetMin: 'budgetMin',
+  budgetMax: 'budgetMax',
+  details: 'details',
+  status: 'status',
+  adminNote: 'adminNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  buyerId: 'buyerId',
+  typeId: 'typeId'
+};
+
 exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -318,6 +337,13 @@ exports.BookingStatus = exports.$Enums.BookingStatus = {
   COMPLETED: 'COMPLETED'
 };
 
+exports.SpaceNeedStatus = exports.$Enums.SpaceNeedStatus = {
+  NEW: 'NEW',
+  IN_REVIEW: 'IN_REVIEW',
+  MATCHED: 'MATCHED',
+  CLOSED: 'CLOSED'
+};
+
 exports.ConversationType = exports.$Enums.ConversationType = {
   SPACE: 'SPACE',
   ADMIN_SUPPORT: 'ADMIN_SUPPORT'
@@ -335,6 +361,7 @@ exports.Prisma.ModelName = {
   SpaceService: 'SpaceService',
   SpaceRule: 'SpaceRule',
   Booking: 'Booking',
+  SpaceNeedRequest: 'SpaceNeedRequest',
   Conversation: 'Conversation',
   ConversationMessage: 'ConversationMessage',
   SpaceReview: 'SpaceReview'

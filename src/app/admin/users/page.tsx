@@ -15,7 +15,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
     users = await prisma.user.findMany({
       where,
       select: {
-        id: true, name: true, email: true, role: true, status: true, createdAt: true,
+        id: true, name: true, email: true, avatarUrl: true, role: true, status: true, createdAt: true,
         _count: { select: { spaces: true, bookings: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -134,8 +134,12 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                 <tr key={u.id} className="hover:bg-[#F7F3EB]/40 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] text-[#C49A3C] flex items-center justify-center font-bold text-sm">
-                        {u.name.charAt(0)}
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] text-[#C49A3C] flex items-center justify-center font-bold text-sm overflow-hidden">
+                        {u.avatarUrl ? (
+                          <img src={u.avatarUrl} alt={u.name} className="h-full w-full object-cover" />
+                        ) : (
+                          u.name.charAt(0)
+                        )}
                       </div>
                       <div>
                         <p className="font-semibold text-[#14201A]">{u.name}</p>
@@ -183,6 +187,7 @@ type UserType = {
   id: string
   name: string
   email: string
+  avatarUrl: string | null
   role: string
   status: string
   createdAt: Date

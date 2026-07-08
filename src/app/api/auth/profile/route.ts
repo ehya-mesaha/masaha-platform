@@ -9,7 +9,7 @@ export async function PUT(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
 
     const body = await req.json()
-    const { name, phone, currentPassword, newPassword } = body
+    const { name, phone, avatarUrl, currentPassword, newPassword } = body
 
     const dbUser = await prisma.user.findUnique({ where: { id: user.id as string } })
     if (!dbUser) return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
@@ -18,6 +18,7 @@ export async function PUT(req: NextRequest) {
 
     if (name && name.trim()) data.name = name.trim()
     if (phone !== undefined) data.phone = phone.trim() || null
+    if (avatarUrl !== undefined) data.avatarUrl = typeof avatarUrl === 'string' && avatarUrl.trim() ? avatarUrl.trim() : null
 
     if (newPassword) {
       if (!currentPassword) {
@@ -40,7 +41,7 @@ export async function PUT(req: NextRequest) {
     const updated = await prisma.user.update({
       where: { id: user.id as string },
       data,
-      select: { id: true, name: true, email: true, phone: true },
+      select: { id: true, name: true, email: true, phone: true, avatarUrl: true },
     })
 
     return NextResponse.json({ user: updated })

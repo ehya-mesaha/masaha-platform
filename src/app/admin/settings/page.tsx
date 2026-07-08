@@ -4,7 +4,7 @@ import SettingsClient from '@/components/settings/SettingsClientPro'
 
 export const dynamic = 'force-dynamic'
 
-export default async function SellerSettingsPage() {
+export default async function AdminSettingsPage() {
   const user = await getCurrentUser()
   if (!user) return null
 
