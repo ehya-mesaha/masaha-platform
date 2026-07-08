@@ -15,6 +15,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         workingHours: { orderBy: { dayOfWeek: 'asc' } },
         services: true,
         rules: true,
+        reviews: {
+          where: { isVisible: true },
+          include: {
+            buyer: { select: { id: true, name: true } },
+            booking: { select: { id: true, date: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 8,
+        },
       },
     })
 
@@ -22,7 +31,21 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'المساحة غير موجودة' }, { status: 404 })
     }
 
-    return NextResponse.json({ space })
+    const reviewAggregate = await prisma.spaceReview.aggregate({
+      where: { spaceId: id, isVisible: true },
+      _avg: { rating: true },
+      _count: { id: true },
+    })
+
+    return NextResponse.json({
+      space: {
+        ...space,
+        reviewSummary: {
+          average: reviewAggregate._avg.rating ? Number(reviewAggregate._avg.rating.toFixed(1)) : 0,
+          count: reviewAggregate._count.id,
+        },
+      },
+    })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })

@@ -13,6 +13,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       include: {
         space: { include: { type: true, images: { take: 1, orderBy: { order: 'asc' } } } },
         buyer: { select: { name: true, email: true, phone: true } },
+        review: true,
       },
     })
 
@@ -57,11 +58,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (status !== 'CANCELLED') return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
     }
 
-    // Seller can accept/reject
+    // Seller can accept/reject pending bookings and complete accepted bookings
     if (user.role === 'SELLER') {
-      if (!['ACCEPTED', 'REJECTED'].includes(status)) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-      if (booking.status !== 'PENDING') return NextResponse.json({ error: 'لا يمكن تعديل حجز تمت مراجعته' }, { status: 400 })
       if (booking.space.sellerId !== user.id) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+      if (['ACCEPTED', 'REJECTED'].includes(status)) {
+        if (booking.status !== 'PENDING') return NextResponse.json({ error: 'لا يمكن تعديل حجز تمت مراجعته' }, { status: 400 })
+      } else if (status === 'COMPLETED') {
+        if (booking.status !== 'ACCEPTED') return NextResponse.json({ error: 'يمكن إكمال الحجوزات المقبولة فقط' }, { status: 400 })
+      } else {
+        return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+      }
     }
 
     const updated = await prisma.booking.update({

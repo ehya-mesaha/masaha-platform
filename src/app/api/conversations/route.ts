@@ -31,15 +31,19 @@ const conversationInclude = {
   },
 } as const
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const token = await getCurrentUser()
     if (!token) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
 
     const user = token as TokenPayload
+    const { searchParams } = new URL(req.url)
+    const scope = searchParams.get('scope')
     const where =
       user.role === 'ADMIN'
-        ? {}
+        ? scope === 'all'
+          ? {}
+          : { type: 'ADMIN_SUPPORT' as const }
         : user.role === 'SELLER'
           ? { sellerId: user.id }
           : { buyerId: user.id }

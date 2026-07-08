@@ -253,6 +253,18 @@ exports.Prisma.ConversationMessageScalarFieldEnum = {
   senderId: 'senderId'
 };
 
+exports.Prisma.SpaceReviewScalarFieldEnum = {
+  id: 'id',
+  rating: 'rating',
+  comment: 'comment',
+  isVisible: 'isVisible',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  spaceId: 'spaceId',
+  buyerId: 'buyerId',
+  bookingId: 'bookingId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -324,7 +336,8 @@ exports.Prisma.ModelName = {
   SpaceRule: 'SpaceRule',
   Booking: 'Booking',
   Conversation: 'Conversation',
-  ConversationMessage: 'ConversationMessage'
+  ConversationMessage: 'ConversationMessage',
+  SpaceReview: 'SpaceReview'
 };
 
 /**

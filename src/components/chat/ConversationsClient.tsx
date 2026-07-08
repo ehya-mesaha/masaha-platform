@@ -97,6 +97,7 @@ export default function ConversationsClient({ currentUser }: Props) {
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [adminScope, setAdminScope] = useState<'support' | 'all'>('support')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const activeConversation = useMemo(
@@ -107,7 +108,8 @@ export default function ConversationsClient({ currentUser }: Props) {
   const loadConversations = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     try {
-      const res = await fetch('/api/conversations')
+      const scopeQuery = currentUser.role === 'ADMIN' && adminScope === 'all' ? '?scope=all' : ''
+      const res = await fetch(`/api/conversations${scopeQuery}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'تعذر تحميل المحادثات')
       setConversations(data.conversations || [])
@@ -117,7 +119,7 @@ export default function ConversationsClient({ currentUser }: Props) {
     } finally {
       if (!silent) setLoading(false)
     }
-  }, [activeId])
+  }, [activeId, adminScope, currentUser.role])
 
   const loadMessages = useCallback(async (conversationId: string, silent = false) => {
     if (!silent) setMessagesLoading(true)
@@ -183,6 +185,12 @@ export default function ConversationsClient({ currentUser }: Props) {
     }
   }
 
+  function toggleAdminScope() {
+    setAdminScope(prev => prev === 'support' ? 'all' : 'support')
+    setActiveId(null)
+    setMessages([])
+  }
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault()
     if (!activeId || !draft.trim() || sending) return
@@ -215,14 +223,22 @@ export default function ConversationsClient({ currentUser }: Props) {
         <div>
           <h1 className="font-display text-2xl font-extrabold text-[#14201A]">المحادثات</h1>
         </div>
-        {currentUser.role !== 'ADMIN' && (
+        {currentUser.role === 'ADMIN' ? (
+          <button
+            type="button"
+            onClick={toggleAdminScope}
+            className="inline-flex items-center justify-center rounded-xl border border-[#D8CFBE] bg-white px-4 py-2.5 text-sm font-semibold text-[#1B3A2D] transition-colors hover:border-[#1B3A2D] hover:bg-[#F7F3EB]"
+          >
+            {adminScope === 'support' ? 'عرض محادثات المستخدمين عند الحاجة' : 'إخفاء محادثات المستخدمين'}
+          </button>
+        ) : (
           <button
             type="button"
             onClick={startAdminConversation}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1B3A2D] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0F2219]"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100"
           >
             <span aria-hidden>✉</span>
-            محادثة الإدارة
+            بلاغ عاجل للإدارة
           </button>
         )}
       </div>
@@ -236,7 +252,9 @@ export default function ConversationsClient({ currentUser }: Props) {
       <div className="grid min-h-[calc(100dvh-11rem)] overflow-hidden rounded-2xl border border-[#E8E3D8] bg-white shadow-sm lg:grid-cols-[22rem_1fr]">
         <aside className={`${activeConversation ? 'hidden lg:block' : 'block'} border-[#E8E3D8] lg:border-l`}>
           <div className="border-b border-[#E8E3D8] px-4 py-3">
-            <p className="text-xs font-bold text-[#6B7566]">قائمة المحادثات</p>
+            <p className="text-xs font-bold text-[#6B7566]">
+              {currentUser.role === 'ADMIN' && adminScope === 'all' ? 'محادثات المستخدمين' : 'قائمة المحادثات'}
+            </p>
           </div>
           <div className="max-h-[calc(100dvh-15rem)] overflow-y-auto p-2">
             {loading ? (

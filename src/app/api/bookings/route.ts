@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
           space: {
             include: { type: true, images: { take: 1, orderBy: { order: 'asc' } } },
           },
+          review: { select: { id: true, rating: true } },
         },
         orderBy: { createdAt: 'desc' },
       })

@@ -78,6 +78,11 @@ export type Conversation = $Result.DefaultSelection<Prisma.$ConversationPayload>
  * 
  */
 export type ConversationMessage = $Result.DefaultSelection<Prisma.$ConversationMessagePayload>
+/**
+ * Model SpaceReview
+ * 
+ */
+export type SpaceReview = $Result.DefaultSelection<Prisma.$SpaceReviewPayload>
 
 /**
  * Enums
@@ -427,6 +432,16 @@ export class PrismaClient<
     * ```
     */
   get conversationMessage(): Prisma.ConversationMessageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.spaceReview`: Exposes CRUD operations for the **SpaceReview** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SpaceReviews
+    * const spaceReviews = await prisma.spaceReview.findMany()
+    * ```
+    */
+  get spaceReview(): Prisma.SpaceReviewDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -873,7 +888,8 @@ export namespace Prisma {
     SpaceRule: 'SpaceRule',
     Booking: 'Booking',
     Conversation: 'Conversation',
-    ConversationMessage: 'ConversationMessage'
+    ConversationMessage: 'ConversationMessage',
+    SpaceReview: 'SpaceReview'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -889,7 +905,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "userDocument" | "spaceType" | "amenity" | "space" | "spaceImage" | "spaceAmenity" | "spaceWorkingHours" | "spaceService" | "spaceRule" | "booking" | "conversation" | "conversationMessage"
+      modelProps: "user" | "userDocument" | "spaceType" | "amenity" | "space" | "spaceImage" | "spaceAmenity" | "spaceWorkingHours" | "spaceService" | "spaceRule" | "booking" | "conversation" | "conversationMessage" | "spaceReview"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1855,6 +1871,80 @@ export namespace Prisma {
           }
         }
       }
+      SpaceReview: {
+        payload: Prisma.$SpaceReviewPayload<ExtArgs>
+        fields: Prisma.SpaceReviewFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SpaceReviewFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SpaceReviewFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>
+          }
+          findFirst: {
+            args: Prisma.SpaceReviewFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SpaceReviewFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>
+          }
+          findMany: {
+            args: Prisma.SpaceReviewFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>[]
+          }
+          create: {
+            args: Prisma.SpaceReviewCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>
+          }
+          createMany: {
+            args: Prisma.SpaceReviewCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SpaceReviewCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>[]
+          }
+          delete: {
+            args: Prisma.SpaceReviewDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>
+          }
+          update: {
+            args: Prisma.SpaceReviewUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>
+          }
+          deleteMany: {
+            args: Prisma.SpaceReviewDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SpaceReviewUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SpaceReviewUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>[]
+          }
+          upsert: {
+            args: Prisma.SpaceReviewUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SpaceReviewPayload>
+          }
+          aggregate: {
+            args: Prisma.SpaceReviewAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSpaceReview>
+          }
+          groupBy: {
+            args: Prisma.SpaceReviewGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SpaceReviewGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SpaceReviewCountArgs<ExtArgs>
+            result: $Utils.Optional<SpaceReviewCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1976,6 +2066,7 @@ export namespace Prisma {
     booking?: BookingOmit
     conversation?: ConversationOmit
     conversationMessage?: ConversationMessageOmit
+    spaceReview?: SpaceReviewOmit
   }
 
   /* Types for Logging */
@@ -2063,6 +2154,7 @@ export namespace Prisma {
     sellerConversations: number
     adminConversations: number
     sentMessages: number
+    reviews: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2073,6 +2165,7 @@ export namespace Prisma {
     sellerConversations?: boolean | UserCountOutputTypeCountSellerConversationsArgs
     adminConversations?: boolean | UserCountOutputTypeCountAdminConversationsArgs
     sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
+    reviews?: boolean | UserCountOutputTypeCountReviewsArgs
   }
 
   // Custom InputTypes
@@ -2133,6 +2226,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ConversationMessageWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SpaceReviewWhereInput
   }
 
 
@@ -2210,6 +2310,7 @@ export namespace Prisma {
     services: number
     rules: number
     conversations: number
+    reviews: number
   }
 
   export type SpaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2220,6 +2321,7 @@ export namespace Prisma {
     services?: boolean | SpaceCountOutputTypeCountServicesArgs
     rules?: boolean | SpaceCountOutputTypeCountRulesArgs
     conversations?: boolean | SpaceCountOutputTypeCountConversationsArgs
+    reviews?: boolean | SpaceCountOutputTypeCountReviewsArgs
   }
 
   // Custom InputTypes
@@ -2280,6 +2382,13 @@ export namespace Prisma {
    */
   export type SpaceCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ConversationWhereInput
+  }
+
+  /**
+   * SpaceCountOutputType without action
+   */
+  export type SpaceCountOutputTypeCountReviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SpaceReviewWhereInput
   }
 
 
@@ -2521,6 +2630,7 @@ export namespace Prisma {
     sellerConversations?: boolean | User$sellerConversationsArgs<ExtArgs>
     adminConversations?: boolean | User$adminConversationsArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
+    reviews?: boolean | User$reviewsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2569,6 +2679,7 @@ export namespace Prisma {
     sellerConversations?: boolean | User$sellerConversationsArgs<ExtArgs>
     adminConversations?: boolean | User$adminConversationsArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
+    reviews?: boolean | User$reviewsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2584,6 +2695,7 @@ export namespace Prisma {
       sellerConversations: Prisma.$ConversationPayload<ExtArgs>[]
       adminConversations: Prisma.$ConversationPayload<ExtArgs>[]
       sentMessages: Prisma.$ConversationMessagePayload<ExtArgs>[]
+      reviews: Prisma.$SpaceReviewPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2996,6 +3108,7 @@ export namespace Prisma {
     sellerConversations<T extends User$sellerConversationsArgs<ExtArgs> = {}>(args?: Subset<T, User$sellerConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     adminConversations<T extends User$adminConversationsArgs<ExtArgs> = {}>(args?: Subset<T, User$adminConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    reviews<T extends User$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3592,6 +3705,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ConversationMessageScalarFieldEnum | ConversationMessageScalarFieldEnum[]
+  }
+
+  /**
+   * User.reviews
+   */
+  export type User$reviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    where?: SpaceReviewWhereInput
+    orderBy?: SpaceReviewOrderByWithRelationInput | SpaceReviewOrderByWithRelationInput[]
+    cursor?: SpaceReviewWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SpaceReviewScalarFieldEnum | SpaceReviewScalarFieldEnum[]
   }
 
   /**
@@ -7153,6 +7290,7 @@ export namespace Prisma {
     services?: boolean | Space$servicesArgs<ExtArgs>
     rules?: boolean | Space$rulesArgs<ExtArgs>
     conversations?: boolean | Space$conversationsArgs<ExtArgs>
+    reviews?: boolean | Space$reviewsArgs<ExtArgs>
     _count?: boolean | SpaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["space"]>
 
@@ -7252,6 +7390,7 @@ export namespace Prisma {
     services?: boolean | Space$servicesArgs<ExtArgs>
     rules?: boolean | Space$rulesArgs<ExtArgs>
     conversations?: boolean | Space$conversationsArgs<ExtArgs>
+    reviews?: boolean | Space$reviewsArgs<ExtArgs>
     _count?: boolean | SpaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SpaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7275,6 +7414,7 @@ export namespace Prisma {
       services: Prisma.$SpaceServicePayload<ExtArgs>[]
       rules: Prisma.$SpaceRulePayload<ExtArgs>[]
       conversations: Prisma.$ConversationPayload<ExtArgs>[]
+      reviews: Prisma.$SpaceReviewPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7704,6 +7844,7 @@ export namespace Prisma {
     services<T extends Space$servicesArgs<ExtArgs> = {}>(args?: Subset<T, Space$servicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceServicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     rules<T extends Space$rulesArgs<ExtArgs> = {}>(args?: Subset<T, Space$rulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     conversations<T extends Space$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, Space$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    reviews<T extends Space$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Space$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8323,6 +8464,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ConversationScalarFieldEnum | ConversationScalarFieldEnum[]
+  }
+
+  /**
+   * Space.reviews
+   */
+  export type Space$reviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    where?: SpaceReviewWhereInput
+    orderBy?: SpaceReviewOrderByWithRelationInput | SpaceReviewOrderByWithRelationInput[]
+    cursor?: SpaceReviewWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SpaceReviewScalarFieldEnum | SpaceReviewScalarFieldEnum[]
   }
 
   /**
@@ -13986,6 +14151,7 @@ export namespace Prisma {
     buyerId?: boolean
     space?: boolean | SpaceDefaultArgs<ExtArgs>
     buyer?: boolean | UserDefaultArgs<ExtArgs>
+    review?: boolean | Booking$reviewArgs<ExtArgs>
   }, ExtArgs["result"]["booking"]>
 
   export type BookingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14041,6 +14207,7 @@ export namespace Prisma {
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     space?: boolean | SpaceDefaultArgs<ExtArgs>
     buyer?: boolean | UserDefaultArgs<ExtArgs>
+    review?: boolean | Booking$reviewArgs<ExtArgs>
   }
   export type BookingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     space?: boolean | SpaceDefaultArgs<ExtArgs>
@@ -14056,6 +14223,7 @@ export namespace Prisma {
     objects: {
       space: Prisma.$SpacePayload<ExtArgs>
       buyer: Prisma.$UserPayload<ExtArgs>
+      review: Prisma.$SpaceReviewPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -14466,6 +14634,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     space<T extends SpaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SpaceDefaultArgs<ExtArgs>>): Prisma__SpaceClient<$Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     buyer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    review<T extends Booking$reviewArgs<ExtArgs> = {}>(args?: Subset<T, Booking$reviewArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14905,6 +15074,25 @@ export namespace Prisma {
      * Limit how many Bookings to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Booking.review
+   */
+  export type Booking$reviewArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    where?: SpaceReviewWhereInput
   }
 
   /**
@@ -17269,6 +17457,1171 @@ export namespace Prisma {
 
 
   /**
+   * Model SpaceReview
+   */
+
+  export type AggregateSpaceReview = {
+    _count: SpaceReviewCountAggregateOutputType | null
+    _avg: SpaceReviewAvgAggregateOutputType | null
+    _sum: SpaceReviewSumAggregateOutputType | null
+    _min: SpaceReviewMinAggregateOutputType | null
+    _max: SpaceReviewMaxAggregateOutputType | null
+  }
+
+  export type SpaceReviewAvgAggregateOutputType = {
+    rating: number | null
+  }
+
+  export type SpaceReviewSumAggregateOutputType = {
+    rating: number | null
+  }
+
+  export type SpaceReviewMinAggregateOutputType = {
+    id: string | null
+    rating: number | null
+    comment: string | null
+    isVisible: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    spaceId: string | null
+    buyerId: string | null
+    bookingId: string | null
+  }
+
+  export type SpaceReviewMaxAggregateOutputType = {
+    id: string | null
+    rating: number | null
+    comment: string | null
+    isVisible: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    spaceId: string | null
+    buyerId: string | null
+    bookingId: string | null
+  }
+
+  export type SpaceReviewCountAggregateOutputType = {
+    id: number
+    rating: number
+    comment: number
+    isVisible: number
+    createdAt: number
+    updatedAt: number
+    spaceId: number
+    buyerId: number
+    bookingId: number
+    _all: number
+  }
+
+
+  export type SpaceReviewAvgAggregateInputType = {
+    rating?: true
+  }
+
+  export type SpaceReviewSumAggregateInputType = {
+    rating?: true
+  }
+
+  export type SpaceReviewMinAggregateInputType = {
+    id?: true
+    rating?: true
+    comment?: true
+    isVisible?: true
+    createdAt?: true
+    updatedAt?: true
+    spaceId?: true
+    buyerId?: true
+    bookingId?: true
+  }
+
+  export type SpaceReviewMaxAggregateInputType = {
+    id?: true
+    rating?: true
+    comment?: true
+    isVisible?: true
+    createdAt?: true
+    updatedAt?: true
+    spaceId?: true
+    buyerId?: true
+    bookingId?: true
+  }
+
+  export type SpaceReviewCountAggregateInputType = {
+    id?: true
+    rating?: true
+    comment?: true
+    isVisible?: true
+    createdAt?: true
+    updatedAt?: true
+    spaceId?: true
+    buyerId?: true
+    bookingId?: true
+    _all?: true
+  }
+
+  export type SpaceReviewAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SpaceReview to aggregate.
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SpaceReviews to fetch.
+     */
+    orderBy?: SpaceReviewOrderByWithRelationInput | SpaceReviewOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SpaceReviewWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SpaceReviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SpaceReviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SpaceReviews
+    **/
+    _count?: true | SpaceReviewCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SpaceReviewAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SpaceReviewSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SpaceReviewMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SpaceReviewMaxAggregateInputType
+  }
+
+  export type GetSpaceReviewAggregateType<T extends SpaceReviewAggregateArgs> = {
+        [P in keyof T & keyof AggregateSpaceReview]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSpaceReview[P]>
+      : GetScalarType<T[P], AggregateSpaceReview[P]>
+  }
+
+
+
+
+  export type SpaceReviewGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SpaceReviewWhereInput
+    orderBy?: SpaceReviewOrderByWithAggregationInput | SpaceReviewOrderByWithAggregationInput[]
+    by: SpaceReviewScalarFieldEnum[] | SpaceReviewScalarFieldEnum
+    having?: SpaceReviewScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SpaceReviewCountAggregateInputType | true
+    _avg?: SpaceReviewAvgAggregateInputType
+    _sum?: SpaceReviewSumAggregateInputType
+    _min?: SpaceReviewMinAggregateInputType
+    _max?: SpaceReviewMaxAggregateInputType
+  }
+
+  export type SpaceReviewGroupByOutputType = {
+    id: string
+    rating: number
+    comment: string | null
+    isVisible: boolean
+    createdAt: Date
+    updatedAt: Date
+    spaceId: string
+    buyerId: string
+    bookingId: string
+    _count: SpaceReviewCountAggregateOutputType | null
+    _avg: SpaceReviewAvgAggregateOutputType | null
+    _sum: SpaceReviewSumAggregateOutputType | null
+    _min: SpaceReviewMinAggregateOutputType | null
+    _max: SpaceReviewMaxAggregateOutputType | null
+  }
+
+  type GetSpaceReviewGroupByPayload<T extends SpaceReviewGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SpaceReviewGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SpaceReviewGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SpaceReviewGroupByOutputType[P]>
+            : GetScalarType<T[P], SpaceReviewGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SpaceReviewSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    isVisible?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    spaceId?: boolean
+    buyerId?: boolean
+    bookingId?: boolean
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["spaceReview"]>
+
+  export type SpaceReviewSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    isVisible?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    spaceId?: boolean
+    buyerId?: boolean
+    bookingId?: boolean
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["spaceReview"]>
+
+  export type SpaceReviewSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    isVisible?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    spaceId?: boolean
+    buyerId?: boolean
+    bookingId?: boolean
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["spaceReview"]>
+
+  export type SpaceReviewSelectScalar = {
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    isVisible?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    spaceId?: boolean
+    buyerId?: boolean
+    bookingId?: boolean
+  }
+
+  export type SpaceReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rating" | "comment" | "isVisible" | "createdAt" | "updatedAt" | "spaceId" | "buyerId" | "bookingId", ExtArgs["result"]["spaceReview"]>
+  export type SpaceReviewInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }
+  export type SpaceReviewIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }
+  export type SpaceReviewIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }
+
+  export type $SpaceReviewPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SpaceReview"
+    objects: {
+      space: Prisma.$SpacePayload<ExtArgs>
+      buyer: Prisma.$UserPayload<ExtArgs>
+      booking: Prisma.$BookingPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      rating: number
+      comment: string | null
+      isVisible: boolean
+      createdAt: Date
+      updatedAt: Date
+      spaceId: string
+      buyerId: string
+      bookingId: string
+    }, ExtArgs["result"]["spaceReview"]>
+    composites: {}
+  }
+
+  type SpaceReviewGetPayload<S extends boolean | null | undefined | SpaceReviewDefaultArgs> = $Result.GetResult<Prisma.$SpaceReviewPayload, S>
+
+  type SpaceReviewCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SpaceReviewFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SpaceReviewCountAggregateInputType | true
+    }
+
+  export interface SpaceReviewDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SpaceReview'], meta: { name: 'SpaceReview' } }
+    /**
+     * Find zero or one SpaceReview that matches the filter.
+     * @param {SpaceReviewFindUniqueArgs} args - Arguments to find a SpaceReview
+     * @example
+     * // Get one SpaceReview
+     * const spaceReview = await prisma.spaceReview.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SpaceReviewFindUniqueArgs>(args: SelectSubset<T, SpaceReviewFindUniqueArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SpaceReview that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SpaceReviewFindUniqueOrThrowArgs} args - Arguments to find a SpaceReview
+     * @example
+     * // Get one SpaceReview
+     * const spaceReview = await prisma.spaceReview.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SpaceReviewFindUniqueOrThrowArgs>(args: SelectSubset<T, SpaceReviewFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SpaceReview that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewFindFirstArgs} args - Arguments to find a SpaceReview
+     * @example
+     * // Get one SpaceReview
+     * const spaceReview = await prisma.spaceReview.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SpaceReviewFindFirstArgs>(args?: SelectSubset<T, SpaceReviewFindFirstArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SpaceReview that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewFindFirstOrThrowArgs} args - Arguments to find a SpaceReview
+     * @example
+     * // Get one SpaceReview
+     * const spaceReview = await prisma.spaceReview.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SpaceReviewFindFirstOrThrowArgs>(args?: SelectSubset<T, SpaceReviewFindFirstOrThrowArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SpaceReviews that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SpaceReviews
+     * const spaceReviews = await prisma.spaceReview.findMany()
+     * 
+     * // Get first 10 SpaceReviews
+     * const spaceReviews = await prisma.spaceReview.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const spaceReviewWithIdOnly = await prisma.spaceReview.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SpaceReviewFindManyArgs>(args?: SelectSubset<T, SpaceReviewFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SpaceReview.
+     * @param {SpaceReviewCreateArgs} args - Arguments to create a SpaceReview.
+     * @example
+     * // Create one SpaceReview
+     * const SpaceReview = await prisma.spaceReview.create({
+     *   data: {
+     *     // ... data to create a SpaceReview
+     *   }
+     * })
+     * 
+     */
+    create<T extends SpaceReviewCreateArgs>(args: SelectSubset<T, SpaceReviewCreateArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SpaceReviews.
+     * @param {SpaceReviewCreateManyArgs} args - Arguments to create many SpaceReviews.
+     * @example
+     * // Create many SpaceReviews
+     * const spaceReview = await prisma.spaceReview.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SpaceReviewCreateManyArgs>(args?: SelectSubset<T, SpaceReviewCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SpaceReviews and returns the data saved in the database.
+     * @param {SpaceReviewCreateManyAndReturnArgs} args - Arguments to create many SpaceReviews.
+     * @example
+     * // Create many SpaceReviews
+     * const spaceReview = await prisma.spaceReview.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SpaceReviews and only return the `id`
+     * const spaceReviewWithIdOnly = await prisma.spaceReview.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SpaceReviewCreateManyAndReturnArgs>(args?: SelectSubset<T, SpaceReviewCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SpaceReview.
+     * @param {SpaceReviewDeleteArgs} args - Arguments to delete one SpaceReview.
+     * @example
+     * // Delete one SpaceReview
+     * const SpaceReview = await prisma.spaceReview.delete({
+     *   where: {
+     *     // ... filter to delete one SpaceReview
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SpaceReviewDeleteArgs>(args: SelectSubset<T, SpaceReviewDeleteArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SpaceReview.
+     * @param {SpaceReviewUpdateArgs} args - Arguments to update one SpaceReview.
+     * @example
+     * // Update one SpaceReview
+     * const spaceReview = await prisma.spaceReview.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SpaceReviewUpdateArgs>(args: SelectSubset<T, SpaceReviewUpdateArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SpaceReviews.
+     * @param {SpaceReviewDeleteManyArgs} args - Arguments to filter SpaceReviews to delete.
+     * @example
+     * // Delete a few SpaceReviews
+     * const { count } = await prisma.spaceReview.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SpaceReviewDeleteManyArgs>(args?: SelectSubset<T, SpaceReviewDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SpaceReviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SpaceReviews
+     * const spaceReview = await prisma.spaceReview.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SpaceReviewUpdateManyArgs>(args: SelectSubset<T, SpaceReviewUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SpaceReviews and returns the data updated in the database.
+     * @param {SpaceReviewUpdateManyAndReturnArgs} args - Arguments to update many SpaceReviews.
+     * @example
+     * // Update many SpaceReviews
+     * const spaceReview = await prisma.spaceReview.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SpaceReviews and only return the `id`
+     * const spaceReviewWithIdOnly = await prisma.spaceReview.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SpaceReviewUpdateManyAndReturnArgs>(args: SelectSubset<T, SpaceReviewUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SpaceReview.
+     * @param {SpaceReviewUpsertArgs} args - Arguments to update or create a SpaceReview.
+     * @example
+     * // Update or create a SpaceReview
+     * const spaceReview = await prisma.spaceReview.upsert({
+     *   create: {
+     *     // ... data to create a SpaceReview
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SpaceReview we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SpaceReviewUpsertArgs>(args: SelectSubset<T, SpaceReviewUpsertArgs<ExtArgs>>): Prisma__SpaceReviewClient<$Result.GetResult<Prisma.$SpaceReviewPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SpaceReviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewCountArgs} args - Arguments to filter SpaceReviews to count.
+     * @example
+     * // Count the number of SpaceReviews
+     * const count = await prisma.spaceReview.count({
+     *   where: {
+     *     // ... the filter for the SpaceReviews we want to count
+     *   }
+     * })
+    **/
+    count<T extends SpaceReviewCountArgs>(
+      args?: Subset<T, SpaceReviewCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SpaceReviewCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SpaceReview.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SpaceReviewAggregateArgs>(args: Subset<T, SpaceReviewAggregateArgs>): Prisma.PrismaPromise<GetSpaceReviewAggregateType<T>>
+
+    /**
+     * Group by SpaceReview.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SpaceReviewGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SpaceReviewGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SpaceReviewGroupByArgs['orderBy'] }
+        : { orderBy?: SpaceReviewGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SpaceReviewGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSpaceReviewGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SpaceReview model
+   */
+  readonly fields: SpaceReviewFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SpaceReview.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SpaceReviewClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    space<T extends SpaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SpaceDefaultArgs<ExtArgs>>): Prisma__SpaceClient<$Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    buyer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    booking<T extends BookingDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BookingDefaultArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SpaceReview model
+   */
+  interface SpaceReviewFieldRefs {
+    readonly id: FieldRef<"SpaceReview", 'String'>
+    readonly rating: FieldRef<"SpaceReview", 'Int'>
+    readonly comment: FieldRef<"SpaceReview", 'String'>
+    readonly isVisible: FieldRef<"SpaceReview", 'Boolean'>
+    readonly createdAt: FieldRef<"SpaceReview", 'DateTime'>
+    readonly updatedAt: FieldRef<"SpaceReview", 'DateTime'>
+    readonly spaceId: FieldRef<"SpaceReview", 'String'>
+    readonly buyerId: FieldRef<"SpaceReview", 'String'>
+    readonly bookingId: FieldRef<"SpaceReview", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SpaceReview findUnique
+   */
+  export type SpaceReviewFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * Filter, which SpaceReview to fetch.
+     */
+    where: SpaceReviewWhereUniqueInput
+  }
+
+  /**
+   * SpaceReview findUniqueOrThrow
+   */
+  export type SpaceReviewFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * Filter, which SpaceReview to fetch.
+     */
+    where: SpaceReviewWhereUniqueInput
+  }
+
+  /**
+   * SpaceReview findFirst
+   */
+  export type SpaceReviewFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * Filter, which SpaceReview to fetch.
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SpaceReviews to fetch.
+     */
+    orderBy?: SpaceReviewOrderByWithRelationInput | SpaceReviewOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SpaceReviews.
+     */
+    cursor?: SpaceReviewWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SpaceReviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SpaceReviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SpaceReviews.
+     */
+    distinct?: SpaceReviewScalarFieldEnum | SpaceReviewScalarFieldEnum[]
+  }
+
+  /**
+   * SpaceReview findFirstOrThrow
+   */
+  export type SpaceReviewFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * Filter, which SpaceReview to fetch.
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SpaceReviews to fetch.
+     */
+    orderBy?: SpaceReviewOrderByWithRelationInput | SpaceReviewOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SpaceReviews.
+     */
+    cursor?: SpaceReviewWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SpaceReviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SpaceReviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SpaceReviews.
+     */
+    distinct?: SpaceReviewScalarFieldEnum | SpaceReviewScalarFieldEnum[]
+  }
+
+  /**
+   * SpaceReview findMany
+   */
+  export type SpaceReviewFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * Filter, which SpaceReviews to fetch.
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SpaceReviews to fetch.
+     */
+    orderBy?: SpaceReviewOrderByWithRelationInput | SpaceReviewOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SpaceReviews.
+     */
+    cursor?: SpaceReviewWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SpaceReviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SpaceReviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SpaceReviews.
+     */
+    distinct?: SpaceReviewScalarFieldEnum | SpaceReviewScalarFieldEnum[]
+  }
+
+  /**
+   * SpaceReview create
+   */
+  export type SpaceReviewCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SpaceReview.
+     */
+    data: XOR<SpaceReviewCreateInput, SpaceReviewUncheckedCreateInput>
+  }
+
+  /**
+   * SpaceReview createMany
+   */
+  export type SpaceReviewCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SpaceReviews.
+     */
+    data: SpaceReviewCreateManyInput | SpaceReviewCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SpaceReview createManyAndReturn
+   */
+  export type SpaceReviewCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * The data used to create many SpaceReviews.
+     */
+    data: SpaceReviewCreateManyInput | SpaceReviewCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SpaceReview update
+   */
+  export type SpaceReviewUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SpaceReview.
+     */
+    data: XOR<SpaceReviewUpdateInput, SpaceReviewUncheckedUpdateInput>
+    /**
+     * Choose, which SpaceReview to update.
+     */
+    where: SpaceReviewWhereUniqueInput
+  }
+
+  /**
+   * SpaceReview updateMany
+   */
+  export type SpaceReviewUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SpaceReviews.
+     */
+    data: XOR<SpaceReviewUpdateManyMutationInput, SpaceReviewUncheckedUpdateManyInput>
+    /**
+     * Filter which SpaceReviews to update
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * Limit how many SpaceReviews to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SpaceReview updateManyAndReturn
+   */
+  export type SpaceReviewUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * The data used to update SpaceReviews.
+     */
+    data: XOR<SpaceReviewUpdateManyMutationInput, SpaceReviewUncheckedUpdateManyInput>
+    /**
+     * Filter which SpaceReviews to update
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * Limit how many SpaceReviews to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SpaceReview upsert
+   */
+  export type SpaceReviewUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SpaceReview to update in case it exists.
+     */
+    where: SpaceReviewWhereUniqueInput
+    /**
+     * In case the SpaceReview found by the `where` argument doesn't exist, create a new SpaceReview with this data.
+     */
+    create: XOR<SpaceReviewCreateInput, SpaceReviewUncheckedCreateInput>
+    /**
+     * In case the SpaceReview was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SpaceReviewUpdateInput, SpaceReviewUncheckedUpdateInput>
+  }
+
+  /**
+   * SpaceReview delete
+   */
+  export type SpaceReviewDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+    /**
+     * Filter which SpaceReview to delete.
+     */
+    where: SpaceReviewWhereUniqueInput
+  }
+
+  /**
+   * SpaceReview deleteMany
+   */
+  export type SpaceReviewDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SpaceReviews to delete
+     */
+    where?: SpaceReviewWhereInput
+    /**
+     * Limit how many SpaceReviews to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SpaceReview without action
+   */
+  export type SpaceReviewDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SpaceReview
+     */
+    select?: SpaceReviewSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SpaceReview
+     */
+    omit?: SpaceReviewOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SpaceReviewInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -17452,6 +18805,21 @@ export namespace Prisma {
   };
 
   export type ConversationMessageScalarFieldEnum = (typeof ConversationMessageScalarFieldEnum)[keyof typeof ConversationMessageScalarFieldEnum]
+
+
+  export const SpaceReviewScalarFieldEnum: {
+    id: 'id',
+    rating: 'rating',
+    comment: 'comment',
+    isVisible: 'isVisible',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    spaceId: 'spaceId',
+    buyerId: 'buyerId',
+    bookingId: 'bookingId'
+  };
+
+  export type SpaceReviewScalarFieldEnum = (typeof SpaceReviewScalarFieldEnum)[keyof typeof SpaceReviewScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -17667,6 +19035,7 @@ export namespace Prisma {
     sellerConversations?: ConversationListRelationFilter
     adminConversations?: ConversationListRelationFilter
     sentMessages?: ConversationMessageListRelationFilter
+    reviews?: SpaceReviewListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -17686,6 +19055,7 @@ export namespace Prisma {
     sellerConversations?: ConversationOrderByRelationAggregateInput
     adminConversations?: ConversationOrderByRelationAggregateInput
     sentMessages?: ConversationMessageOrderByRelationAggregateInput
+    reviews?: SpaceReviewOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -17708,6 +19078,7 @@ export namespace Prisma {
     sellerConversations?: ConversationListRelationFilter
     adminConversations?: ConversationListRelationFilter
     sentMessages?: ConversationMessageListRelationFilter
+    reviews?: SpaceReviewListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -17922,6 +19293,7 @@ export namespace Prisma {
     services?: SpaceServiceListRelationFilter
     rules?: SpaceRuleListRelationFilter
     conversations?: ConversationListRelationFilter
+    reviews?: SpaceReviewListRelationFilter
   }
 
   export type SpaceOrderByWithRelationInput = {
@@ -17958,6 +19330,7 @@ export namespace Prisma {
     services?: SpaceServiceOrderByRelationAggregateInput
     rules?: SpaceRuleOrderByRelationAggregateInput
     conversations?: ConversationOrderByRelationAggregateInput
+    reviews?: SpaceReviewOrderByRelationAggregateInput
   }
 
   export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -17997,6 +19370,7 @@ export namespace Prisma {
     services?: SpaceServiceListRelationFilter
     rules?: SpaceRuleListRelationFilter
     conversations?: ConversationListRelationFilter
+    reviews?: SpaceReviewListRelationFilter
   }, "id">
 
   export type SpaceOrderByWithAggregationInput = {
@@ -18350,6 +19724,7 @@ export namespace Prisma {
     buyerId?: StringFilter<"Booking"> | string
     space?: XOR<SpaceScalarRelationFilter, SpaceWhereInput>
     buyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    review?: XOR<SpaceReviewNullableScalarRelationFilter, SpaceReviewWhereInput> | null
   }
 
   export type BookingOrderByWithRelationInput = {
@@ -18367,6 +19742,7 @@ export namespace Prisma {
     buyerId?: SortOrder
     space?: SpaceOrderByWithRelationInput
     buyer?: UserOrderByWithRelationInput
+    review?: SpaceReviewOrderByWithRelationInput
   }
 
   export type BookingWhereUniqueInput = Prisma.AtLeast<{
@@ -18387,6 +19763,7 @@ export namespace Prisma {
     buyerId?: StringFilter<"Booking"> | string
     space?: XOR<SpaceScalarRelationFilter, SpaceWhereInput>
     buyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    review?: XOR<SpaceReviewNullableScalarRelationFilter, SpaceReviewWhereInput> | null
   }, "id">
 
   export type BookingOrderByWithAggregationInput = {
@@ -18582,6 +19959,89 @@ export namespace Prisma {
     senderId?: StringWithAggregatesFilter<"ConversationMessage"> | string
   }
 
+  export type SpaceReviewWhereInput = {
+    AND?: SpaceReviewWhereInput | SpaceReviewWhereInput[]
+    OR?: SpaceReviewWhereInput[]
+    NOT?: SpaceReviewWhereInput | SpaceReviewWhereInput[]
+    id?: StringFilter<"SpaceReview"> | string
+    rating?: IntFilter<"SpaceReview"> | number
+    comment?: StringNullableFilter<"SpaceReview"> | string | null
+    isVisible?: BoolFilter<"SpaceReview"> | boolean
+    createdAt?: DateTimeFilter<"SpaceReview"> | Date | string
+    updatedAt?: DateTimeFilter<"SpaceReview"> | Date | string
+    spaceId?: StringFilter<"SpaceReview"> | string
+    buyerId?: StringFilter<"SpaceReview"> | string
+    bookingId?: StringFilter<"SpaceReview"> | string
+    space?: XOR<SpaceScalarRelationFilter, SpaceWhereInput>
+    buyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    booking?: XOR<BookingScalarRelationFilter, BookingWhereInput>
+  }
+
+  export type SpaceReviewOrderByWithRelationInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrderInput | SortOrder
+    isVisible?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    spaceId?: SortOrder
+    buyerId?: SortOrder
+    bookingId?: SortOrder
+    space?: SpaceOrderByWithRelationInput
+    buyer?: UserOrderByWithRelationInput
+    booking?: BookingOrderByWithRelationInput
+  }
+
+  export type SpaceReviewWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    bookingId?: string
+    AND?: SpaceReviewWhereInput | SpaceReviewWhereInput[]
+    OR?: SpaceReviewWhereInput[]
+    NOT?: SpaceReviewWhereInput | SpaceReviewWhereInput[]
+    rating?: IntFilter<"SpaceReview"> | number
+    comment?: StringNullableFilter<"SpaceReview"> | string | null
+    isVisible?: BoolFilter<"SpaceReview"> | boolean
+    createdAt?: DateTimeFilter<"SpaceReview"> | Date | string
+    updatedAt?: DateTimeFilter<"SpaceReview"> | Date | string
+    spaceId?: StringFilter<"SpaceReview"> | string
+    buyerId?: StringFilter<"SpaceReview"> | string
+    space?: XOR<SpaceScalarRelationFilter, SpaceWhereInput>
+    buyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    booking?: XOR<BookingScalarRelationFilter, BookingWhereInput>
+  }, "id" | "bookingId">
+
+  export type SpaceReviewOrderByWithAggregationInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrderInput | SortOrder
+    isVisible?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    spaceId?: SortOrder
+    buyerId?: SortOrder
+    bookingId?: SortOrder
+    _count?: SpaceReviewCountOrderByAggregateInput
+    _avg?: SpaceReviewAvgOrderByAggregateInput
+    _max?: SpaceReviewMaxOrderByAggregateInput
+    _min?: SpaceReviewMinOrderByAggregateInput
+    _sum?: SpaceReviewSumOrderByAggregateInput
+  }
+
+  export type SpaceReviewScalarWhereWithAggregatesInput = {
+    AND?: SpaceReviewScalarWhereWithAggregatesInput | SpaceReviewScalarWhereWithAggregatesInput[]
+    OR?: SpaceReviewScalarWhereWithAggregatesInput[]
+    NOT?: SpaceReviewScalarWhereWithAggregatesInput | SpaceReviewScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SpaceReview"> | string
+    rating?: IntWithAggregatesFilter<"SpaceReview"> | number
+    comment?: StringNullableWithAggregatesFilter<"SpaceReview"> | string | null
+    isVisible?: BoolWithAggregatesFilter<"SpaceReview"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"SpaceReview"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SpaceReview"> | Date | string
+    spaceId?: StringWithAggregatesFilter<"SpaceReview"> | string
+    buyerId?: StringWithAggregatesFilter<"SpaceReview"> | string
+    bookingId?: StringWithAggregatesFilter<"SpaceReview"> | string
+  }
+
   export type UserCreateInput = {
     id?: string
     name: string
@@ -18599,6 +20059,7 @@ export namespace Prisma {
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -18618,6 +20079,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUpdateInput = {
@@ -18637,6 +20099,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -18656,6 +20119,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -18873,6 +20337,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateInput = {
@@ -18907,6 +20372,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUpdateInput = {
@@ -18941,6 +20407,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateInput = {
@@ -18975,6 +20442,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceCreateManyInput = {
@@ -19323,6 +20791,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
     buyer: UserCreateNestedOneWithoutBookingsInput
+    review?: SpaceReviewCreateNestedOneWithoutBookingInput
   }
 
   export type BookingUncheckedCreateInput = {
@@ -19338,6 +20807,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     spaceId: string
     buyerId: string
+    review?: SpaceReviewUncheckedCreateNestedOneWithoutBookingInput
   }
 
   export type BookingUpdateInput = {
@@ -19353,6 +20823,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
     buyer?: UserUpdateOneRequiredWithoutBookingsNestedInput
+    review?: SpaceReviewUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateInput = {
@@ -19368,6 +20839,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
     buyerId?: StringFieldUpdateOperationsInput | string
+    review?: SpaceReviewUncheckedUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingCreateManyInput = {
@@ -19565,6 +21037,87 @@ export namespace Prisma {
     senderId?: StringFieldUpdateOperationsInput | string
   }
 
+  export type SpaceReviewCreateInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    space: SpaceCreateNestedOneWithoutReviewsInput
+    buyer: UserCreateNestedOneWithoutReviewsInput
+    booking: BookingCreateNestedOneWithoutReviewInput
+  }
+
+  export type SpaceReviewUncheckedCreateInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaceId: string
+    buyerId: string
+    bookingId: string
+  }
+
+  export type SpaceReviewUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    space?: SpaceUpdateOneRequiredWithoutReviewsNestedInput
+    buyer?: UserUpdateOneRequiredWithoutReviewsNestedInput
+    booking?: BookingUpdateOneRequiredWithoutReviewNestedInput
+  }
+
+  export type SpaceReviewUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type SpaceReviewCreateManyInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaceId: string
+    buyerId: string
+    bookingId: string
+  }
+
+  export type SpaceReviewUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SpaceReviewUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -19650,6 +21203,12 @@ export namespace Prisma {
     none?: ConversationMessageWhereInput
   }
 
+  export type SpaceReviewListRelationFilter = {
+    every?: SpaceReviewWhereInput
+    some?: SpaceReviewWhereInput
+    none?: SpaceReviewWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -19672,6 +21231,10 @@ export namespace Prisma {
   }
 
   export type ConversationMessageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SpaceReviewOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20334,6 +21897,11 @@ export namespace Prisma {
     not?: NestedEnumBookingStatusFilter<$PrismaModel> | $Enums.BookingStatus
   }
 
+  export type SpaceReviewNullableScalarRelationFilter = {
+    is?: SpaceReviewWhereInput | null
+    isNot?: SpaceReviewWhereInput | null
+  }
+
   export type BookingCountOrderByAggregateInput = {
     id?: SortOrder
     date?: SortOrder
@@ -20520,6 +22088,55 @@ export namespace Prisma {
     senderId?: SortOrder
   }
 
+  export type BookingScalarRelationFilter = {
+    is?: BookingWhereInput
+    isNot?: BookingWhereInput
+  }
+
+  export type SpaceReviewCountOrderByAggregateInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    isVisible?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    spaceId?: SortOrder
+    buyerId?: SortOrder
+    bookingId?: SortOrder
+  }
+
+  export type SpaceReviewAvgOrderByAggregateInput = {
+    rating?: SortOrder
+  }
+
+  export type SpaceReviewMaxOrderByAggregateInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    isVisible?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    spaceId?: SortOrder
+    buyerId?: SortOrder
+    bookingId?: SortOrder
+  }
+
+  export type SpaceReviewMinOrderByAggregateInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    isVisible?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    spaceId?: SortOrder
+    buyerId?: SortOrder
+    bookingId?: SortOrder
+  }
+
+  export type SpaceReviewSumOrderByAggregateInput = {
+    rating?: SortOrder
+  }
+
   export type SpaceCreateNestedManyWithoutSellerInput = {
     create?: XOR<SpaceCreateWithoutSellerInput, SpaceUncheckedCreateWithoutSellerInput> | SpaceCreateWithoutSellerInput[] | SpaceUncheckedCreateWithoutSellerInput[]
     connectOrCreate?: SpaceCreateOrConnectWithoutSellerInput | SpaceCreateOrConnectWithoutSellerInput[]
@@ -20569,6 +22186,13 @@ export namespace Prisma {
     connect?: ConversationMessageWhereUniqueInput | ConversationMessageWhereUniqueInput[]
   }
 
+  export type SpaceReviewCreateNestedManyWithoutBuyerInput = {
+    create?: XOR<SpaceReviewCreateWithoutBuyerInput, SpaceReviewUncheckedCreateWithoutBuyerInput> | SpaceReviewCreateWithoutBuyerInput[] | SpaceReviewUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBuyerInput | SpaceReviewCreateOrConnectWithoutBuyerInput[]
+    createMany?: SpaceReviewCreateManyBuyerInputEnvelope
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+  }
+
   export type SpaceUncheckedCreateNestedManyWithoutSellerInput = {
     create?: XOR<SpaceCreateWithoutSellerInput, SpaceUncheckedCreateWithoutSellerInput> | SpaceCreateWithoutSellerInput[] | SpaceUncheckedCreateWithoutSellerInput[]
     connectOrCreate?: SpaceCreateOrConnectWithoutSellerInput | SpaceCreateOrConnectWithoutSellerInput[]
@@ -20616,6 +22240,13 @@ export namespace Prisma {
     connectOrCreate?: ConversationMessageCreateOrConnectWithoutSenderInput | ConversationMessageCreateOrConnectWithoutSenderInput[]
     createMany?: ConversationMessageCreateManySenderInputEnvelope
     connect?: ConversationMessageWhereUniqueInput | ConversationMessageWhereUniqueInput[]
+  }
+
+  export type SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput = {
+    create?: XOR<SpaceReviewCreateWithoutBuyerInput, SpaceReviewUncheckedCreateWithoutBuyerInput> | SpaceReviewCreateWithoutBuyerInput[] | SpaceReviewUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBuyerInput | SpaceReviewCreateOrConnectWithoutBuyerInput[]
+    createMany?: SpaceReviewCreateManyBuyerInputEnvelope
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -20736,6 +22367,20 @@ export namespace Prisma {
     deleteMany?: ConversationMessageScalarWhereInput | ConversationMessageScalarWhereInput[]
   }
 
+  export type SpaceReviewUpdateManyWithoutBuyerNestedInput = {
+    create?: XOR<SpaceReviewCreateWithoutBuyerInput, SpaceReviewUncheckedCreateWithoutBuyerInput> | SpaceReviewCreateWithoutBuyerInput[] | SpaceReviewUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBuyerInput | SpaceReviewCreateOrConnectWithoutBuyerInput[]
+    upsert?: SpaceReviewUpsertWithWhereUniqueWithoutBuyerInput | SpaceReviewUpsertWithWhereUniqueWithoutBuyerInput[]
+    createMany?: SpaceReviewCreateManyBuyerInputEnvelope
+    set?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    disconnect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    delete?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    update?: SpaceReviewUpdateWithWhereUniqueWithoutBuyerInput | SpaceReviewUpdateWithWhereUniqueWithoutBuyerInput[]
+    updateMany?: SpaceReviewUpdateManyWithWhereWithoutBuyerInput | SpaceReviewUpdateManyWithWhereWithoutBuyerInput[]
+    deleteMany?: SpaceReviewScalarWhereInput | SpaceReviewScalarWhereInput[]
+  }
+
   export type SpaceUncheckedUpdateManyWithoutSellerNestedInput = {
     create?: XOR<SpaceCreateWithoutSellerInput, SpaceUncheckedCreateWithoutSellerInput> | SpaceCreateWithoutSellerInput[] | SpaceUncheckedCreateWithoutSellerInput[]
     connectOrCreate?: SpaceCreateOrConnectWithoutSellerInput | SpaceCreateOrConnectWithoutSellerInput[]
@@ -20832,6 +22477,20 @@ export namespace Prisma {
     update?: ConversationMessageUpdateWithWhereUniqueWithoutSenderInput | ConversationMessageUpdateWithWhereUniqueWithoutSenderInput[]
     updateMany?: ConversationMessageUpdateManyWithWhereWithoutSenderInput | ConversationMessageUpdateManyWithWhereWithoutSenderInput[]
     deleteMany?: ConversationMessageScalarWhereInput | ConversationMessageScalarWhereInput[]
+  }
+
+  export type SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput = {
+    create?: XOR<SpaceReviewCreateWithoutBuyerInput, SpaceReviewUncheckedCreateWithoutBuyerInput> | SpaceReviewCreateWithoutBuyerInput[] | SpaceReviewUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBuyerInput | SpaceReviewCreateOrConnectWithoutBuyerInput[]
+    upsert?: SpaceReviewUpsertWithWhereUniqueWithoutBuyerInput | SpaceReviewUpsertWithWhereUniqueWithoutBuyerInput[]
+    createMany?: SpaceReviewCreateManyBuyerInputEnvelope
+    set?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    disconnect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    delete?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    update?: SpaceReviewUpdateWithWhereUniqueWithoutBuyerInput | SpaceReviewUpdateWithWhereUniqueWithoutBuyerInput[]
+    updateMany?: SpaceReviewUpdateManyWithWhereWithoutBuyerInput | SpaceReviewUpdateManyWithWhereWithoutBuyerInput[]
+    deleteMany?: SpaceReviewScalarWhereInput | SpaceReviewScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutDocumentsInput = {
@@ -20997,6 +22656,13 @@ export namespace Prisma {
     connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
   }
 
+  export type SpaceReviewCreateNestedManyWithoutSpaceInput = {
+    create?: XOR<SpaceReviewCreateWithoutSpaceInput, SpaceReviewUncheckedCreateWithoutSpaceInput> | SpaceReviewCreateWithoutSpaceInput[] | SpaceReviewUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutSpaceInput | SpaceReviewCreateOrConnectWithoutSpaceInput[]
+    createMany?: SpaceReviewCreateManySpaceInputEnvelope
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+  }
+
   export type SpaceImageUncheckedCreateNestedManyWithoutSpaceInput = {
     create?: XOR<SpaceImageCreateWithoutSpaceInput, SpaceImageUncheckedCreateWithoutSpaceInput> | SpaceImageCreateWithoutSpaceInput[] | SpaceImageUncheckedCreateWithoutSpaceInput[]
     connectOrCreate?: SpaceImageCreateOrConnectWithoutSpaceInput | SpaceImageCreateOrConnectWithoutSpaceInput[]
@@ -21044,6 +22710,13 @@ export namespace Prisma {
     connectOrCreate?: ConversationCreateOrConnectWithoutSpaceInput | ConversationCreateOrConnectWithoutSpaceInput[]
     createMany?: ConversationCreateManySpaceInputEnvelope
     connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+  }
+
+  export type SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput = {
+    create?: XOR<SpaceReviewCreateWithoutSpaceInput, SpaceReviewUncheckedCreateWithoutSpaceInput> | SpaceReviewCreateWithoutSpaceInput[] | SpaceReviewUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutSpaceInput | SpaceReviewCreateOrConnectWithoutSpaceInput[]
+    createMany?: SpaceReviewCreateManySpaceInputEnvelope
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -21192,6 +22865,20 @@ export namespace Prisma {
     deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
+  export type SpaceReviewUpdateManyWithoutSpaceNestedInput = {
+    create?: XOR<SpaceReviewCreateWithoutSpaceInput, SpaceReviewUncheckedCreateWithoutSpaceInput> | SpaceReviewCreateWithoutSpaceInput[] | SpaceReviewUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutSpaceInput | SpaceReviewCreateOrConnectWithoutSpaceInput[]
+    upsert?: SpaceReviewUpsertWithWhereUniqueWithoutSpaceInput | SpaceReviewUpsertWithWhereUniqueWithoutSpaceInput[]
+    createMany?: SpaceReviewCreateManySpaceInputEnvelope
+    set?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    disconnect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    delete?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    update?: SpaceReviewUpdateWithWhereUniqueWithoutSpaceInput | SpaceReviewUpdateWithWhereUniqueWithoutSpaceInput[]
+    updateMany?: SpaceReviewUpdateManyWithWhereWithoutSpaceInput | SpaceReviewUpdateManyWithWhereWithoutSpaceInput[]
+    deleteMany?: SpaceReviewScalarWhereInput | SpaceReviewScalarWhereInput[]
+  }
+
   export type SpaceImageUncheckedUpdateManyWithoutSpaceNestedInput = {
     create?: XOR<SpaceImageCreateWithoutSpaceInput, SpaceImageUncheckedCreateWithoutSpaceInput> | SpaceImageCreateWithoutSpaceInput[] | SpaceImageUncheckedCreateWithoutSpaceInput[]
     connectOrCreate?: SpaceImageCreateOrConnectWithoutSpaceInput | SpaceImageCreateOrConnectWithoutSpaceInput[]
@@ -21288,6 +22975,20 @@ export namespace Prisma {
     update?: ConversationUpdateWithWhereUniqueWithoutSpaceInput | ConversationUpdateWithWhereUniqueWithoutSpaceInput[]
     updateMany?: ConversationUpdateManyWithWhereWithoutSpaceInput | ConversationUpdateManyWithWhereWithoutSpaceInput[]
     deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
+  }
+
+  export type SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput = {
+    create?: XOR<SpaceReviewCreateWithoutSpaceInput, SpaceReviewUncheckedCreateWithoutSpaceInput> | SpaceReviewCreateWithoutSpaceInput[] | SpaceReviewUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutSpaceInput | SpaceReviewCreateOrConnectWithoutSpaceInput[]
+    upsert?: SpaceReviewUpsertWithWhereUniqueWithoutSpaceInput | SpaceReviewUpsertWithWhereUniqueWithoutSpaceInput[]
+    createMany?: SpaceReviewCreateManySpaceInputEnvelope
+    set?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    disconnect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    delete?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    connect?: SpaceReviewWhereUniqueInput | SpaceReviewWhereUniqueInput[]
+    update?: SpaceReviewUpdateWithWhereUniqueWithoutSpaceInput | SpaceReviewUpdateWithWhereUniqueWithoutSpaceInput[]
+    updateMany?: SpaceReviewUpdateManyWithWhereWithoutSpaceInput | SpaceReviewUpdateManyWithWhereWithoutSpaceInput[]
+    deleteMany?: SpaceReviewScalarWhereInput | SpaceReviewScalarWhereInput[]
   }
 
   export type SpaceCreateNestedOneWithoutImagesInput = {
@@ -21398,6 +23099,18 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type SpaceReviewCreateNestedOneWithoutBookingInput = {
+    create?: XOR<SpaceReviewCreateWithoutBookingInput, SpaceReviewUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBookingInput
+    connect?: SpaceReviewWhereUniqueInput
+  }
+
+  export type SpaceReviewUncheckedCreateNestedOneWithoutBookingInput = {
+    create?: XOR<SpaceReviewCreateWithoutBookingInput, SpaceReviewUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBookingInput
+    connect?: SpaceReviewWhereUniqueInput
+  }
+
   export type EnumBookingStatusFieldUpdateOperationsInput = {
     set?: $Enums.BookingStatus
   }
@@ -21416,6 +23129,26 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutBookingsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBookingsInput, UserUpdateWithoutBookingsInput>, UserUncheckedUpdateWithoutBookingsInput>
+  }
+
+  export type SpaceReviewUpdateOneWithoutBookingNestedInput = {
+    create?: XOR<SpaceReviewCreateWithoutBookingInput, SpaceReviewUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBookingInput
+    upsert?: SpaceReviewUpsertWithoutBookingInput
+    disconnect?: SpaceReviewWhereInput | boolean
+    delete?: SpaceReviewWhereInput | boolean
+    connect?: SpaceReviewWhereUniqueInput
+    update?: XOR<XOR<SpaceReviewUpdateToOneWithWhereWithoutBookingInput, SpaceReviewUpdateWithoutBookingInput>, SpaceReviewUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type SpaceReviewUncheckedUpdateOneWithoutBookingNestedInput = {
+    create?: XOR<SpaceReviewCreateWithoutBookingInput, SpaceReviewUncheckedCreateWithoutBookingInput>
+    connectOrCreate?: SpaceReviewCreateOrConnectWithoutBookingInput
+    upsert?: SpaceReviewUpsertWithoutBookingInput
+    disconnect?: SpaceReviewWhereInput | boolean
+    delete?: SpaceReviewWhereInput | boolean
+    connect?: SpaceReviewWhereUniqueInput
+    update?: XOR<XOR<SpaceReviewUpdateToOneWithWhereWithoutBookingInput, SpaceReviewUpdateWithoutBookingInput>, SpaceReviewUncheckedUpdateWithoutBookingInput>
   }
 
   export type UserCreateNestedOneWithoutBuyerConversationsInput = {
@@ -21558,6 +23291,48 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSentMessagesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSentMessagesInput, UserUpdateWithoutSentMessagesInput>, UserUncheckedUpdateWithoutSentMessagesInput>
+  }
+
+  export type SpaceCreateNestedOneWithoutReviewsInput = {
+    create?: XOR<SpaceCreateWithoutReviewsInput, SpaceUncheckedCreateWithoutReviewsInput>
+    connectOrCreate?: SpaceCreateOrConnectWithoutReviewsInput
+    connect?: SpaceWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutReviewsInput = {
+    create?: XOR<UserCreateWithoutReviewsInput, UserUncheckedCreateWithoutReviewsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BookingCreateNestedOneWithoutReviewInput = {
+    create?: XOR<BookingCreateWithoutReviewInput, BookingUncheckedCreateWithoutReviewInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutReviewInput
+    connect?: BookingWhereUniqueInput
+  }
+
+  export type SpaceUpdateOneRequiredWithoutReviewsNestedInput = {
+    create?: XOR<SpaceCreateWithoutReviewsInput, SpaceUncheckedCreateWithoutReviewsInput>
+    connectOrCreate?: SpaceCreateOrConnectWithoutReviewsInput
+    upsert?: SpaceUpsertWithoutReviewsInput
+    connect?: SpaceWhereUniqueInput
+    update?: XOR<XOR<SpaceUpdateToOneWithWhereWithoutReviewsInput, SpaceUpdateWithoutReviewsInput>, SpaceUncheckedUpdateWithoutReviewsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutReviewsNestedInput = {
+    create?: XOR<UserCreateWithoutReviewsInput, UserUncheckedCreateWithoutReviewsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewsInput
+    upsert?: UserUpsertWithoutReviewsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReviewsInput, UserUpdateWithoutReviewsInput>, UserUncheckedUpdateWithoutReviewsInput>
+  }
+
+  export type BookingUpdateOneRequiredWithoutReviewNestedInput = {
+    create?: XOR<BookingCreateWithoutReviewInput, BookingUncheckedCreateWithoutReviewInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutReviewInput
+    upsert?: BookingUpsertWithoutReviewInput
+    connect?: BookingWhereUniqueInput
+    update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutReviewInput, BookingUpdateWithoutReviewInput>, BookingUncheckedUpdateWithoutReviewInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -21943,6 +23718,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutSellerInput = {
@@ -21976,6 +23752,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutSellerInput = {
@@ -22000,6 +23777,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
+    review?: SpaceReviewCreateNestedOneWithoutBookingInput
   }
 
   export type BookingUncheckedCreateWithoutBuyerInput = {
@@ -22014,6 +23792,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
+    review?: SpaceReviewUncheckedCreateNestedOneWithoutBookingInput
   }
 
   export type BookingCreateOrConnectWithoutBuyerInput = {
@@ -22181,6 +23960,38 @@ export namespace Prisma {
 
   export type ConversationMessageCreateManySenderInputEnvelope = {
     data: ConversationMessageCreateManySenderInput | ConversationMessageCreateManySenderInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SpaceReviewCreateWithoutBuyerInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    space: SpaceCreateNestedOneWithoutReviewsInput
+    booking: BookingCreateNestedOneWithoutReviewInput
+  }
+
+  export type SpaceReviewUncheckedCreateWithoutBuyerInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaceId: string
+    bookingId: string
+  }
+
+  export type SpaceReviewCreateOrConnectWithoutBuyerInput = {
+    where: SpaceReviewWhereUniqueInput
+    create: XOR<SpaceReviewCreateWithoutBuyerInput, SpaceReviewUncheckedCreateWithoutBuyerInput>
+  }
+
+  export type SpaceReviewCreateManyBuyerInputEnvelope = {
+    data: SpaceReviewCreateManyBuyerInput | SpaceReviewCreateManyBuyerInput[]
     skipDuplicates?: boolean
   }
 
@@ -22383,6 +24194,37 @@ export namespace Prisma {
     senderId?: StringFilter<"ConversationMessage"> | string
   }
 
+  export type SpaceReviewUpsertWithWhereUniqueWithoutBuyerInput = {
+    where: SpaceReviewWhereUniqueInput
+    update: XOR<SpaceReviewUpdateWithoutBuyerInput, SpaceReviewUncheckedUpdateWithoutBuyerInput>
+    create: XOR<SpaceReviewCreateWithoutBuyerInput, SpaceReviewUncheckedCreateWithoutBuyerInput>
+  }
+
+  export type SpaceReviewUpdateWithWhereUniqueWithoutBuyerInput = {
+    where: SpaceReviewWhereUniqueInput
+    data: XOR<SpaceReviewUpdateWithoutBuyerInput, SpaceReviewUncheckedUpdateWithoutBuyerInput>
+  }
+
+  export type SpaceReviewUpdateManyWithWhereWithoutBuyerInput = {
+    where: SpaceReviewScalarWhereInput
+    data: XOR<SpaceReviewUpdateManyMutationInput, SpaceReviewUncheckedUpdateManyWithoutBuyerInput>
+  }
+
+  export type SpaceReviewScalarWhereInput = {
+    AND?: SpaceReviewScalarWhereInput | SpaceReviewScalarWhereInput[]
+    OR?: SpaceReviewScalarWhereInput[]
+    NOT?: SpaceReviewScalarWhereInput | SpaceReviewScalarWhereInput[]
+    id?: StringFilter<"SpaceReview"> | string
+    rating?: IntFilter<"SpaceReview"> | number
+    comment?: StringNullableFilter<"SpaceReview"> | string | null
+    isVisible?: BoolFilter<"SpaceReview"> | boolean
+    createdAt?: DateTimeFilter<"SpaceReview"> | Date | string
+    updatedAt?: DateTimeFilter<"SpaceReview"> | Date | string
+    spaceId?: StringFilter<"SpaceReview"> | string
+    buyerId?: StringFilter<"SpaceReview"> | string
+    bookingId?: StringFilter<"SpaceReview"> | string
+  }
+
   export type UserCreateWithoutDocumentsInput = {
     id?: string
     name: string
@@ -22399,6 +24241,7 @@ export namespace Prisma {
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutDocumentsInput = {
@@ -22417,6 +24260,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutDocumentsInput = {
@@ -22451,6 +24295,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDocumentsInput = {
@@ -22469,6 +24314,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
   }
 
   export type SpaceCreateWithoutTypeInput = {
@@ -22502,6 +24348,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutTypeInput = {
@@ -22535,6 +24382,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutTypeInput = {
@@ -22636,6 +24484,7 @@ export namespace Prisma {
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutSpacesInput = {
@@ -22654,6 +24503,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutSpacesInput = {
@@ -22713,6 +24563,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     buyer: UserCreateNestedOneWithoutBookingsInput
+    review?: SpaceReviewCreateNestedOneWithoutBookingInput
   }
 
   export type BookingUncheckedCreateWithoutSpaceInput = {
@@ -22727,6 +24578,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     buyerId: string
+    review?: SpaceReviewUncheckedCreateNestedOneWithoutBookingInput
   }
 
   export type BookingCreateOrConnectWithoutSpaceInput = {
@@ -22849,6 +24701,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SpaceReviewCreateWithoutSpaceInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    buyer: UserCreateNestedOneWithoutReviewsInput
+    booking: BookingCreateNestedOneWithoutReviewInput
+  }
+
+  export type SpaceReviewUncheckedCreateWithoutSpaceInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    buyerId: string
+    bookingId: string
+  }
+
+  export type SpaceReviewCreateOrConnectWithoutSpaceInput = {
+    where: SpaceReviewWhereUniqueInput
+    create: XOR<SpaceReviewCreateWithoutSpaceInput, SpaceReviewUncheckedCreateWithoutSpaceInput>
+  }
+
+  export type SpaceReviewCreateManySpaceInputEnvelope = {
+    data: SpaceReviewCreateManySpaceInput | SpaceReviewCreateManySpaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SpaceTypeUpsertWithoutSpacesInput = {
     update: XOR<SpaceTypeUpdateWithoutSpacesInput, SpaceTypeUncheckedUpdateWithoutSpacesInput>
     create: XOR<SpaceTypeCreateWithoutSpacesInput, SpaceTypeUncheckedCreateWithoutSpacesInput>
@@ -22897,6 +24781,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSpacesInput = {
@@ -22915,6 +24800,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
   }
 
   export type SpaceImageUpsertWithWhereUniqueWithoutSpaceInput = {
@@ -23073,6 +24959,22 @@ export namespace Prisma {
     data: XOR<ConversationUpdateManyMutationInput, ConversationUncheckedUpdateManyWithoutSpaceInput>
   }
 
+  export type SpaceReviewUpsertWithWhereUniqueWithoutSpaceInput = {
+    where: SpaceReviewWhereUniqueInput
+    update: XOR<SpaceReviewUpdateWithoutSpaceInput, SpaceReviewUncheckedUpdateWithoutSpaceInput>
+    create: XOR<SpaceReviewCreateWithoutSpaceInput, SpaceReviewUncheckedCreateWithoutSpaceInput>
+  }
+
+  export type SpaceReviewUpdateWithWhereUniqueWithoutSpaceInput = {
+    where: SpaceReviewWhereUniqueInput
+    data: XOR<SpaceReviewUpdateWithoutSpaceInput, SpaceReviewUncheckedUpdateWithoutSpaceInput>
+  }
+
+  export type SpaceReviewUpdateManyWithWhereWithoutSpaceInput = {
+    where: SpaceReviewScalarWhereInput
+    data: XOR<SpaceReviewUpdateManyMutationInput, SpaceReviewUncheckedUpdateManyWithoutSpaceInput>
+  }
+
   export type SpaceCreateWithoutImagesInput = {
     id?: string
     name: string
@@ -23104,6 +25006,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutImagesInput = {
@@ -23137,6 +25040,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutImagesInput = {
@@ -23186,6 +25090,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutImagesInput = {
@@ -23219,6 +25124,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceCreateWithoutAmenitiesInput = {
@@ -23252,6 +25158,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutAmenitiesInput = {
@@ -23285,6 +25192,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutAmenitiesInput = {
@@ -23353,6 +25261,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutAmenitiesInput = {
@@ -23386,6 +25295,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type AmenityUpsertWithoutSpacesInput = {
@@ -23444,6 +25354,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutWorkingHoursInput = {
@@ -23477,6 +25388,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutWorkingHoursInput = {
@@ -23526,6 +25438,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutWorkingHoursInput = {
@@ -23559,6 +25472,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceCreateWithoutServicesInput = {
@@ -23592,6 +25506,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutServicesInput = {
@@ -23625,6 +25540,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutServicesInput = {
@@ -23674,6 +25590,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutServicesInput = {
@@ -23707,6 +25624,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceCreateWithoutRulesInput = {
@@ -23740,6 +25658,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursCreateNestedManyWithoutSpaceInput
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutRulesInput = {
@@ -23773,6 +25692,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUncheckedCreateNestedManyWithoutSpaceInput
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutRulesInput = {
@@ -23822,6 +25742,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUpdateManyWithoutSpaceNestedInput
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutRulesInput = {
@@ -23855,6 +25776,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUncheckedUpdateManyWithoutSpaceNestedInput
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceCreateWithoutBookingsInput = {
@@ -23888,6 +25810,7 @@ export namespace Prisma {
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
     conversations?: ConversationCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutBookingsInput = {
@@ -23921,6 +25844,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutBookingsInput = {
@@ -23944,6 +25868,7 @@ export namespace Prisma {
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutBookingsInput = {
@@ -23962,11 +25887,39 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutBookingsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutBookingsInput, UserUncheckedCreateWithoutBookingsInput>
+  }
+
+  export type SpaceReviewCreateWithoutBookingInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    space: SpaceCreateNestedOneWithoutReviewsInput
+    buyer: UserCreateNestedOneWithoutReviewsInput
+  }
+
+  export type SpaceReviewUncheckedCreateWithoutBookingInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaceId: string
+    buyerId: string
+  }
+
+  export type SpaceReviewCreateOrConnectWithoutBookingInput = {
+    where: SpaceReviewWhereUniqueInput
+    create: XOR<SpaceReviewCreateWithoutBookingInput, SpaceReviewUncheckedCreateWithoutBookingInput>
   }
 
   export type SpaceUpsertWithoutBookingsInput = {
@@ -24011,6 +25964,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutBookingsInput = {
@@ -24044,6 +25998,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type UserUpsertWithoutBookingsInput = {
@@ -24073,6 +26028,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBookingsInput = {
@@ -24091,6 +26047,40 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
+  }
+
+  export type SpaceReviewUpsertWithoutBookingInput = {
+    update: XOR<SpaceReviewUpdateWithoutBookingInput, SpaceReviewUncheckedUpdateWithoutBookingInput>
+    create: XOR<SpaceReviewCreateWithoutBookingInput, SpaceReviewUncheckedCreateWithoutBookingInput>
+    where?: SpaceReviewWhereInput
+  }
+
+  export type SpaceReviewUpdateToOneWithWhereWithoutBookingInput = {
+    where?: SpaceReviewWhereInput
+    data: XOR<SpaceReviewUpdateWithoutBookingInput, SpaceReviewUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type SpaceReviewUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    space?: SpaceUpdateOneRequiredWithoutReviewsNestedInput
+    buyer?: UserUpdateOneRequiredWithoutReviewsNestedInput
+  }
+
+  export type SpaceReviewUncheckedUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserCreateWithoutBuyerConversationsInput = {
@@ -24109,6 +26099,7 @@ export namespace Prisma {
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutBuyerConversationsInput = {
@@ -24127,6 +26118,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutBuyerConversationsInput = {
@@ -24150,6 +26142,7 @@ export namespace Prisma {
     buyerConversations?: ConversationCreateNestedManyWithoutBuyerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutSellerConversationsInput = {
@@ -24168,6 +26161,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUncheckedCreateNestedManyWithoutBuyerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutSellerConversationsInput = {
@@ -24191,6 +26185,7 @@ export namespace Prisma {
     buyerConversations?: ConversationCreateNestedManyWithoutBuyerInput
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutAdminConversationsInput = {
@@ -24209,6 +26204,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUncheckedCreateNestedManyWithoutBuyerInput
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutAdminConversationsInput = {
@@ -24247,6 +26243,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursCreateNestedManyWithoutSpaceInput
     services?: SpaceServiceCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceUncheckedCreateWithoutConversationsInput = {
@@ -24280,6 +26277,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUncheckedCreateNestedManyWithoutSpaceInput
     services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
     rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutSpaceInput
   }
 
   export type SpaceCreateOrConnectWithoutConversationsInput = {
@@ -24340,6 +26338,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBuyerConversationsInput = {
@@ -24358,6 +26357,7 @@ export namespace Prisma {
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUpsertWithoutSellerConversationsInput = {
@@ -24387,6 +26387,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUpdateManyWithoutBuyerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSellerConversationsInput = {
@@ -24405,6 +26406,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUncheckedUpdateManyWithoutBuyerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUpsertWithoutAdminConversationsInput = {
@@ -24434,6 +26436,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUpdateManyWithoutBuyerNestedInput
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdminConversationsInput = {
@@ -24452,6 +26455,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUncheckedUpdateManyWithoutBuyerNestedInput
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
   }
 
   export type SpaceUpsertWithoutConversationsInput = {
@@ -24496,6 +26500,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUpdateManyWithoutSpaceNestedInput
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutConversationsInput = {
@@ -24529,6 +26534,7 @@ export namespace Prisma {
     workingHours?: SpaceWorkingHoursUncheckedUpdateManyWithoutSpaceNestedInput
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type ConversationMessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -24594,6 +26600,7 @@ export namespace Prisma {
     buyerConversations?: ConversationCreateNestedManyWithoutBuyerInput
     sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationCreateNestedManyWithoutAdminInput
+    reviews?: SpaceReviewCreateNestedManyWithoutBuyerInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -24612,6 +26619,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUncheckedCreateNestedManyWithoutBuyerInput
     sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
     adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
+    reviews?: SpaceReviewUncheckedCreateNestedManyWithoutBuyerInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -24683,6 +26691,7 @@ export namespace Prisma {
     buyerConversations?: ConversationUpdateManyWithoutBuyerNestedInput
     sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutBuyerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -24701,6 +26710,327 @@ export namespace Prisma {
     buyerConversations?: ConversationUncheckedUpdateManyWithoutBuyerNestedInput
     sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
     adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutBuyerNestedInput
+  }
+
+  export type SpaceCreateWithoutReviewsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    city: string
+    district?: string | null
+    address?: string | null
+    capacity?: number | null
+    price: number
+    pricePeriod?: string
+    status?: $Enums.SpaceStatus
+    adminNotes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    latitude?: number | null
+    longitude?: number | null
+    streetName?: string | null
+    buildingNumber?: string | null
+    postalCode?: string | null
+    landmarks?: string | null
+    minBookingHours?: number | null
+    maxAdvanceBookingDays?: number | null
+    cancellationPolicy?: $Enums.CancellationPolicy
+    type: SpaceTypeCreateNestedOneWithoutSpacesInput
+    seller: UserCreateNestedOneWithoutSpacesInput
+    images?: SpaceImageCreateNestedManyWithoutSpaceInput
+    amenities?: SpaceAmenityCreateNestedManyWithoutSpaceInput
+    bookings?: BookingCreateNestedManyWithoutSpaceInput
+    workingHours?: SpaceWorkingHoursCreateNestedManyWithoutSpaceInput
+    services?: SpaceServiceCreateNestedManyWithoutSpaceInput
+    rules?: SpaceRuleCreateNestedManyWithoutSpaceInput
+    conversations?: ConversationCreateNestedManyWithoutSpaceInput
+  }
+
+  export type SpaceUncheckedCreateWithoutReviewsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    city: string
+    district?: string | null
+    address?: string | null
+    capacity?: number | null
+    price: number
+    pricePeriod?: string
+    status?: $Enums.SpaceStatus
+    adminNotes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    latitude?: number | null
+    longitude?: number | null
+    streetName?: string | null
+    buildingNumber?: string | null
+    postalCode?: string | null
+    landmarks?: string | null
+    minBookingHours?: number | null
+    maxAdvanceBookingDays?: number | null
+    cancellationPolicy?: $Enums.CancellationPolicy
+    typeId: string
+    sellerId: string
+    images?: SpaceImageUncheckedCreateNestedManyWithoutSpaceInput
+    amenities?: SpaceAmenityUncheckedCreateNestedManyWithoutSpaceInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutSpaceInput
+    workingHours?: SpaceWorkingHoursUncheckedCreateNestedManyWithoutSpaceInput
+    services?: SpaceServiceUncheckedCreateNestedManyWithoutSpaceInput
+    rules?: SpaceRuleUncheckedCreateNestedManyWithoutSpaceInput
+    conversations?: ConversationUncheckedCreateNestedManyWithoutSpaceInput
+  }
+
+  export type SpaceCreateOrConnectWithoutReviewsInput = {
+    where: SpaceWhereUniqueInput
+    create: XOR<SpaceCreateWithoutReviewsInput, SpaceUncheckedCreateWithoutReviewsInput>
+  }
+
+  export type UserCreateWithoutReviewsInput = {
+    id?: string
+    name: string
+    email: string
+    phone?: string | null
+    password: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaces?: SpaceCreateNestedManyWithoutSellerInput
+    bookings?: BookingCreateNestedManyWithoutBuyerInput
+    documents?: UserDocumentCreateNestedManyWithoutUserInput
+    buyerConversations?: ConversationCreateNestedManyWithoutBuyerInput
+    sellerConversations?: ConversationCreateNestedManyWithoutSellerInput
+    adminConversations?: ConversationCreateNestedManyWithoutAdminInput
+    sentMessages?: ConversationMessageCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserUncheckedCreateWithoutReviewsInput = {
+    id?: string
+    name: string
+    email: string
+    phone?: string | null
+    password: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaces?: SpaceUncheckedCreateNestedManyWithoutSellerInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBuyerInput
+    documents?: UserDocumentUncheckedCreateNestedManyWithoutUserInput
+    buyerConversations?: ConversationUncheckedCreateNestedManyWithoutBuyerInput
+    sellerConversations?: ConversationUncheckedCreateNestedManyWithoutSellerInput
+    adminConversations?: ConversationUncheckedCreateNestedManyWithoutAdminInput
+    sentMessages?: ConversationMessageUncheckedCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserCreateOrConnectWithoutReviewsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReviewsInput, UserUncheckedCreateWithoutReviewsInput>
+  }
+
+  export type BookingCreateWithoutReviewInput = {
+    id?: string
+    date: string
+    startTime: string
+    endTime: string
+    persons?: number | null
+    notes?: string | null
+    status?: $Enums.BookingStatus
+    sellerNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    space: SpaceCreateNestedOneWithoutBookingsInput
+    buyer: UserCreateNestedOneWithoutBookingsInput
+  }
+
+  export type BookingUncheckedCreateWithoutReviewInput = {
+    id?: string
+    date: string
+    startTime: string
+    endTime: string
+    persons?: number | null
+    notes?: string | null
+    status?: $Enums.BookingStatus
+    sellerNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaceId: string
+    buyerId: string
+  }
+
+  export type BookingCreateOrConnectWithoutReviewInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutReviewInput, BookingUncheckedCreateWithoutReviewInput>
+  }
+
+  export type SpaceUpsertWithoutReviewsInput = {
+    update: XOR<SpaceUpdateWithoutReviewsInput, SpaceUncheckedUpdateWithoutReviewsInput>
+    create: XOR<SpaceCreateWithoutReviewsInput, SpaceUncheckedCreateWithoutReviewsInput>
+    where?: SpaceWhereInput
+  }
+
+  export type SpaceUpdateToOneWithWhereWithoutReviewsInput = {
+    where?: SpaceWhereInput
+    data: XOR<SpaceUpdateWithoutReviewsInput, SpaceUncheckedUpdateWithoutReviewsInput>
+  }
+
+  export type SpaceUpdateWithoutReviewsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: StringFieldUpdateOperationsInput | string
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    capacity?: NullableIntFieldUpdateOperationsInput | number | null
+    price?: FloatFieldUpdateOperationsInput | number
+    pricePeriod?: StringFieldUpdateOperationsInput | string
+    status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    streetName?: NullableStringFieldUpdateOperationsInput | string | null
+    buildingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
+    landmarks?: NullableStringFieldUpdateOperationsInput | string | null
+    minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
+    maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
+    cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
+    seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
+    images?: SpaceImageUpdateManyWithoutSpaceNestedInput
+    amenities?: SpaceAmenityUpdateManyWithoutSpaceNestedInput
+    bookings?: BookingUpdateManyWithoutSpaceNestedInput
+    workingHours?: SpaceWorkingHoursUpdateManyWithoutSpaceNestedInput
+    services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
+    rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
+    conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+  }
+
+  export type SpaceUncheckedUpdateWithoutReviewsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: StringFieldUpdateOperationsInput | string
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    capacity?: NullableIntFieldUpdateOperationsInput | number | null
+    price?: FloatFieldUpdateOperationsInput | number
+    pricePeriod?: StringFieldUpdateOperationsInput | string
+    status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    streetName?: NullableStringFieldUpdateOperationsInput | string | null
+    buildingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
+    landmarks?: NullableStringFieldUpdateOperationsInput | string | null
+    minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
+    maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
+    cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    typeId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    images?: SpaceImageUncheckedUpdateManyWithoutSpaceNestedInput
+    amenities?: SpaceAmenityUncheckedUpdateManyWithoutSpaceNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutSpaceNestedInput
+    workingHours?: SpaceWorkingHoursUncheckedUpdateManyWithoutSpaceNestedInput
+    services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
+    rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
+    conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+  }
+
+  export type UserUpsertWithoutReviewsInput = {
+    update: XOR<UserUpdateWithoutReviewsInput, UserUncheckedUpdateWithoutReviewsInput>
+    create: XOR<UserCreateWithoutReviewsInput, UserUncheckedCreateWithoutReviewsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReviewsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReviewsInput, UserUncheckedUpdateWithoutReviewsInput>
+  }
+
+  export type UserUpdateWithoutReviewsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaces?: SpaceUpdateManyWithoutSellerNestedInput
+    bookings?: BookingUpdateManyWithoutBuyerNestedInput
+    documents?: UserDocumentUpdateManyWithoutUserNestedInput
+    buyerConversations?: ConversationUpdateManyWithoutBuyerNestedInput
+    sellerConversations?: ConversationUpdateManyWithoutSellerNestedInput
+    adminConversations?: ConversationUpdateManyWithoutAdminNestedInput
+    sentMessages?: ConversationMessageUpdateManyWithoutSenderNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReviewsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaces?: SpaceUncheckedUpdateManyWithoutSellerNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBuyerNestedInput
+    documents?: UserDocumentUncheckedUpdateManyWithoutUserNestedInput
+    buyerConversations?: ConversationUncheckedUpdateManyWithoutBuyerNestedInput
+    sellerConversations?: ConversationUncheckedUpdateManyWithoutSellerNestedInput
+    adminConversations?: ConversationUncheckedUpdateManyWithoutAdminNestedInput
+    sentMessages?: ConversationMessageUncheckedUpdateManyWithoutSenderNestedInput
+  }
+
+  export type BookingUpsertWithoutReviewInput = {
+    update: XOR<BookingUpdateWithoutReviewInput, BookingUncheckedUpdateWithoutReviewInput>
+    create: XOR<BookingCreateWithoutReviewInput, BookingUncheckedCreateWithoutReviewInput>
+    where?: BookingWhereInput
+  }
+
+  export type BookingUpdateToOneWithWhereWithoutReviewInput = {
+    where?: BookingWhereInput
+    data: XOR<BookingUpdateWithoutReviewInput, BookingUncheckedUpdateWithoutReviewInput>
+  }
+
+  export type BookingUpdateWithoutReviewInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    persons?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    sellerNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
+    buyer?: UserUpdateOneRequiredWithoutBookingsNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutReviewInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    persons?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    sellerNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
   }
 
   export type SpaceCreateManySellerInput = {
@@ -24794,6 +27124,17 @@ export namespace Prisma {
     conversationId: string
   }
 
+  export type SpaceReviewCreateManyBuyerInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    spaceId: string
+    bookingId: string
+  }
+
   export type SpaceUpdateWithoutSellerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -24825,6 +27166,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutSellerInput = {
@@ -24858,6 +27200,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateManyWithoutSellerInput = {
@@ -24898,6 +27241,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
+    review?: SpaceReviewUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutBuyerInput = {
@@ -24912,6 +27256,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
+    review?: SpaceReviewUncheckedUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateManyWithoutBuyerInput = {
@@ -25087,6 +27432,39 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
   }
 
+  export type SpaceReviewUpdateWithoutBuyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    space?: SpaceUpdateOneRequiredWithoutReviewsNestedInput
+    booking?: BookingUpdateOneRequiredWithoutReviewNestedInput
+  }
+
+  export type SpaceReviewUncheckedUpdateWithoutBuyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type SpaceReviewUncheckedUpdateManyWithoutBuyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+  }
+
   export type SpaceCreateManyTypeInput = {
     id?: string
     name: string
@@ -25144,6 +27522,7 @@ export namespace Prisma {
     services?: SpaceServiceUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateWithoutTypeInput = {
@@ -25177,6 +27556,7 @@ export namespace Prisma {
     services?: SpaceServiceUncheckedUpdateManyWithoutSpaceNestedInput
     rules?: SpaceRuleUncheckedUpdateManyWithoutSpaceNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutSpaceNestedInput
+    reviews?: SpaceReviewUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
   export type SpaceUncheckedUpdateManyWithoutTypeInput = {
@@ -25279,6 +27659,17 @@ export namespace Prisma {
     adminId?: string | null
   }
 
+  export type SpaceReviewCreateManySpaceInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    isVisible?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    buyerId: string
+    bookingId: string
+  }
+
   export type SpaceImageUpdateWithoutSpaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
@@ -25321,6 +27712,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     buyer?: UserUpdateOneRequiredWithoutBookingsNestedInput
+    review?: SpaceReviewUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutSpaceInput = {
@@ -25335,6 +27727,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     buyerId?: StringFieldUpdateOperationsInput | string
+    review?: SpaceReviewUncheckedUpdateOneWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateManyWithoutSpaceInput = {
@@ -25453,6 +27846,39 @@ export namespace Prisma {
     buyerId?: NullableStringFieldUpdateOperationsInput | string | null
     sellerId?: NullableStringFieldUpdateOperationsInput | string | null
     adminId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type SpaceReviewUpdateWithoutSpaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    buyer?: UserUpdateOneRequiredWithoutReviewsNestedInput
+    booking?: BookingUpdateOneRequiredWithoutReviewNestedInput
+  }
+
+  export type SpaceReviewUncheckedUpdateWithoutSpaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type SpaceReviewUncheckedUpdateManyWithoutSpaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isVisible?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ConversationMessageCreateManyConversationInput = {

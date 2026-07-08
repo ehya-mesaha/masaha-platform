@@ -70,6 +70,7 @@ model User {
   sellerConversations Conversation[]        @relation("SellerConversations")
   adminConversations  Conversation[]        @relation("AdminConversations")
   sentMessages        ConversationMessage[]
+  reviews             SpaceReview[]
 }
 
 model UserDocument {
@@ -133,6 +134,7 @@ model Space {
   services      SpaceService[]
   rules         SpaceRule[]
   conversations Conversation[]
+  reviews       SpaceReview[]
 }
 
 model SpaceImage {
@@ -198,6 +200,8 @@ model Booking {
   space   Space  @relation(fields: [spaceId], references: [id])
   buyerId String
   buyer   User   @relation(fields: [buyerId], references: [id])
+
+  review SpaceReview?
 }
 
 model Conversation {
@@ -239,4 +243,24 @@ model ConversationMessage {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+}
+
+model SpaceReview {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  spaceId   String
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     User    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, isVisible, createdAt])
+  @@index([buyerId])
+  @@index([rating])
 }

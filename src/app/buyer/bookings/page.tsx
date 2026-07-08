@@ -20,6 +20,7 @@ export default async function BuyerBookingsPage() {
             images: { take: 1, orderBy: { order: 'asc' } },
           },
         },
+        review: { select: { id: true, rating: true } },
       },
       orderBy: { createdAt: 'desc' },
     }) as BookingType[]
@@ -84,6 +85,11 @@ export default async function BuyerBookingsPage() {
                     <Link href={`/buyer/bookings/${b.id}`} className="text-xs text-[#1B3A2D] hover:underline font-medium whitespace-nowrap">
                       عرض
                     </Link>
+                    {b.status === 'COMPLETED' && (
+                      <span className={`text-[11px] font-semibold ${b.review ? 'text-[#6B7566]' : 'text-[#C49A3C]'}`}>
+                        {b.review ? `تم التقييم ${b.review.rating}/5` : 'جاهز للتقييم'}
+                      </span>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -102,6 +108,7 @@ type BookingType = {
   startTime: string
   endTime: string
   sellerNote: string | null
+  review: { id: string; rating: number } | null
   space: {
     name: string
     city: string

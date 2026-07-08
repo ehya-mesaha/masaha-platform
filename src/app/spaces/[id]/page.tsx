@@ -19,6 +19,14 @@ const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
 type Service = { id: string; name: string; description: string | null; price: number; pricingType: string }
 type Rule = { id: string; rule: string }
+type Review = {
+  id: string
+  rating: number
+  comment: string | null
+  createdAt: string
+  buyer: { id: string; name: string }
+  booking: { id: string; date: string }
+}
 type Space = {
   id: string
   name: string
@@ -46,6 +54,20 @@ type Space = {
   workingHours: WorkingHour[]
   services: Service[]
   rules: Rule[]
+  reviews: Review[]
+  reviewSummary: { average: number; count: number }
+}
+
+function RatingStars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+  return (
+    <div className={`flex items-center gap-0.5 ${size === 'md' ? 'text-lg' : 'text-sm'}`} aria-label={`${rating} من 5`}>
+      {[1, 2, 3, 4, 5].map(star => (
+        <span key={star} className={star <= Math.round(rating) ? 'text-[#C49A3C]' : 'text-[#D8CFBE]'}>
+          ★
+        </span>
+      ))}
+    </div>
+  )
 }
 
 export default function SpaceDetailPage() {
@@ -180,7 +202,22 @@ export default function SpaceDetailPage() {
             {/* Space Info */}
             <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
               <div className="flex items-start justify-between mb-3">
-                <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{space.name}</h1>
+                <div>
+                  <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{space.name}</h1>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <RatingStars rating={space.reviewSummary.average} />
+                    <span className="text-xs font-semibold text-[#1B3A2D]">
+                      {space.reviewSummary.count > 0
+                        ? `${space.reviewSummary.average.toLocaleString('ar-SA')} من 5`
+                        : 'لا توجد تقييمات بعد'}
+                    </span>
+                    {space.reviewSummary.count > 0 && (
+                      <span className="text-xs text-[#6B7566]">
+                        ({space.reviewSummary.count.toLocaleString('ar-SA')} تقييم)
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <span className="bg-[#1B3A2D]/10 text-[#1B3A2D] text-xs font-medium px-3 py-1 rounded-full">{space.type.name}</span>
               </div>
               <p className="text-[#6B7566] text-sm flex items-center gap-1 mb-4">
@@ -306,6 +343,62 @@ export default function SpaceDetailPage() {
               </div>
             )}
 
+            {/* Reviews */}
+            <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
+              <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="font-display font-extrabold text-[#14201A] text-base flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.519 4.674c.3.921-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.519-4.674a1 1 0 00-.363-1.118L3.077 10.1c-.783-.57-.38-1.81.588-1.81H8.58a1 1 0 00.95-.69l1.519-4.674z" />
+                    </svg>
+                    التقييمات والآراء
+                  </h3>
+                  <p className="mt-1 text-xs text-[#6B7566]">
+                    آراء المستأجرين الذين أكملوا حجوزاتهم.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-[#F7F3EB] px-4 py-3 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl font-extrabold text-[#1B3A2D]">
+                      {space.reviewSummary.count > 0 ? space.reviewSummary.average.toLocaleString('ar-SA') : '-'}
+                    </span>
+                    <RatingStars rating={space.reviewSummary.average} size="md" />
+                  </div>
+                  <p className="text-[11px] text-[#6B7566]">
+                    {space.reviewSummary.count > 0
+                      ? `${space.reviewSummary.count.toLocaleString('ar-SA')} تقييم موثق`
+                      : 'غير متاح حالياً'}
+                  </p>
+                </div>
+              </div>
+
+              {space.reviews.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-6 text-center">
+                  <p className="text-sm font-semibold text-[#14201A]">لا توجد تقييمات لهذه المساحة حتى الآن</p>
+                  <p className="mt-1 text-xs text-[#6B7566]">ستظهر التقييمات هنا بعد أن يكمل المستأجرون حجوزاتهم.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {space.reviews.map(review => (
+                    <div key={review.id} className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                      <div className="mb-2 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-[#14201A]">{review.buyer.name}</p>
+                          <p className="text-[11px] text-[#8B9389]">حجز بتاريخ {review.booking.date}</p>
+                        </div>
+                        <RatingStars rating={review.rating} />
+                      </div>
+                      {review.comment ? (
+                        <p className="text-sm leading-6 text-[#4A554D]">{review.comment}</p>
+                      ) : (
+                        <p className="text-sm text-[#8B9389]">تقييم بدون تعليق</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Map */}
             {space.latitude && space.longitude && (
               <div className="bg-white rounded-2xl border border-[#E8E3D8] p-6">
@@ -379,10 +472,6 @@ export default function SpaceDetailPage() {
                   sellerId={space.seller.id}
                   spaceId={space.id}
                   label="محادثة صاحب المساحة"
-                />
-                <StartConversationButton
-                  admin
-                  label="محادثة الإدارة"
                 />
               </div>
 

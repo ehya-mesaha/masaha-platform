@@ -16,6 +16,12 @@ type Booking = {
   persons: number | null
   notes: string | null
   sellerNote: string | null
+  review: {
+    id: string
+    rating: number
+    comment: string | null
+    createdAt: string
+  } | null
   space: {
     name: string
     city: string
@@ -31,6 +37,10 @@ export default function BuyerBookingDetailPage() {
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [reviewError, setReviewError] = useState('')
 
   useEffect(() => {
     fetch(`/api/bookings/${id}`)
@@ -51,6 +61,35 @@ export default function BuyerBookingDetailPage() {
       setBooking(prev => prev ? { ...prev, status: data.booking.status } : null)
     }
     setCancelling(false)
+  }
+
+  async function handleReviewSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setReviewError('')
+    if (!reviewRating) {
+      setReviewError('اختر عدد النجوم أولاً')
+      return
+    }
+
+    setReviewLoading(true)
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: id, rating: reviewRating, comment: reviewComment }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setReviewError(data.error || 'تعذر إرسال التقييم')
+        return
+      }
+      setBooking(prev => prev ? { ...prev, review: data.review } : prev)
+      setReviewComment('')
+    } catch {
+      setReviewError('حدث خطأ في الاتصال')
+    } finally {
+      setReviewLoading(false)
+    }
   }
 
   if (loading) return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>
@@ -107,6 +146,73 @@ export default function BuyerBookingDetailPage() {
               <p className="text-xs font-medium text-amber-700 mb-1">رد صاحب المساحة:</p>
               <p className="text-sm text-amber-800">{booking.sellerNote}</p>
             </div>
+          )}
+
+          {booking.status === 'COMPLETED' && (
+            <Card>
+              <h3 className="font-semibold text-gray-900 mb-2">تقييم تجربتك</h3>
+              {booking.review ? (
+                <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                  <div className="mb-2 flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <span key={star} className={star <= booking.review!.rating ? 'text-[#C49A3C] text-xl' : 'text-[#D8CFBE] text-xl'}>
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm font-semibold text-green-700">تم إرسال تقييمك بنجاح</p>
+                  {booking.review.comment && (
+                    <p className="mt-2 text-sm text-green-800">{booking.review.comment}</p>
+                  )}
+                </div>
+              ) : (
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  {reviewError && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {reviewError}
+                    </div>
+                  )}
+                  <div>
+                    <p className="mb-2 text-xs font-bold text-gray-500">عدد النجوم</p>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          className={`h-10 w-10 rounded-xl border text-2xl transition-colors ${
+                            star <= reviewRating
+                              ? 'border-[#C49A3C] bg-[#F7F3EB] text-[#C49A3C]'
+                              : 'border-[#E8E3D8] bg-white text-[#D8CFBE] hover:border-[#C49A3C]'
+                          }`}
+                          aria-label={`${star} نجوم`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-bold text-gray-500">تعليقك</label>
+                    <textarea
+                      value={reviewComment}
+                      onChange={e => setReviewComment(e.target.value)}
+                      rows={4}
+                      maxLength={1000}
+                      placeholder="شارك رأيك عن المساحة وتجربة الحجز..."
+                      className="w-full resize-none rounded-xl border border-[#E8E3D8] px-4 py-3 text-sm focus:border-[#1B3A2D] focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={reviewLoading}
+                    className="w-full rounded-xl bg-[#1B3A2D] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0F2219] disabled:opacity-60"
+                  >
+                    {reviewLoading ? 'جاري إرسال التقييم...' : 'إرسال التقييم'}
+                  </button>
+                </form>
+              )}
+            </Card>
           )}
 
           {booking.status === 'PENDING' && (
