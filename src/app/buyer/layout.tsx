@@ -19,7 +19,7 @@ export default async function BuyerLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col lg:flex-row">
       <DashboardSidebar role="BUYER" userName={user.name as string} avatarUrl={avatarUrl} />
       <main className="flex-1 bg-[#F5F0E6] overflow-auto">
         {children}

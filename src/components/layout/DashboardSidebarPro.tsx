@@ -83,7 +83,12 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
   const router = useRouter()
   const links = roleLinks[role]
   const [unreadConversations, setUnreadConversations] = useState(0)
+  const [open, setOpen] = useState(false)
   const settingsHref = role === 'ADMIN' ? '/admin/settings' : role === 'SELLER' ? '/seller/settings' : '/buyer/settings'
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   useEffect(() => {
     let cancelled = false
@@ -118,22 +123,69 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
   }
 
   return (
-    <aside className="relative flex min-h-screen w-64 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219]">
+    <>
+      {/* Mobile top bar */}
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#1B3A2D]/10 bg-[#1B3A2D] px-4 py-3 lg:hidden">
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="فتح القائمة"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:bg-white/10"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-base font-extrabold text-white">مساحة</span>
+        </Link>
+        <Link href={settingsHref} className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-sm font-extrabold text-[#0F2219]">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={userName || 'profile'} className="h-full w-full object-cover" />
+          ) : (
+            userName?.charAt(0) || '?'
+          )}
+        </Link>
+      </div>
+
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 right-0 z-50 flex w-72 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
+          open ? 'translate-x-0' : 'max-lg:translate-x-full'
+        }`}
+      >
       <div className="pointer-events-none absolute -end-16 top-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
       <div className="pointer-events-none absolute -start-16 bottom-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
 
       <div className="relative border-b border-white/[0.06] px-5 py-5">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-            <svg className="h-5 w-5 text-[#C49A3C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d={ICONS.dashboard} />
+        <div className="flex items-center justify-between">
+          <Link href="/" className="group flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+              <svg className="h-5 w-5 text-[#C49A3C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d={ICONS.dashboard} />
+              </svg>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-lg font-extrabold text-white">مساحة</span>
+              <span className="text-[9px] text-white/40">MASAHA</span>
+            </div>
+          </Link>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="إغلاق القائمة"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 lg:hidden"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-lg font-extrabold text-white">مساحة</span>
-            <span className="text-[9px] text-white/40">MASAHA</span>
-          </div>
-        </Link>
+          </button>
+        </div>
 
         <Link href={settingsHref} className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3 transition-colors hover:bg-white/[0.08]">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-lg font-extrabold text-[#0F2219]">
@@ -199,6 +251,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
           تسجيل الخروج
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   )
 }
