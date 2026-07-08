@@ -58,6 +58,8 @@ export type StepProps = {
   update: (field: string, value: unknown) => void
   types?: SpaceType[]
   amenities?: Amenity[]
+  categoriesLoading?: boolean
+  categoriesError?: string
 }
 
 export const SAUDI_CITIES = [

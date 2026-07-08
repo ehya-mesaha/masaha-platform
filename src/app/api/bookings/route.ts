@@ -60,6 +60,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'المساحة غير متاحة' }, { status: 400 })
     }
 
+    if (startTime >= endTime) {
+      return NextResponse.json({ error: 'وقت النهاية يجب أن يكون بعد وقت البداية' }, { status: 400 })
+    }
+
+    if (persons && space.capacity && Number(persons) > space.capacity) {
+      return NextResponse.json({ error: 'عدد الأشخاص أكبر من السعة المتاحة للمساحة' }, { status: 400 })
+    }
+
+    const overlappingBooking = await prisma.booking.findFirst({
+      where: {
+        spaceId,
+        date,
+        status: { in: ['PENDING', 'ACCEPTED'] },
+        startTime: { lt: endTime },
+        endTime: { gt: startTime },
+      },
+      select: { id: true },
+    })
+    if (overlappingBooking) {
+      return NextResponse.json({ error: 'يوجد حجز آخر في هذا الوقت. اختر وقتاً مختلفاً' }, { status: 409 })
+    }
+
     const booking = await prisma.booking.create({
       data: {
         spaceId,

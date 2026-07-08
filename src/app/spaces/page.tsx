@@ -107,6 +107,13 @@ async function getSpaces(params: SearchParams) {
   const where: Record<string, unknown> = { status: 'APPROVED' }
   if (params.city) where.city = { contains: params.city, mode: 'insensitive' }
   if (params.typeId) where.typeId = params.typeId
+  else if (params.type) {
+    const matchedTypes = await prisma.spaceType.findMany({
+      where: { name: { contains: params.type, mode: 'insensitive' } },
+      select: { id: true },
+    })
+    where.typeId = { in: matchedTypes.map(type => type.id) }
+  }
 
   return prisma.space.findMany({
     where,

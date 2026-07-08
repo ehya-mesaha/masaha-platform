@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose'
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!)
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const token = req.cookies.get('masaha_token')?.value
   const pathname = req.nextUrl.pathname
 

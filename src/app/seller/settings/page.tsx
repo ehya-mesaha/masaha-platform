@@ -1,54 +1,29 @@
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import Card from '@/components/ui/Card'
+import SettingsClient from '@/components/settings/SettingsClient'
+
+export const dynamic = 'force-dynamic'
 
 export default async function SellerSettingsPage() {
   const user = await getCurrentUser()
   if (!user) return null
 
-  let userData = null
-  try {
-    userData = await prisma.user.findUnique({
-      where: { id: user.id as string },
-      select: { id: true, name: true, email: true, phone: true, createdAt: true },
-    })
-  } catch {
-    // DB not connected
-  }
+  const userData = await prisma.user.findUnique({
+    where: { id: user.id as string },
+    select: { name: true, email: true, phone: true, role: true, createdAt: true },
+  })
+
+  if (!userData) return null
 
   return (
-    <div className="p-8">
-      <div className="max-w-xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">الإعدادات</h1>
-
-        <Card>
-          <h3 className="font-semibold text-gray-900 mb-4">معلومات الحساب</h3>
-          <div className="space-y-4 text-sm">
-            <div>
-              <p className="text-gray-500 mb-0.5">الاسم الكامل</p>
-              <p className="font-medium text-gray-900">{userData?.name || user.name as string}</p>
-            </div>
-            <div>
-              <p className="text-gray-500 mb-0.5">البريد الإلكتروني</p>
-              <p className="font-medium text-gray-900">{userData?.email || user.email as string}</p>
-            </div>
-            {userData?.phone && (
-              <div>
-                <p className="text-gray-500 mb-0.5">رقم الجوال</p>
-                <p className="font-medium text-gray-900">{userData.phone}</p>
-              </div>
-            )}
-            {userData?.createdAt && (
-              <div>
-                <p className="text-gray-500 mb-0.5">تاريخ التسجيل</p>
-                <p className="font-medium text-gray-900">
-                  {new Date(userData.createdAt).toLocaleDateString('ar-SA')}
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
-      </div>
-    </div>
+    <SettingsClient
+      user={{
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        role: userData.role,
+        createdAt: userData.createdAt.toISOString(),
+      }}
+    />
   )
 }

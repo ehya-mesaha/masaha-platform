@@ -18,6 +18,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     if (!booking) return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 })
 
+    const canView =
+      user.role === 'ADMIN' ||
+      booking.buyerId === user.id ||
+      booking.space.sellerId === user.id
+    if (!canView) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+
     return NextResponse.json({ booking })
   } catch (err) {
     console.error(err)
@@ -41,6 +47,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (!booking) return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 })
 
+    if (!['ACCEPTED', 'REJECTED', 'CANCELLED', 'COMPLETED'].includes(status)) {
+      return NextResponse.json({ error: 'حالة الحجز غير صحيحة' }, { status: 400 })
+    }
+
     // Buyer can only cancel
     if (user.role === 'BUYER') {
       if (booking.buyerId !== user.id) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
@@ -49,6 +59,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     // Seller can accept/reject
     if (user.role === 'SELLER') {
+      if (!['ACCEPTED', 'REJECTED'].includes(status)) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+      if (booking.status !== 'PENDING') return NextResponse.json({ error: 'لا يمكن تعديل حجز تمت مراجعته' }, { status: 400 })
       if (booking.space.sellerId !== user.id) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
     }
 

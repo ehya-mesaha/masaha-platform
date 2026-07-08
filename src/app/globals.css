@@ -19,7 +19,7 @@
 html { direction: rtl; scroll-behavior: smooth; }
 
 body {
-  font-family: var(--font-tajawal), 'Tajawal', system-ui, sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
   background-color: var(--bg-warm);
   color: var(--text);
   font-feature-settings: "ss01", "cv01";
@@ -35,7 +35,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Fine-tuned typography for Arabic */
 .font-display {
-  font-family: var(--font-tajawal), 'Tajawal', sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
   font-weight: 800;
   letter-spacing: -0.03em;
 }

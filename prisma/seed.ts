@@ -6,16 +6,43 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
+  const demoPassword = await bcrypt.hash('KFUPM123', 10)
+
   // Admin user
   const adminPassword = await bcrypt.hash('admin123', 10)
   await prisma.user.upsert({
     where: { email: 'admin@masaha.sa' },
-    update: {},
+    update: { role: 'ADMIN', status: 'ACTIVE' },
     create: {
       name: 'مدير المنصة',
       email: 'admin@masaha.sa',
       password: adminPassword,
       role: 'ADMIN',
+      status: 'ACTIVE',
+    },
+  })
+
+  await prisma.user.upsert({
+    where: { email: 'seller@masaha.com' },
+    update: { role: 'SELLER', status: 'ACTIVE' },
+    create: {
+      name: 'Demo Seller',
+      email: 'seller@masaha.com',
+      password: demoPassword,
+      role: 'SELLER',
+      status: 'ACTIVE',
+    },
+  })
+
+  await prisma.user.upsert({
+    where: { email: 'buyer@masaha.com' },
+    update: { role: 'BUYER', status: 'ACTIVE' },
+    create: {
+      name: 'Demo Buyer',
+      email: 'buyer@masaha.com',
+      password: demoPassword,
+      role: 'BUYER',
+      status: 'ACTIVE',
     },
   })
 

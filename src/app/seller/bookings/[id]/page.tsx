@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Badge, { getBookingStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
@@ -22,11 +22,11 @@ type Booking = {
 
 export default function SellerBookingDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const router = useRouter()
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
   const [note, setNote] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetch(`/api/bookings/${id}`)
@@ -36,20 +36,32 @@ export default function SellerBookingDetailPage() {
         setNote(data.booking?.sellerNote || '')
         setLoading(false)
       })
+      .catch(() => {
+        setError('تعذر تحميل تفاصيل الحجز')
+        setLoading(false)
+      })
   }, [id])
 
   async function handleAction(status: string) {
+    setError('')
     setActionLoading(true)
-    const res = await fetch(`/api/bookings/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, sellerNote: note }),
-    })
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, sellerNote: note }),
+      })
       const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'تعذر تحديث حالة الحجز')
+        return
+      }
       setBooking(prev => prev ? { ...prev, status: data.booking.status, sellerNote: data.booking.sellerNote } : null)
+    } catch {
+      setError('تعذر الاتصال بالخادم')
+    } finally {
+      setActionLoading(false)
     }
-    setActionLoading(false)
   }
 
   if (loading) return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>
@@ -70,6 +82,12 @@ export default function SellerBookingDetailPage() {
         </div>
 
         <div className="space-y-4">
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
           <Card>
             <h3 className="font-semibold text-gray-900 mb-4">معلومات المستأجر</h3>
             <div className="space-y-2 text-sm">

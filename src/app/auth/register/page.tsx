@@ -21,6 +21,8 @@ function RegisterForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [showTerms, setShowTerms] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
   const idRef = useRef<HTMLInputElement>(null)
   const crRef = useRef<HTMLInputElement>(null)
 
@@ -179,8 +181,8 @@ function RegisterForm() {
         <div className="relative flex items-center justify-between text-xs text-white/50">
           <span>© {new Date().getFullYear()} مساحة</span>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-white/80">الخصوصية</a>
-            <a href="#" className="hover:text-white/80">الشروط</a>
+            <Link href="/policies#privacy" className="hover:text-white/80">الخصوصية</Link>
+            <Link href="/policies#terms" className="hover:text-white/80">الشروط</Link>
           </div>
         </div>
       </div>
@@ -404,9 +406,9 @@ function RegisterForm() {
                 <input type="checkbox" required className="mt-1 accent-[#1B3A2D]" />
                 <p className="text-[11px] text-[#6B7566] leading-relaxed">
                   أوافق على{' '}
-                  <a href="#" className="text-[#1B3A2D] font-bold hover:underline">شروط الاستخدام</a>
+                  <button type="button" onClick={() => setShowTerms(true)} className="text-[#1B3A2D] font-bold hover:underline">شروط الاستخدام</button>
                   {' '}و{' '}
-                  <a href="#" className="text-[#1B3A2D] font-bold hover:underline">سياسة الخصوصية</a>
+                  <button type="button" onClick={() => setShowPrivacy(true)} className="text-[#1B3A2D] font-bold hover:underline">سياسة الخصوصية</button>
                 </p>
               </div>
 
@@ -434,6 +436,123 @@ function RegisterForm() {
           </div>
         </div>
       </div>
+      {/* Terms of Service Modal */}
+      {showTerms && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowTerms(false)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-extrabold text-[#14201A]">شروط الاستخدام</h2>
+              <button type="button" onClick={() => setShowTerms(false)} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="prose-sm text-[#4A554D] text-sm leading-relaxed space-y-4">
+              <p className="font-bold text-[#1B3A2D]">مرحباً بك في منصة مساحة. باستخدامك لهذه المنصة، فإنك توافق على الالتزام بالشروط والأحكام التالية:</p>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">١. التعريفات</h3>
+                <p>تشير &ldquo;المنصة&rdquo; إلى موقع مساحة الإلكتروني وتطبيقاته. يُقصد بـ &ldquo;صاحب المساحة&rdquo; الطرف الذي يعرض مساحته للإيجار. يُقصد بـ &ldquo;المستأجر&rdquo; الطرف الذي يحجز المساحة.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٢. الأهلية والتسجيل</h3>
+                <p>يجب أن يكون المستخدم قد بلغ سن الرشد النظامي (١٨ عاماً) في المملكة العربية السعودية. يلتزم المستخدم بتقديم بيانات صحيحة ودقيقة عند التسجيل، ويتحمل مسؤولية تحديثها. يحق للمنصة تعليق أو إلغاء أي حساب يتضمن بيانات مضللة أو غير صحيحة.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٣. التحقق من الهوية</h3>
+                <p>يُلزم أصحاب المساحات بتقديم وثائق التحقق (الهوية الوطنية والسجل التجاري إن وُجد) كشرط لتفعيل حساباتهم. تخضع جميع الحسابات لمراجعة إدارية قبل الموافقة عليها.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٤. الحجوزات والمدفوعات</h3>
+                <p>تُعدّ عملية الحجز مُلزمة لكلا الطرفين بمجرد التأكيد. يلتزم المستأجر بسداد المبلغ المتفق عليه وفقاً لشروط الدفع المحددة. تخضع عمليات الإلغاء لسياسة الإلغاء المعتمدة من قبل صاحب المساحة (مرنة، متوسطة، أو صارمة).</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٥. التزامات صاحب المساحة</h3>
+                <p>يلتزم صاحب المساحة بتقديم وصف دقيق وصور حقيقية للمساحة المعروضة. يتحمل صاحب المساحة مسؤولية صيانة المساحة وضمان سلامتها وملاءمتها للاستخدام المعلن. يحق للمنصة إزالة أي إعلان يتضمن معلومات مضللة.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٦. التزامات المستأجر</h3>
+                <p>يلتزم المستأجر باحترام قواعد استخدام المساحة المحددة من قبل مالكها. يتحمل المستأجر مسؤولية أي أضرار تلحق بالمساحة خلال فترة الاستخدام. يلتزم المستأجر بإخلاء المساحة في الموعد المحدد.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٧. حدود المسؤولية</h3>
+                <p>المنصة وسيط تقني بين أصحاب المساحات والمستأجرين، ولا تتحمل مسؤولية مباشرة عن جودة المساحات أو النزاعات بين الأطراف. تسعى المنصة لحل النزاعات ودياً وفق آليات التواصل المتاحة.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٨. التعديلات</h3>
+                <p>يحق للمنصة تعديل هذه الشروط في أي وقت، ويُعدّ استمرار استخدام المنصة بعد التعديل موافقة ضمنية على الشروط المحدّثة.</p>
+              </div>
+
+              <p className="text-xs text-[#6B7566] pt-2 border-t border-[#ECE6D8]">آخر تحديث: يوليو ٢٠٢٦</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Policy Modal */}
+      {showPrivacy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowPrivacy(false)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-extrabold text-[#14201A]">سياسة الخصوصية</h2>
+              <button type="button" onClick={() => setShowPrivacy(false)} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="prose-sm text-[#4A554D] text-sm leading-relaxed space-y-4">
+              <p className="font-bold text-[#1B3A2D]">تلتزم منصة مساحة بحماية خصوصية مستخدميها وبياناتهم الشخصية وفقاً للأنظمة المعمول بها في المملكة العربية السعودية.</p>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">١. البيانات التي نجمعها</h3>
+                <p>نقوم بجمع البيانات التالية: الاسم الكامل أو اسم المنشأة، البريد الإلكتروني، رقم الجوال، وثائق التحقق من الهوية (لأصحاب المساحات)، وبيانات الحجوزات والمعاملات المالية.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٢. كيفية استخدام البيانات</h3>
+                <p>نستخدم بياناتك لأغراض: التحقق من الهوية وتفعيل الحساب، إتمام عمليات الحجز والتواصل بين الأطراف، تحسين خدمات المنصة وتجربة المستخدم، والامتثال للمتطلبات النظامية والقانونية.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٣. حماية البيانات</h3>
+                <p>نتخذ إجراءات أمنية مناسبة لحماية بياناتك من الوصول غير المصرح به أو التعديل أو الإفشاء أو الإتلاف، بما في ذلك تشفير البيانات الحساسة واستخدام بروتوكولات أمان متقدمة.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٤. مشاركة البيانات</h3>
+                <p>لا نشارك بياناتك الشخصية مع أطراف ثالثة إلا في الحالات التالية: بموافقتك الصريحة، لإتمام عملية حجز (مشاركة بيانات التواصل الضرورية مع الطرف الآخر)، أو بموجب طلب رسمي من جهة حكومية مختصة.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٥. ملفات تعريف الارتباط</h3>
+                <p>تستخدم المنصة ملفات تعريف الارتباط (Cookies) لتحسين تجربة التصفح وتذكّر تفضيلات المستخدم. يمكنك التحكم في إعدادات الكوكيز من خلال متصفحك.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٦. حقوق المستخدم</h3>
+                <p>يحق لك الوصول إلى بياناتك الشخصية وتعديلها أو حذفها. يمكنك طلب نسخة من بياناتك المخزنة لدينا. يحق لك الاعتراض على معالجة بياناتك في أي وقت عبر التواصل مع فريق الدعم.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٧. الاحتفاظ بالبيانات</h3>
+                <p>نحتفظ ببياناتك طالما كان حسابك نشطاً أو حسب ما تقتضيه المتطلبات النظامية. عند حذف الحساب، يتم حذف البيانات الشخصية خلال ٣٠ يوماً، باستثناء ما يُلزمنا النظام بالاحتفاظ به.</p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-[#14201A] text-sm mb-1">٨. التواصل</h3>
+                <p>لأي استفسارات تتعلق بسياسة الخصوصية، يُرجى التواصل معنا عبر البريد الإلكتروني: support@masaha.sa</p>
+              </div>
+
+              <p className="text-xs text-[#6B7566] pt-2 border-t border-[#ECE6D8]">آخر تحديث: يوليو ٢٠٢٦</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -2,7 +2,9 @@
 
 import { StepProps } from './types'
 
-export default function StepBasicInfo({ form, update, types }: StepProps) {
+export default function StepBasicInfo({ form, update, types, categoriesLoading, categoriesError }: StepProps) {
+  const hasTypes = Boolean(types?.length)
+
   return (
     <div>
       <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">المعلومات الأساسية للمساحة</h2>
@@ -25,11 +27,20 @@ export default function StepBasicInfo({ form, update, types }: StepProps) {
             <select
               value={form.typeId}
               onChange={e => update('typeId', e.target.value)}
+              disabled={categoriesLoading || !hasTypes}
               className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
             >
+              {(categoriesLoading || !hasTypes) && (
+                <option value="">
+                  {categoriesLoading ? 'جاري تحميل التصنيفات...' : 'لا توجد تصنيفات متاحة'}
+                </option>
+              )}
               <option value="">اختر التصنيف</option>
               {types?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
+            {categoriesError && (
+              <p className="mt-1.5 text-xs text-red-600">{categoriesError}</p>
+            )}
           </div>
 
           <div>

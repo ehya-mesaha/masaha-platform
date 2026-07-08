@@ -20,16 +20,24 @@ export default function NewSpacePage() {
   const [form, setForm] = useState<SpaceFormData>(getInitialForm)
   const [types, setTypes] = useState<SpaceType[]>([])
   const [amenities, setAmenities] = useState<Amenity[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categoriesError, setCategoriesError] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
     fetch('/api/admin/categories')
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('categories')
+        return r.json()
+      })
       .then(data => {
         setTypes(data.types || [])
         setAmenities(data.amenities || [])
+        setCategoriesError('')
       })
+      .catch(() => setCategoriesError('تعذر تحميل التصنيفات. حدّث الصفحة أو تواصل مع مدير النظام.'))
+      .finally(() => setCategoriesLoading(false))
   }, [])
 
   function update(field: string, value: unknown) {
@@ -37,6 +45,22 @@ export default function NewSpacePage() {
   }
 
   function next() {
+    if (step === 1 && categoriesLoading) {
+      setError('انتظر حتى يتم تحميل التصنيفات')
+      return
+    }
+    if (step === 1 && categoriesError) {
+      setError(categoriesError)
+      return
+    }
+    if (step === 1 && !form.name.trim()) {
+      setError('يرجى إدخال اسم المساحة')
+      return
+    }
+    if (step === 1 && !form.typeId) {
+      setError('يرجى اختيار تصنيف المساحة')
+      return
+    }
     if (step === 1 && (!form.name || !form.typeId)) {
       setError('يرجى إدخال اسم المساحة والتصنيف')
       return
@@ -80,7 +104,7 @@ export default function NewSpacePage() {
     }
   }
 
-  const stepProps = { form, update, types, amenities }
+  const stepProps = { form, update, types, amenities, categoriesLoading, categoriesError }
 
   const StepComponent = [
     StepBasicInfo,
