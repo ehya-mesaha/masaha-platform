@@ -2,6 +2,8 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
+import type { TranslationKey } from '@/lib/i18n'
 
 type UserData = {
   name: string
@@ -12,13 +14,14 @@ type UserData = {
   createdAt: string
 }
 
-const roleLabel: Record<string, string> = {
-  SELLER: 'صاحب مساحة',
-  BUYER: 'مستأجر',
-  ADMIN: 'مدير النظام',
+const roleLabelKey: Record<string, TranslationKey> = {
+  SELLER: 'roleSeller',
+  BUYER: 'roleBuyer',
+  ADMIN: 'roleAdmin',
 }
 
 export default function ProfileSettingsClient({ user }: { user: UserData }) {
+  const { locale, t } = useLanguage()
   const fileRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState(user.name)
   const [phone, setPhone] = useState(user.phone || '')
@@ -34,7 +37,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
       body: JSON.stringify(payload),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'تعذر تحديث الحساب')
+    if (!res.ok) throw new Error(data.error || t('updateFailed'))
     return data.user
   }
 
@@ -43,9 +46,9 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
     setSaving(true)
     try {
       await updateProfile({ name, phone })
-      setMessage({ type: 'ok', text: 'تم تحديث البيانات بنجاح' })
+      setMessage({ type: 'ok', text: t('updated') })
     } catch (err) {
-      setMessage({ type: 'err', text: err instanceof Error ? err.message : 'حدث خطأ في الاتصال' })
+      setMessage({ type: 'err', text: err instanceof Error ? err.message : t('connectionError') })
     } finally {
       setSaving(false)
     }
@@ -59,12 +62,12 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
       fd.append('file', file)
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd })
       const uploadData = await uploadRes.json()
-      if (!uploadRes.ok || !uploadData.url) throw new Error(uploadData.error || 'تعذر رفع الصورة')
+      if (!uploadRes.ok || !uploadData.url) throw new Error(uploadData.error || t('uploadFailed'))
       await updateProfile({ avatarUrl: uploadData.url })
       setAvatarUrl(uploadData.url)
-      setMessage({ type: 'ok', text: 'تم تحديث صورة الملف الشخصي' })
+      setMessage({ type: 'ok', text: t('photoUpdated') })
     } catch (err) {
-      setMessage({ type: 'err', text: err instanceof Error ? err.message : 'حدث خطأ أثناء رفع الصورة' })
+      setMessage({ type: 'err', text: err instanceof Error ? err.message : t('uploadFailed') })
     } finally {
       setAvatarSaving(false)
     }
@@ -76,9 +79,9 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
     try {
       await updateProfile({ avatarUrl: null })
       setAvatarUrl('')
-      setMessage({ type: 'ok', text: 'تم حذف صورة الملف الشخصي' })
+      setMessage({ type: 'ok', text: t('photoDeleted') })
     } catch (err) {
-      setMessage({ type: 'err', text: err instanceof Error ? err.message : 'تعذر حذف الصورة' })
+      setMessage({ type: 'err', text: err instanceof Error ? err.message : t('deleteFailed') })
     } finally {
       setAvatarSaving(false)
     }
@@ -88,9 +91,9 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
     <div className="dashboard-page">
       <div className="page-hero mb-6 p-6 animate-in">
         <div className="relative">
-          <p className="mb-2 text-xs font-bold text-[#C49A3C]">الملف الشخصي</p>
-          <h1 className="text-2xl font-extrabold text-white">الإعدادات</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">إدارة معلومات الحساب والصورة الشخصية وبيانات التواصل.</p>
+          <p className="mb-2 text-xs font-bold text-[#C49A3C]">{t('profile')}</p>
+          <h1 className="text-2xl font-extrabold text-white">{t('settingsTitle')}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">{t('settingsDesc')}</p>
         </div>
       </div>
 
@@ -112,7 +115,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 onClick={() => fileRef.current?.click()}
                 disabled={avatarSaving}
                 className="absolute bottom-1 left-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#C49A3C] text-[#14201A] shadow-lg transition-transform hover:scale-105 disabled:opacity-70"
-                aria-label="تغيير الصورة"
+                aria-label={t('changePhoto')}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h4l2-3h6l2 3h4v13H3V7zm9 3a4 4 0 100 8 4 4 0 000-8z" />
@@ -133,7 +136,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
             <h2 className="mt-4 text-xl font-extrabold text-[#14201A]">{name}</h2>
             <p className="text-sm text-[#6B7566]" dir="ltr">{user.email}</p>
             <span className="mt-3 rounded-full bg-[#F7F3EB] px-3 py-1 text-xs font-bold text-[#1B3A2D]">
-              {roleLabel[user.role] || user.role}
+              {roleLabelKey[user.role] ? t(roleLabelKey[user.role]) : user.role}
             </span>
             <div className="mt-5 flex w-full gap-2">
               <button
@@ -142,7 +145,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 disabled={avatarSaving}
                 className="btn-primary flex-1 rounded-xl py-2.5 text-sm font-bold disabled:opacity-70"
               >
-                {avatarSaving ? 'جاري الرفع...' : 'تغيير الصورة'}
+                {avatarSaving ? t('uploadInProgress') : t('changePhoto')}
               </button>
               <button
                 type="button"
@@ -150,7 +153,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 disabled={avatarSaving || !avatarUrl}
                 className="rounded-xl border border-[#E8E3D8] bg-white px-4 py-2.5 text-sm font-bold text-[#4A554D] transition-colors hover:border-red-200 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                حذف
+                {t('delete')}
               </button>
             </div>
           </div>
@@ -166,48 +169,48 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
           )}
 
           <section className="premium-card p-6 animate-in">
-            <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">معلومات الحساب</h2>
+            <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">{t('accountInfo')}</h2>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-xl bg-[#F7F3EB] p-3">
-                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">البريد الإلكتروني</p>
+                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">{t('email')}</p>
                 <p className="text-sm font-medium text-[#14201A]" dir="ltr">{user.email}</p>
               </div>
               <div className="rounded-xl bg-[#F7F3EB] p-3">
-                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">نوع الحساب</p>
-                <p className="text-sm font-medium text-[#14201A]">{roleLabel[user.role] || user.role}</p>
+                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">{t('accountType')}</p>
+                <p className="text-sm font-medium text-[#14201A]">{roleLabelKey[user.role] ? t(roleLabelKey[user.role]) : user.role}</p>
               </div>
               <div className="rounded-xl bg-[#F7F3EB] p-3">
-                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">تاريخ التسجيل</p>
+                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">{t('joinedAt')}</p>
                 <p className="text-sm font-medium text-[#14201A]">
-                  {new Date(user.createdAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  {new Date(user.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
             </div>
           </section>
 
           <section className="premium-card p-6 animate-in">
-            <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">تعديل البيانات الشخصية</h2>
+            <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">{t('editPersonalInfo')}</h2>
             <div className="mb-4 grid gap-4 md:grid-cols-2">
               <label>
-                <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">الاسم الكامل</span>
+                <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('fullName')}</span>
                 <input value={name} onChange={e => setName(e.target.value)} className="field" />
               </label>
               <label>
-                <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">رقم الجوال</span>
+                <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('phone')}</span>
                 <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="05X XXX XXXX" dir="ltr" className="field" />
               </label>
             </div>
             <button onClick={saveProfile} disabled={saving} className="btn-primary rounded-xl px-6 py-2.5 text-sm font-bold disabled:opacity-60">
-              {saving ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+              {saving ? t('saving') : t('saveChanges')}
             </button>
           </section>
 
           <section className="premium-card p-6 animate-in">
-            <h2 className="mb-3 text-sm font-extrabold text-[#14201A]">السياسات والشروط</h2>
+            <h2 className="mb-3 text-sm font-extrabold text-[#14201A]">{t('policiesTerms')}</h2>
             <div className="grid gap-2 md:grid-cols-3">
-              <PolicyLink href="/policies#terms" label="شروط الاستخدام" />
-              <PolicyLink href="/policies#privacy" label="سياسة الخصوصية" />
-              <PolicyLink href="/policies#cancellation" label="الإلغاء والاسترداد" />
+              <PolicyLink href="/policies#terms" label={t('terms')} />
+              <PolicyLink href="/policies#privacy" label={t('privacy')} />
+              <PolicyLink href="/policies#cancellation" label={t('cancellation')} />
             </div>
           </section>
         </main>
@@ -217,10 +220,12 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
 }
 
 function PolicyLink({ href, label }: { href: string; label: string }) {
+  const { dir } = useLanguage()
+
   return (
     <Link href={href} className="flex items-center justify-between rounded-xl border border-[#E8E3D8] bg-white p-3 text-sm font-bold text-[#14201A] transition-colors hover:border-[#C49A3C] hover:bg-[#FBFAF7]">
       {label}
-      <svg className="h-4 w-4 rotate-180 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <svg className={`h-4 w-4 text-[#C49A3C] ${dir === 'rtl' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
       </svg>
     </Link>

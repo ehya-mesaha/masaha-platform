@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import LanguageToggle from '@/components/i18n/LanguageToggle'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
+import type { TranslationKey } from '@/lib/i18n'
 
 type Role = 'SELLER' | 'BUYER' | 'ADMIN'
 
@@ -35,60 +38,63 @@ const ICONS = {
   reports: 'M3 3v18h18M7 16l3-3 3 2 5-7',
 }
 
-const sellerLinks = [
-  { href: '/seller/dashboard', label: 'لوحة التحكم', icon: ICONS.dashboard },
-  { href: '/seller/spaces', label: 'مساحاتي', icon: ICONS.spaces },
-  { href: '/seller/spaces/new', label: 'إضافة مساحة', icon: ICONS.add },
-  { href: '/seller/bookings', label: 'طلبات الحجز', icon: ICONS.bookings },
-  { href: '/seller/conversations', label: 'المحادثات', icon: ICONS.messages },
-  { href: '/seller/settings', label: 'الإعدادات', icon: ICONS.settings },
-  { href: '/policies', label: 'السياسات والأحكام', icon: ICONS.policies },
+type SidebarLink = {
+  href: string
+  labelKey: TranslationKey
+  icon: string
+}
+
+const sellerLinks: SidebarLink[] = [
+  { href: '/seller/dashboard', labelKey: 'dashboard', icon: ICONS.dashboard },
+  { href: '/seller/spaces', labelKey: 'mySpaces', icon: ICONS.spaces },
+  { href: '/seller/spaces/new', labelKey: 'addSpace', icon: ICONS.add },
+  { href: '/seller/bookings', labelKey: 'bookingRequests', icon: ICONS.bookings },
+  { href: '/seller/conversations', labelKey: 'conversations', icon: ICONS.messages },
+  { href: '/seller/settings', labelKey: 'settings', icon: ICONS.settings },
+  { href: '/policies', labelKey: 'policies', icon: ICONS.policies },
 ]
 
-const buyerLinks = [
-  { href: '/buyer/bookings', label: 'حجوزاتي', icon: ICONS.bookings },
-  { href: '/spaces', label: 'تصفح المساحات', icon: ICONS.search },
-  { href: '/buyer/space-needs', label: 'احتياج مساحة', icon: ICONS.needs },
-  { href: '/buyer/conversations', label: 'المحادثات', icon: ICONS.messages },
-  { href: '/buyer/settings', label: 'الإعدادات', icon: ICONS.settings },
-  { href: '/policies', label: 'السياسات والأحكام', icon: ICONS.policies },
+const buyerLinks: SidebarLink[] = [
+  { href: '/buyer/bookings', labelKey: 'myBookings', icon: ICONS.bookings },
+  { href: '/spaces', labelKey: 'navSpaces', icon: ICONS.search },
+  { href: '/buyer/space-needs', labelKey: 'needSpace', icon: ICONS.needs },
+  { href: '/buyer/conversations', labelKey: 'conversations', icon: ICONS.messages },
+  { href: '/buyer/settings', labelKey: 'settings', icon: ICONS.settings },
+  { href: '/policies', labelKey: 'policies', icon: ICONS.policies },
 ]
 
-const adminLinks = [
-  { href: '/admin/dashboard', label: 'لوحة التحكم', icon: ICONS.dashboard },
-  { href: '/admin/spaces', label: 'المساحات', icon: ICONS.spaces },
-  { href: '/admin/users', label: 'المستخدمون', icon: ICONS.users },
-  { href: '/admin/bookings', label: 'الحجوزات', icon: ICONS.bookings },
-  { href: '/admin/space-needs', label: 'احتياجات المساحات', icon: ICONS.needs },
-  { href: '/admin/reports', label: 'التقارير المالية', icon: ICONS.reports },
-  { href: '/admin/conversations', label: 'المحادثات', icon: ICONS.messages },
-  { href: '/admin/categories', label: 'التصنيفات', icon: ICONS.tags },
-  { href: '/admin/settings', label: 'الإعدادات', icon: ICONS.settings },
+const adminLinks: SidebarLink[] = [
+  { href: '/admin/dashboard', labelKey: 'dashboard', icon: ICONS.dashboard },
+  { href: '/admin/spaces', labelKey: 'spaces', icon: ICONS.spaces },
+  { href: '/admin/users', labelKey: 'users', icon: ICONS.users },
+  { href: '/admin/bookings', labelKey: 'bookings', icon: ICONS.bookings },
+  { href: '/admin/space-needs', labelKey: 'spaceNeeds', icon: ICONS.needs },
+  { href: '/admin/reports', labelKey: 'reports', icon: ICONS.reports },
+  { href: '/admin/conversations', labelKey: 'conversations', icon: ICONS.messages },
+  { href: '/admin/categories', labelKey: 'categories', icon: ICONS.tags },
+  { href: '/admin/settings', labelKey: 'settings', icon: ICONS.settings },
 ]
 
-const roleLinks: Record<Role, typeof sellerLinks> = {
+const roleLinks: Record<Role, SidebarLink[]> = {
   SELLER: sellerLinks,
   BUYER: buyerLinks,
   ADMIN: adminLinks,
 }
 
-const roleLabel: Record<Role, string> = {
-  SELLER: 'صاحب مساحة',
-  BUYER: 'مستأجر',
-  ADMIN: 'مدير النظام',
+const roleLabelKey: Record<Role, TranslationKey> = {
+  SELLER: 'roleSeller',
+  BUYER: 'roleBuyer',
+  ADMIN: 'roleAdmin',
 }
 
 export default function DashboardSidebarPro({ role, userName, avatarUrl }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { dir, t } = useLanguage()
   const links = roleLinks[role]
   const [unreadConversations, setUnreadConversations] = useState(0)
   const [open, setOpen] = useState(false)
   const settingsHref = role === 'ADMIN' ? '/admin/settings' : role === 'SELLER' ? '/seller/settings' : '/buyer/settings'
-
-  useEffect(() => {
-    setOpen(false)
-  }, [pathname])
 
   useEffect(() => {
     let cancelled = false
@@ -128,7 +134,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#1B3A2D]/10 bg-[#1B3A2D] px-4 py-3 lg:hidden">
         <button
           onClick={() => setOpen(true)}
-          aria-label="فتح القائمة"
+          aria-label="Open menu"
           className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:bg-white/10"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -136,7 +142,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
           </svg>
         </button>
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-base font-extrabold text-white">مساحة</span>
+          <span className="text-base font-extrabold text-white">{t('brand')}</span>
         </Link>
         <Link href={settingsHref} className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-sm font-extrabold text-[#0F2219]">
           {avatarUrl ? (
@@ -156,8 +162,10 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
       )}
 
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-72 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
-          open ? 'translate-x-0' : 'max-lg:translate-x-full'
+        className={`fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
+          dir === 'rtl' ? 'right-0' : 'left-0'
+        } ${
+          open ? 'translate-x-0' : dir === 'rtl' ? 'max-lg:translate-x-full' : 'max-lg:-translate-x-full'
         }`}
       >
       <div className="pointer-events-none absolute -end-16 top-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
@@ -172,13 +180,13 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
               </svg>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-lg font-extrabold text-white">مساحة</span>
-              <span className="text-[9px] text-white/40">MASAHA</span>
+              <span className="text-lg font-extrabold text-white">{t('brand')}</span>
+              <span className="text-[9px] text-white/40">{t('brandSub')}</span>
             </div>
           </Link>
           <button
             onClick={() => setOpen(false)}
-            aria-label="إغلاق القائمة"
+            aria-label="Close menu"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 lg:hidden"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -187,7 +195,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
           </button>
         </div>
 
-        <Link href={settingsHref} className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3 transition-colors hover:bg-white/[0.08]">
+        <Link href={settingsHref} onClick={() => setOpen(false)} className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3 transition-colors hover:bg-white/[0.08]">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-lg font-extrabold text-[#0F2219]">
             {avatarUrl ? (
               <img src={avatarUrl} alt={userName || 'profile'} className="h-full w-full object-cover" />
@@ -197,13 +205,16 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">{userName}</p>
-            <p className="text-[11px] font-medium text-white/50">{roleLabel[role]}</p>
+            <p className="text-[11px] font-medium text-white/50">{t(roleLabelKey[role])}</p>
           </div>
         </Link>
       </div>
 
       <nav className="relative flex flex-1 flex-col gap-0.5 px-3 py-5">
-        <p className="mb-2 px-3 text-[10px] font-bold uppercase text-white/40">القائمة</p>
+        <div className="mb-3 px-3">
+          <LanguageToggle className="w-full justify-between" compact={false} />
+        </div>
+        <p className="mb-2 px-3 text-[10px] font-bold uppercase text-white/40">{t('menu')}</p>
         {links.map((link) => {
           const isConversations = link.href.includes('/conversations')
           const isActive =
@@ -215,6 +226,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setOpen(false)}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 isActive
                   ? 'bg-white text-[#1B3A2D] shadow-sm'
@@ -224,7 +236,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
               <span className={isActive ? 'text-[#1B3A2D]' : 'text-[#C49A3C]/80'}>
                 <SvgIcon d={link.icon} />
               </span>
-              <span>{link.label}</span>
+              <span>{t(link.labelKey)}</span>
               {isConversations && unreadConversations > 0 && (
                 <span className={`ms-auto flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-extrabold ${
                   isActive ? 'bg-[#C49A3C] text-[#14201A]' : 'bg-[#C49A3C] text-[#0F2219]'
@@ -233,7 +245,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
                 </span>
               )}
               {isActive && (
-                <svg className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} h-3.5 w-3.5 rotate-180`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <svg className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} h-3.5 w-3.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               )}
@@ -248,7 +260,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-red-500/15 hover:text-red-300"
         >
           <span className="text-[#C49A3C]/80"><SvgIcon d={ICONS.logout} /></span>
-          تسجيل الخروج
+          {t('logout')}
         </button>
       </div>
       </aside>

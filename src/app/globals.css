@@ -18,6 +18,10 @@
 
 html { direction: rtl; scroll-behavior: smooth; }
 
+html[dir="ltr"] {
+  direction: ltr;
+}
+
 body {
   font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
   background:
@@ -27,6 +31,81 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 0;
+}
+
+html[dir="ltr"] body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
+}
+
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(232, 227, 216, 0.95);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--green-dark);
+  border-radius: 999px;
+  padding: 0.25rem 0.35rem 0.25rem 0.75rem;
+  min-height: 2.25rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 10px 24px -20px rgba(15, 34, 25, 0.5);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
+}
+
+html[dir="rtl"] .language-toggle {
+  padding: 0.25rem 0.75rem 0.25rem 0.35rem;
+}
+
+.language-toggle:hover {
+  border-color: rgba(196, 154, 60, 0.7);
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.language-toggle-track {
+  position: relative;
+  display: inline-flex;
+  width: 3.25rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1B3A2D, #0F2219);
+  padding: 0.18rem;
+}
+
+.language-toggle-thumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.28rem;
+  border-radius: 999px;
+  background: #C49A3C;
+  color: #0F2219;
+  font-size: 0.58rem;
+  font-weight: 900;
+  transition: transform 0.22s ease;
+}
+
+.language-toggle-label {
+  line-height: 1;
+}
+
+.language-toggle-compact {
+  gap: 0;
+  padding: 0.2rem;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+html[dir="rtl"] .language-toggle-thumb.translate-x-6 {
+  transform: translateX(1.55rem);
+}
+
+html[dir="ltr"] .language-toggle-thumb.translate-x-6 {
+  transform: translateX(1.55rem);
 }
 
 h1, h2, h3, h4, h5, h6 {

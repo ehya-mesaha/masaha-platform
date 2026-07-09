@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
+import type { TranslationKey } from '@/lib/i18n'
 
 type SpaceType = { id: string; name: string }
 
@@ -27,19 +29,20 @@ type Props = {
 }
 
 const DAY_OPTIONS = [
-  { value: '0', label: 'الأحد' },
-  { value: '1', label: 'الإثنين' },
-  { value: '2', label: 'الثلاثاء' },
-  { value: '3', label: 'الأربعاء' },
-  { value: '4', label: 'الخميس' },
-  { value: '5', label: 'الجمعة' },
-  { value: '6', label: 'السبت' },
-]
+  { value: '0', labelKey: 'sunday' },
+  { value: '1', labelKey: 'monday' },
+  { value: '2', labelKey: 'tuesday' },
+  { value: '3', labelKey: 'wednesday' },
+  { value: '4', labelKey: 'thursday' },
+  { value: '5', labelKey: 'friday' },
+  { value: '6', labelKey: 'saturday' },
+] satisfies { value: string; labelKey: TranslationKey }[]
 
 const MAX_PRICE = 5000
 
 export default function SpacesFiltersPro({ types, params }: Props) {
   const router = useRouter()
+  const { locale, t } = useLanguage()
   const initialDays = useMemo(() => new Set((params.days || '').split(',').filter(Boolean)), [params.days])
   const [city, setCity] = useState(params.city || '')
   const [typeId, setTypeId] = useState(params.typeId || '')
@@ -93,29 +96,29 @@ export default function SpacesFiltersPro({ types, params }: Props) {
     <div className="premium-card sticky top-20 p-5 animate-in">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h3 className="font-extrabold text-[#14201A]">فلترة النتائج</h3>
-          <p className="mt-1 text-xs text-[#6B7566]">اختر ما يناسب احتياجك بدقة</p>
+          <h3 className="font-extrabold text-[#14201A]">{t('filterResults')}</h3>
+          <p className="mt-1 text-xs text-[#6B7566]">{t('filterHint')}</p>
         </div>
         <Link href="/spaces" className="text-xs font-semibold text-[#C49A3C] hover:text-[#1B3A2D]">
-          مسح
+          {t('clear')}
         </Link>
       </div>
 
       <div className="space-y-5">
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">المدينة أو الحي</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('cityDistrict')}</label>
           <input
             value={city}
             onChange={e => setCity(e.target.value)}
-            placeholder="الرياض، جدة..."
+            placeholder={t('cityPlaceholder')}
             className="field"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">نوع المساحة</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('spaceType')}</label>
           <select value={typeId} onChange={e => setTypeId(e.target.value)} className="field bg-white">
-            <option value="">جميع الأنواع</option>
+            <option value="">{t('allTypes')}</option>
             {types.map(type => (
               <option key={type.id} value={type.id}>{type.name}</option>
             ))}
@@ -124,9 +127,9 @@ export default function SpacesFiltersPro({ types, params }: Props) {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-xs font-bold text-[#4A554D]">نطاق السعر للساعة</label>
+            <label className="text-xs font-bold text-[#4A554D]">{t('hourlyPriceRange')}</label>
             <span className="text-[11px] font-semibold text-[#1B3A2D]">
-              {minPrice.toLocaleString('ar-SA')} - {maxPrice.toLocaleString('ar-SA')} ر.س
+              {minPrice.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} - {maxPrice.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} {locale === 'ar' ? 'ر.س' : 'SAR'}
             </span>
           </div>
           <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] px-3 py-5">
@@ -144,7 +147,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
                 value={minPrice}
                 onChange={e => updateMin(Number(e.target.value))}
                 className="dual-range-input"
-                aria-label="الحد الأدنى للسعر"
+                aria-label={t('minPrice')}
               />
               <input
                 type="range"
@@ -154,7 +157,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
                 value={maxPrice}
                 onChange={e => updateMax(Number(e.target.value))}
                 className="dual-range-input"
-                aria-label="الحد الأعلى للسعر"
+                aria-label={t('maxPrice')}
               />
             </div>
           </div>
@@ -165,7 +168,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
               value={minPrice}
               onChange={e => updateMin(Number(e.target.value || 0))}
               className="field py-2 text-xs"
-              aria-label="أقل سعر"
+              aria-label={t('minPrice')}
             />
             <input
               type="number"
@@ -173,35 +176,35 @@ export default function SpacesFiltersPro({ types, params }: Props) {
               value={maxPrice}
               onChange={e => updateMax(Number(e.target.value || 0))}
               className="field py-2 text-xs"
-              aria-label="أعلى سعر"
+              aria-label={t('maxPrice')}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">التسعير</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('pricePeriod')}</label>
             <select value={pricePeriod} onChange={e => setPricePeriod(e.target.value)} className="field bg-white">
-              <option value="">الكل</option>
-              <option value="hour">بالساعة</option>
-              <option value="day">باليوم</option>
+              <option value="">{t('all')}</option>
+              <option value="hour">{t('perHour')}</option>
+              <option value="day">{t('perDay')}</option>
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">السعة</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('capacity')}</label>
             <input
               type="number"
               min={1}
               value={capacity}
               onChange={e => setCapacity(e.target.value)}
-              placeholder="عدد الأشخاص"
+              placeholder={t('capacityPlaceholder')}
               className="field"
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#4A554D]">الأيام المتاحة</label>
+          <label className="mb-2 block text-xs font-bold text-[#4A554D]">{t('availableDays')}</label>
           <div className="grid grid-cols-2 gap-2">
             {DAY_OPTIONS.map(day => {
               const active = selectedDays.has(day.value)
@@ -216,7 +219,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
                       : 'border-[#E8E3D8] bg-white text-[#4A554D] hover:border-[#C49A3C]'
                   }`}
                 >
-                  {day.label}
+                  {t(day.labelKey)}
                 </button>
               )
             })}
@@ -224,33 +227,33 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">تاريخ محدد</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('specificDate')}</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className="field" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">من</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('from')}</label>
             <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="field" />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">إلى</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('to')}</label>
             <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="field" />
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">الترتيب</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('sort')}</label>
           <select value={sort} onChange={e => setSort(e.target.value)} className="field bg-white">
-            <option value="newest">الأحدث</option>
-            <option value="priceAsc">الأقل سعرا</option>
-            <option value="priceDesc">الأعلى سعرا</option>
-            <option value="capacityDesc">الأكبر سعة</option>
+            <option value="newest">{t('newest')}</option>
+            <option value="priceAsc">{t('priceAsc')}</option>
+            <option value="priceDesc">{t('priceDesc')}</option>
+            <option value="capacityDesc">{t('capacityDesc')}</option>
           </select>
         </div>
 
         <button type="button" onClick={applyFilters} className="btn-primary w-full rounded-xl py-3 text-sm font-semibold">
-          تطبيق الفلاتر
+          {t('applyFilters')}
         </button>
       </div>
     </div>

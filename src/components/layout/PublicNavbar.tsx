@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import LanguageToggle from '@/components/i18n/LanguageToggle'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 type User = {
   id: string
@@ -15,6 +17,7 @@ export default function PublicNavbar() {
   const [user, setUser] = useState<User>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { t } = useLanguage()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -47,10 +50,16 @@ export default function PublicNavbar() {
   const isActive = (href: string) => pathname === href
 
   const navLinks = [
-    { href: '/', label: 'الرئيسية' },
-    { href: '/spaces', label: 'تصفح المساحات' },
-    { href: '/#how-it-works', label: 'كيف نعمل' },
+    { href: '/' },
+    { href: '/spaces' },
+    { href: '/#how-it-works' },
   ]
+
+  function getNavLabel(href: string) {
+    if (href === '/') return t('navHome')
+    if (href === '/spaces') return t('navSpaces')
+    return t('navHow')
+  }
 
   return (
     <nav
@@ -70,8 +79,8 @@ export default function PublicNavbar() {
               </svg>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-lg font-extrabold text-[#1B3A2D]">مساحة</span>
-              <span className="text-[10px] text-[#6B7566] font-medium">MASAHA</span>
+              <span className="text-lg font-extrabold text-[#1B3A2D]">{t('brand')}</span>
+              <span className="text-[10px] text-[#6B7566] font-medium">{t('brandSub')}</span>
             </div>
           </Link>
 
@@ -87,7 +96,7 @@ export default function PublicNavbar() {
                     : 'text-[#4A554D] hover:text-[#1B3A2D] hover:bg-[#1B3A2D]/5'
                 }`}
               >
-                {link.label}
+                {getNavLabel(link.href)}
               </Link>
             ))}
             {!user && (
@@ -95,13 +104,14 @@ export default function PublicNavbar() {
                 href="/auth/register?seller=1"
                 className="px-4 py-2 rounded-lg text-sm font-medium text-[#4A554D] hover:text-[#1B3A2D] hover:bg-[#1B3A2D]/5 transition-all"
               >
-                أضف مساحتك
+                {t('navAddSpace')}
               </Link>
             )}
           </div>
 
           {/* Auth buttons */}
           <div className="hidden md:flex items-center gap-2">
+            <LanguageToggle />
             {user ? (
               <>
                 <Link
@@ -117,7 +127,7 @@ export default function PublicNavbar() {
                   onClick={handleLogout}
                   className="text-sm text-[#6B7566] hover:text-red-600 px-3 py-2 transition-colors"
                 >
-                  خروج
+                  {t('signOut')}
                 </button>
               </>
             ) : (
@@ -126,13 +136,13 @@ export default function PublicNavbar() {
                   href="/auth/login"
                   className="text-sm font-medium text-[#1B3A2D] px-4 py-2 rounded-lg hover:bg-[#1B3A2D]/5 transition-colors"
                 >
-                  تسجيل الدخول
+                  {t('login')}
                 </Link>
                 <Link
                   href="/auth/register"
                   className="btn-primary text-sm font-semibold px-5 py-2.5 rounded-lg"
                 >
-                  حساب جديد
+                  {t('register')}
                 </Link>
               </>
             )}
@@ -156,6 +166,9 @@ export default function PublicNavbar() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-[#ECE6D8] py-3 flex flex-col gap-1 fade-up">
+            <div className="px-3 pb-2">
+              <LanguageToggle className="w-full justify-between" />
+            </div>
             {navLinks.map(link => (
               <Link
                 key={link.href}
@@ -163,25 +176,25 @@ export default function PublicNavbar() {
                 onClick={() => setMenuOpen(false)}
                 className="text-[#1B3A2D] text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-[#1B3A2D]/5"
               >
-                {link.label}
+                {getNavLabel(link.href)}
               </Link>
             ))}
             {user ? (
               <>
                 <Link href={getDashboardLink()} className="text-[#1B3A2D] text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-[#1B3A2D]/5">
-                  لوحة التحكم
+                  {t('dashboard')}
                 </Link>
-                <button onClick={handleLogout} className="text-right text-red-600 text-sm font-medium px-3 py-2.5">
-                  تسجيل الخروج
+                <button onClick={handleLogout} className="text-start text-red-600 text-sm font-medium px-3 py-2.5">
+                  {t('logout')}
                 </button>
               </>
             ) : (
               <div className="flex gap-2 pt-2 border-t border-[#ECE6D8] mt-2">
                 <Link href="/auth/login" className="flex-1 text-center text-sm font-medium border border-[#ECE6D8] py-2.5 rounded-lg">
-                  دخول
+                  {t('login')}
                 </Link>
                 <Link href="/auth/register" className="flex-1 text-center btn-primary text-sm font-semibold py-2.5 rounded-lg">
-                  حساب جديد
+                  {t('register')}
                 </Link>
               </div>
             )}
