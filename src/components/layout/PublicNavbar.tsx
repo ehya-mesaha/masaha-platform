@@ -11,6 +11,7 @@ type User = {
   name: string
   email: string
   role: string
+  avatarUrl?: string | null
 } | null
 
 export default function PublicNavbar() {
@@ -118,8 +119,13 @@ export default function PublicNavbar() {
                   href={getDashboardLink()}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F7F3EB] transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#1B3A2D] text-white text-sm font-bold flex items-center justify-center">
-                    {user.name.charAt(0)}
+                  <div className="w-8 h-8 rounded-full bg-[#1B3A2D] text-white text-sm font-bold flex items-center justify-center overflow-hidden">
+                    {user.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                    ) : (
+                      user.name.charAt(0)
+                    )}
                   </div>
                   <span className="text-sm font-medium text-[#1B3A2D]">{user.name}</span>
                 </Link>

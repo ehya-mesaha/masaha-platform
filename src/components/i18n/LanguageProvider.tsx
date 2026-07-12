@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { getDirection, Locale, TranslationKey, translations } from '@/lib/i18n'
+import { translateDomText } from '@/lib/domTranslations'
 
 type LanguageContextValue = {
   locale: Locale
@@ -12,6 +13,11 @@ type LanguageContextValue = {
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
+const originalText = new WeakMap<Text, string>()
+const originalAttributes = new WeakMap<Element, Partial<Record<'placeholder' | 'aria-label' | 'title', string>>>()
+const ignoredTags = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'TEXTAREA', 'CODE', 'PRE'])
+const translatedAttributes = ['placeholder', 'aria-label', 'title'] as const
+const arabicTextPattern = /[\u0600-\u06FF]/
 
 function getInitialLocale(): Locale {
   if (typeof document === 'undefined') return 'ar'
@@ -36,6 +42,71 @@ export default function LanguageProvider({ children }: { children: React.ReactNo
     window.localStorage.setItem('masaha_locale', locale)
     document.cookie = `masaha_locale=${locale}; path=/; max-age=31536000; SameSite=Lax`
   }, [locale, dir])
+
+  useEffect(() => {
+    const shouldSkip = (node: Node) => {
+      const parent = node.parentElement
+      return !parent || ignoredTags.has(parent.tagName)
+    }
+
+    const applyNode = (node: Node) => {
+      if (shouldSkip(node)) return
+
+      if (node.nodeType === Node.TEXT_NODE) {
+        const textNode = node as Text
+        const current = textNode.nodeValue ?? ''
+        const storedSource = originalText.get(textNode)
+        if (!storedSource && !arabicTextPattern.test(current)) return
+        const source = storedSource ?? current
+        if (!storedSource) originalText.set(textNode, source)
+        const nextValue = locale === 'en' ? translateDomText(source) : source
+        if (textNode.nodeValue !== nextValue) textNode.nodeValue = nextValue
+        return
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) return
+      const element = node as Element
+      if (ignoredTags.has(element.tagName)) return
+
+      translatedAttributes.forEach(attr => {
+        if (!element.hasAttribute(attr)) return
+        const current = element.getAttribute(attr) ?? ''
+        const original = originalAttributes.get(element) ?? {}
+        const storedSource = original[attr]
+        if (!storedSource && !arabicTextPattern.test(current)) return
+        const source = storedSource ?? current
+        if (!storedSource) {
+          original[attr] = source
+          originalAttributes.set(element, original)
+        }
+        const nextValue = locale === 'en' ? translateDomText(source) : source
+        if (current !== nextValue) element.setAttribute(attr, nextValue)
+      })
+
+      element.childNodes.forEach(applyNode)
+    }
+
+    const applyPageTranslations = () => applyNode(document.body)
+    applyPageTranslations()
+
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(applyNode)
+        if (mutation.type === 'characterData') applyNode(mutation.target)
+        if (mutation.type === 'attributes') applyNode(mutation.target)
+      })
+    })
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: [...translatedAttributes],
+      characterData: true,
+      childList: true,
+      subtree: true,
+    })
+
+    return () => observer.disconnect()
+  }, [locale])
 
   const value = useMemo<LanguageContextValue>(() => ({
     locale,
