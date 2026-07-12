@@ -34,99 +34,80 @@ async function getTypes() {
 
 export default async function HomePage() {
   const [spaces, types] = await Promise.all([getFeaturedSpaces(), getTypes()])
-  const heroImageUrl = spaces[0]?.images[0]?.url
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F3EB]">
+    <div className="min-h-screen flex flex-col bg-[#F8F6F1]">
       <PublicNavbar />
 
       {/* Hero Section */}
-      <section
-        className="relative overflow-hidden hero-pattern text-white"
-        style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(15,34,25,0.96) 0%, rgba(27,58,45,0.86) 48%, rgba(15,34,25,0.46) 100%), url(${heroImageUrl})` } : undefined}
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,34,25,0)_0%,rgba(15,34,25,0.82)_100%)] pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#C49A3C]/60 to-transparent" />
+      <section className="home-hero relative overflow-hidden text-white">
+        <div className="absolute inset-0 home-hero-photo" aria-hidden="true" />
+        <div className="absolute inset-0 home-hero-overlay" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#D8B35B]/70 to-transparent" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-28 pb-24 lg:pb-36">
-          <div className="max-w-3xl fade-up">
-            <div className="eyebrow mb-6">
-              <span>منصة مساحة</span>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-16 lg:pb-20">
+          <div className="max-w-4xl fade-up">
+            <div className="inline-flex items-center gap-3 mb-6 text-[11px] sm:text-xs font-bold uppercase text-[#E4C878]">
+              <span className="h-px w-8 bg-[#C49A3C]" />
+              <span>منصة مساحة لحجز المساحات المرنة</span>
             </div>
-            <h1 className="font-display text-[42px] leading-[1.15] sm:text-5xl lg:text-6xl font-extrabold text-white mb-6">
-              مساحات تلهم إبداعك،
+            <h1 className="font-display max-w-4xl text-[42px] leading-[1.12] sm:text-6xl lg:text-[68px] font-extrabold text-white mb-6">
+              المكان المناسب،
               <br />
-              <span className="bg-gradient-to-l from-[#E8D6A8] via-[#C49A3C] to-[#D4AA4C] bg-clip-text text-transparent">
-                وتلبي احتياجاتك
-              </span>
+              <span className="text-[#D9B65C]">لعمل يستحق الأفضل.</span>
             </h1>
-            <p className="text-white/75 text-lg leading-relaxed max-w-2xl mb-10">
-              اكتشف واحجز أفضل المساحات المكتبية، قاعات التدريب، والاستوديوهات المرنة
-              بكل سهولة وبدون التزامات طويلة الأمد.
+            <p className="text-white/78 text-base sm:text-lg leading-8 max-w-2xl mb-9">
+              اكتشف مساحات عمل وقاعات تدريب واستوديوهات مختارة بعناية، واحجزها بثقة من منصة واحدة.
             </p>
 
-            {/* Search Bar */}
-            <div className="bg-white/96 backdrop-blur rounded-2xl p-2 shadow-2xl border border-white/35 max-w-4xl hover-lift">
-              <form action="/spaces" method="get" className="flex flex-col md:flex-row gap-1 md:gap-0 md:divide-x md:divide-x-reverse divide-[#ECE6D8]">
-                <div className="flex-1 px-4 py-3 md:py-2">
-                  <label className="block text-[11px] text-[#6B7566] mb-1 font-bold tracking-wider uppercase">
-                    الموقع
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    placeholder="المدينة، الحي، أو المعلم"
-                    className="w-full text-[#14201A] text-sm focus:outline-none bg-transparent placeholder:text-[#B5B0A2]"
-                  />
-                </div>
-                <div className="flex-1 px-4 py-3 md:py-2">
-                  <label className="block text-[11px] text-[#6B7566] mb-1 font-bold tracking-wider uppercase">
-                    نوع المساحة
-                  </label>
-                  <input
-                    type="text"
-                    name="type"
-                    placeholder="قاعة تدريب، مكتب..."
-                    className="w-full text-[#14201A] text-sm focus:outline-none bg-transparent placeholder:text-[#B5B0A2]"
-                  />
-                </div>
-                <div className="flex-1 px-4 py-3 md:py-2">
-                  <label className="block text-[11px] text-[#6B7566] mb-1 font-bold tracking-wider uppercase">
-                    التاريخ
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    className="w-full text-[#14201A] text-sm focus:outline-none bg-transparent placeholder:text-[#B5B0A2]"
-                  />
-                </div>
-                <div className="p-1 md:p-1.5 flex items-stretch">
-                  <button
-                    type="submit"
-                    className="btn-primary rounded-xl px-6 py-3 text-sm font-semibold whitespace-nowrap flex items-center gap-2 w-full justify-center"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <div className="home-search max-w-5xl">
+              <form action="/spaces" method="get" className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr_0.9fr_auto] items-stretch">
+                <label className="home-search-field">
+                  <span>الموقع</span>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#B28A32] flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 21s7-6.1 7-12A7 7 0 105 9c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>
+                    <input type="text" name="city" placeholder="المدينة أو الحي" />
+                  </span>
+                </label>
+                <label className="home-search-field">
+                  <span>نوع المساحة</span>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#B28A32] flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2"/></svg>
+                    <input type="text" name="type" placeholder="مكتب، قاعة، استوديو" />
+                  </span>
+                </label>
+                <label className="home-search-field">
+                  <span>التاريخ</span>
+                  <input type="date" name="date" />
+                </label>
+                <div className="p-2.5">
+                  <button type="submit" className="home-search-button">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-5.2-5.2m2.2-5.3a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0Z" /></svg>
                     ابحث الآن
                   </button>
                 </div>
               </form>
             </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-white/65">
+              {['مساحات موثقة', 'حجز مرن', 'دعم محلي'].map(item => (
+                <span key={item} className="inline-flex items-center gap-2">
+                  <svg className="w-4 h-4 text-[#D9B65C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 12 4 4L19 6" /></svg>
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* wave divider */}
-        <div className="absolute bottom-0 start-0 end-0 h-16 bg-gradient-to-b from-transparent to-[#F7F3EB]" />
       </section>
 
       {/* Category tabs */}
       {types.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10">
-          <div className="bg-white/95 backdrop-blur border border-[#ECE6D8] rounded-2xl p-3 flex gap-2 overflow-x-auto shadow-[0_20px_70px_-45px_rgba(15,34,25,0.55)] animate-in">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 relative z-10 w-full">
+          <div className="bg-white border border-[#E8E1D3] rounded-xl p-2.5 flex gap-2 overflow-x-auto shadow-[0_18px_50px_-38px_rgba(15,34,25,0.7)] animate-in">
             <Link
               href="/spaces"
-              className="flex-shrink-0 px-4 py-2 rounded-xl bg-[#1B3A2D] text-white text-sm font-semibold whitespace-nowrap"
+              className="flex-shrink-0 px-5 py-2.5 rounded-lg bg-[#1B3A2D] text-white text-sm font-semibold whitespace-nowrap"
             >
               جميع المساحات
             </Link>
@@ -134,7 +115,7 @@ export default async function HomePage() {
               <Link
                 key={t.id}
                 href={`/spaces?typeId=${t.id}`}
-                className="flex-shrink-0 px-4 py-2 rounded-xl text-[#4A554D] text-sm font-medium hover:bg-[#F7F3EB] transition-colors whitespace-nowrap"
+                className="flex-shrink-0 px-5 py-2.5 rounded-lg text-[#4A554D] text-sm font-medium hover:bg-[#F7F3EB] transition-colors whitespace-nowrap"
               >
                 {t.name}
               </Link>

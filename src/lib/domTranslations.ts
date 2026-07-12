@@ -1,6 +1,13 @@
 const exactTranslations: Record<string, string> = {
   'مساحة': 'Masaha',
   'منصة مساحة': 'Masaha Platform',
+  'منصة مساحة لحجز المساحات المرنة': 'Masaha Flexible Space Platform',
+  'المكان المناسب،': 'The Right Place,',
+  'لعمل يستحق الأفضل.': 'For Work That Deserves Better.',
+  'اكتشف مساحات عمل وقاعات تدريب واستوديوهات مختارة بعناية، واحجزها بثقة من منصة واحدة.': 'Discover carefully selected workspaces, training rooms, and studios, and book with confidence from one platform.',
+  'مكتب، قاعة، استوديو': 'Office, hall, or studio',
+  'حجز مرن': 'Flexible Booking',
+  'دعم محلي': 'Local Support',
   'منصة حجز المساحات المرنة': 'Flexible Space Booking Platform',
   'الرئيسية': 'Home',
   'تصفح المساحات': 'Browse Spaces',

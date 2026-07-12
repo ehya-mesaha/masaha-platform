@@ -46,7 +46,7 @@ export default function LanguageProvider({ children }: { children: React.ReactNo
   useEffect(() => {
     const shouldSkip = (node: Node) => {
       const parent = node.parentElement
-      return !parent || ignoredTags.has(parent.tagName)
+      return !parent || ignoredTags.has(parent.tagName) || Boolean(parent.closest('[data-no-translate="true"]'))
     }
 
     const applyNode = (node: Node) => {
@@ -56,6 +56,13 @@ export default function LanguageProvider({ children }: { children: React.ReactNo
         const textNode = node as Text
         const current = textNode.nodeValue ?? ''
         const storedSource = originalText.get(textNode)
+        if (storedSource && !arabicTextPattern.test(current)) {
+          const expectedTranslation = translateDomText(storedSource)
+          if (current !== expectedTranslation) {
+            originalText.delete(textNode)
+            return
+          }
+        }
         if (!storedSource && !arabicTextPattern.test(current)) return
         const source = storedSource ?? current
         if (!storedSource) originalText.set(textNode, source)
@@ -73,6 +80,14 @@ export default function LanguageProvider({ children }: { children: React.ReactNo
         const current = element.getAttribute(attr) ?? ''
         const original = originalAttributes.get(element) ?? {}
         const storedSource = original[attr]
+        if (storedSource && !arabicTextPattern.test(current)) {
+          const expectedTranslation = translateDomText(storedSource)
+          if (current !== expectedTranslation) {
+            delete original[attr]
+            originalAttributes.set(element, original)
+            return
+          }
+        }
         if (!storedSource && !arabicTextPattern.test(current)) return
         const source = storedSource ?? current
         if (!storedSource) {
