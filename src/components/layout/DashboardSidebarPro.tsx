@@ -162,14 +162,13 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
       )}
 
       <aside
-        className={`fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] via-[#1B3A2D] to-[#0F2219] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
+        className={`fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden border-white/[0.06] bg-[#10271E] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
           dir === 'rtl' ? 'right-0' : 'left-0'
         } ${
           open ? 'translate-x-0' : dir === 'rtl' ? 'max-lg:translate-x-full' : 'max-lg:-translate-x-full'
         }`}
       >
-      <div className="pointer-events-none absolute -end-16 top-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
-      <div className="pointer-events-none absolute -start-16 bottom-0 h-64 w-64 rounded-full bg-[#C49A3C]/5 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" />
 
       <div className="relative border-b border-white/[0.06] px-5 py-5">
         <div className="flex items-center justify-between">

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Card from '@/components/ui/Card'
 import Link from 'next/link'
-import Badge, { getSpaceStatusBadge, getBookingStatusBadge } from '@/components/ui/Badge'
+import Badge, { getBookingStatusBadge } from '@/components/ui/Badge'
 
 export default async function AdminDashboard() {
   let stats = {
@@ -51,14 +51,20 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">لوحة تحكم المدير</h1>
-        <p className="text-gray-500 mt-1">نظرة عامة على المنصة</p>
+    <div className="dashboard-page">
+      <div className="page-hero mb-8 p-7 animate-in">
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-2 text-xs font-bold text-[#D9B65C]">مركز إدارة مساحة</p>
+            <h1 className="font-display text-3xl font-extrabold text-white">كل ما يحدث في المنصة، بوضوح.</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">تابع نمو المستخدمين والمساحات والحجوزات، وراجع الطلبات التي تحتاج إلى قرار من مكان واحد.</p>
+          </div>
+          <Link href="/admin/reports" className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/[0.07] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white/[0.12]">فتح التقارير المالية</Link>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 stagger-grid">
         {[
           { label: 'إجمالي المستخدمين', value: stats.users, icon: '👥', color: 'text-blue-600' },
           { label: 'أصحاب المساحات', value: stats.sellers, icon: '🔑', color: 'text-purple-600' },
@@ -79,7 +85,7 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 motion-list">
         {/* Pending spaces */}
         <Card padding={false}>
           <div className="px-5 py-4 border-b border-[#E8E3D8] flex items-center justify-between">

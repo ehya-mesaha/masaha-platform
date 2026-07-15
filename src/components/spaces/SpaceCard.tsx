@@ -26,9 +26,9 @@ export default function SpaceCard({
   const priceLabel = pricePeriod === 'day' ? 'يوم' : 'ساعة'
 
   return (
-    <Link href={`/spaces/${id}`} className="card-elevated hover-lift overflow-hidden group block">
+    <Link href={`/spaces/${id}`} className="group block overflow-hidden rounded-[14px] border border-[#E4DED1] bg-white shadow-[0_22px_60px_-45px_rgba(15,34,25,.68)] transition-all duration-300 hover:-translate-y-1 hover:border-[#C49A3C]/55 hover:shadow-[0_32px_80px_-48px_rgba(15,34,25,.76)]">
       {/* Image */}
-      <div className="relative h-52 bg-gradient-to-br from-[#F7F3EB] to-[#ECE6D8] overflow-hidden">
+      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[#F7F3EB] to-[#ECE6D8]">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -45,13 +45,18 @@ export default function SpaceCard({
         )}
 
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2219]/55 via-[#0F2219]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2219]/60 via-transparent to-[#0F2219]/10 opacity-75 transition-opacity duration-500 group-hover:opacity-95" />
 
         {/* Type badge */}
         <div className="absolute top-3 end-3">
-          <span className="chip bg-white/95 backdrop-blur text-[#1B3A2D] shadow-sm border border-white">
+          <span className="chip border border-white/70 bg-white/92 text-[#1B3A2D] shadow-sm backdrop-blur">
             {type}
           </span>
+        </div>
+
+        <div className="absolute start-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-[#0F2219]/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+          <svg className="h-3 w-3 text-[#E4C878]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m5 12 4 4L19 6" /></svg>
+          مساحة معتمدة
         </div>
 
         {/* Capacity badge */}
@@ -68,7 +73,7 @@ export default function SpaceCard({
       </div>
 
       {/* Content */}
-      <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#fffdf9_100%)]">
+      <div className="bg-[linear-gradient(180deg,#fff_0%,#fffdf9_100%)] p-5">
         <h3 className="font-display font-extrabold text-[#14201A] text-lg mb-1.5 line-clamp-1 group-hover:text-[#1B3A2D]">
           {name}
         </h3>
@@ -80,7 +85,7 @@ export default function SpaceCard({
           <span className="truncate">{city}{district ? ` · ${district}` : ''}</span>
         </div>
 
-        <div className="pt-4 border-t border-dashed border-[#ECE6D8] flex items-end justify-between">
+        <div className="flex items-end justify-between border-t border-[#ECE6D8] pt-4">
           <div>
             <div className="flex items-baseline gap-1">
               <span className="font-display text-2xl font-extrabold text-[#14201A]">
@@ -92,10 +97,9 @@ export default function SpaceCard({
               لكل {priceLabel}
             </div>
           </div>
-          <div className="flex items-center gap-1 text-[#1B3A2D] text-xs font-semibold group-hover:gap-2 transition-all duration-300">
-            <span>عرض التفاصيل</span>
-            <svg className="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          <div className="grid h-9 w-9 place-items-center rounded-lg border border-[#DED6C7] text-[#1B3A2D] transition-all duration-300 group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white">
+            <svg className="h-4 w-4 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
             </svg>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import LanguageToggle from '@/components/i18n/LanguageToggle'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -43,14 +44,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="auth-shell flex">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-[45%] relative hero-pattern flex-col justify-between p-12 text-white overflow-hidden">
-        {/* Decorative */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 -start-16 w-72 h-72 rounded-full bg-[#C49A3C]/20 blur-3xl" />
-          <div className="absolute bottom-0 -end-20 w-96 h-96 rounded-full bg-[#C49A3C]/10 blur-3xl" />
-        </div>
+      <div className="auth-visual hidden overflow-hidden p-12 text-white lg:flex lg:w-[46%] lg:flex-col lg:justify-between">
 
         <Link href="/" className="relative flex items-center gap-3 group">
           <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur border border-white/10 flex items-center justify-center">
@@ -64,29 +60,34 @@ export default function LoginPage() {
           </div>
         </Link>
 
-        <div className="relative fade-up">
+        <div className="relative max-w-xl fade-up">
           <div className="eyebrow mb-6"><span>مرحباً بعودتك</span></div>
           <h2 className="font-display text-4xl lg:text-5xl font-extrabold leading-tight mb-5">
             مساحتك،
             <br />
             بوابتك للنجاح.
           </h2>
-          <p className="text-white/70 text-base leading-relaxed max-w-md">
+          <p className="max-w-md text-base leading-8 text-white/72">
             قم بإدارة مساحاتك، متابعة حجوزاتك، وتنمية أعمالك بكل سهولة واحترافية من خلال لوحة تحكم متكاملة.
           </p>
+          <div className="mt-8 flex items-center gap-3 border-t border-white/15 pt-6 text-xs text-white/60">
+            <span className="h-8 w-px bg-[#C49A3C]" />
+            منصة واحدة تجمع البحث والحجز والتواصل وإدارة المساحات.
+          </div>
         </div>
 
         <div className="relative flex items-center justify-between text-xs text-white/50">
           <span>© {new Date().getFullYear()} مساحة</span>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-white/80">الخصوصية</a>
-            <a href="#" className="hover:text-white/80">الشروط</a>
+            <Link href="/policies#privacy" className="hover:text-white/80">الخصوصية</Link>
+            <Link href="/policies#terms" className="hover:text-white/80">الشروط</Link>
           </div>
         </div>
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-[#F7F3EB] bg-paper">
+      <div className="relative flex flex-1 items-center justify-center bg-[#F7F3EB] p-6 lg:p-12">
+        <div className="absolute end-6 top-6 lg:end-10 lg:top-8"><LanguageToggle /></div>
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8 flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#244A3A] to-[#0F2219] flex items-center justify-center">
@@ -97,7 +98,7 @@ export default function LoginPage() {
             <span className="text-2xl font-extrabold text-[#1B3A2D]">مساحة</span>
           </div>
 
-          <div className="card-elevated p-8 lg:p-10">
+          <div className="auth-form-card p-8 lg:p-10">
             <h1 className="font-display text-3xl font-extrabold text-[#14201A] mb-1.5">تسجيل الدخول</h1>
             <p className="text-[#6B7566] text-sm mb-7">أدخل بياناتك للوصول إلى لوحة التحكم</p>
 
@@ -136,9 +137,6 @@ export default function LoginPage() {
                   <label className="block text-xs font-bold text-[#4A554D] tracking-wide">
                     كلمة المرور
                   </label>
-                  <Link href="#" className="text-xs text-[#C49A3C] font-semibold hover:underline">
-                    نسيت كلمة المرور؟
-                  </Link>
                 </div>
                 <div className="relative">
                   <button

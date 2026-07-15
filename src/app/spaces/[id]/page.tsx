@@ -171,40 +171,61 @@ export default function SpaceDetailPage() {
     <div className="min-h-screen flex flex-col bg-paper">
       <PublicNavbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 animate-in">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-28 pt-6 sm:px-6 sm:pb-12 lg:px-8 lg:py-10 animate-in">
+        <nav className="mb-5 flex items-center gap-2 text-xs text-[#778078]" aria-label="مسار الصفحة">
+          <Link href="/" className="transition-colors hover:text-[#1B3A2D]">الرئيسية</Link>
+          <svg className="h-3 w-3 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m9 5 7 7-7 7" /></svg>
+          <Link href="/spaces" className="transition-colors hover:text-[#1B3A2D]">المساحات</Link>
+          <svg className="h-3 w-3 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m9 5 7 7-7 7" /></svg>
+          <span className="max-w-44 truncate font-semibold text-[#14201A]">{space.name}</span>
+        </nav>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-4">
             {/* Image Gallery */}
-            <div className="mb-2">
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-[0_26px_80px_-45px_rgba(15,34,25,0.65)]">
+            <div className="mb-4">
+              <div className="space-detail-gallery">
                 {sortedImages.length > 0 ? (
-                  <img src={sortedImages[activeImage]?.url} alt={space.name} className="w-full h-full object-cover" />
+                  <button type="button" className="space-detail-gallery-main" aria-label="الصورة الرئيسية">
+                    <img src={sortedImages[activeImage]?.url} alt={space.name} />
+                    <span className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0F2219]/55 to-transparent" />
+                    <span className="absolute bottom-4 start-4 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-xs font-bold text-white backdrop-blur-md">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V6.75A2.25 2.25 0 0 1 5.25 4.5h13.5A2.25 2.25 0 0 1 21 6.75v9.75m-18 0v.75a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 17.25v-.75M3 16.5l5.25-5.25 3.75 3.75 2.25-2.25L21 16.5M14.25 8.25h.008v.008h-.008V8.25Z" /></svg>
+                      {activeImage + 1} / {sortedImages.length}
+                    </span>
+                  </button>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1B3A2D]/10 to-[#C49A3C]/10">
+                  <div className="space-detail-gallery-main flex items-center justify-center bg-gradient-to-br from-[#1B3A2D]/10 to-[#C49A3C]/10">
                     <svg className="w-24 h-24 text-[#1B3A2D]/20" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
                     </svg>
                   </div>
                 )}
-              </div>
-              {sortedImages.length > 1 && (
-                <div className="flex gap-2 mt-3">
-                  {sortedImages.map((img, i) => (
-                    <button key={img.id} onClick={() => setActiveImage(i)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${i === activeImage ? 'border-[#1B3A2D]' : 'border-transparent'}`}>
-                      <img src={img.url} alt="" className="w-full h-full object-cover" />
+                {[1, 2].map(offset => {
+                  const index = sortedImages.length > offset ? offset : -1
+                  const image = index >= 0 ? sortedImages[index] : null
+                  return image ? (
+                    <button key={`${image.id}-${offset}`} type="button" onClick={() => setActiveImage(index)} aria-label={`عرض الصورة ${index + 1}`}>
+                      <img src={image.url} alt="" />
+                      {offset === 2 && sortedImages.length > 2 && (
+                        <span className="absolute inset-0 grid place-items-center bg-[#0F2219]/35 text-sm font-bold text-white backdrop-blur-[1px] transition-colors hover:bg-[#0F2219]/25">عرض الصور</span>
+                      )}
                     </button>
-                  ))}
-                </div>
-              )}
+                  ) : (
+                    <div key={offset} className="grid place-items-center bg-[#EDE8DE] text-[#1B3A2D]/20">
+                      <svg className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2" /></svg>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
 
             {/* Space Info */}
-            <div className="premium-card p-6">
+            <section className="space-detail-section pt-3">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{space.name}</h1>
+                  <p className="mb-2 text-xs font-bold text-[#A3802F]">{space.type.name} · {space.city}</p>
+                  <h1 className="font-display text-3xl font-extrabold leading-tight text-[#14201A] sm:text-4xl">{space.name}</h1>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <RatingStars rating={space.reviewSummary.average} />
                     <span className="text-xs font-semibold text-[#1B3A2D]">
@@ -219,7 +240,7 @@ export default function SpaceDetailPage() {
                     )}
                   </div>
                 </div>
-                <span className="bg-[#1B3A2D]/10 text-[#1B3A2D] text-xs font-medium px-3 py-1 rounded-full">{space.type.name}</span>
+                <span className="hidden rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-bold text-green-700 sm:inline-flex">مساحة معتمدة</span>
               </div>
               <p className="text-[#6B7566] text-sm flex items-center gap-1 mb-4">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,19 +251,19 @@ export default function SpaceDetailPage() {
               </p>
               {space.description && <p className="text-[#4A554D] text-sm leading-relaxed mb-4">{space.description}</p>}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+              <div className="mb-5 grid grid-cols-3 divide-x divide-x-reverse divide-[#E0D8CA] border-y border-[#E0D8CA] py-4">
+                <div className="px-3 first:ps-0">
                   <p className="text-[11px] font-bold text-[#6B7566]">السعر</p>
                   <p className="mt-1 text-lg font-extrabold text-[#1B3A2D]">
                     {space.price.toLocaleString('ar-SA')} ر.س
                     <span className="text-xs font-semibold text-[#6B7566]"> / {priceLabel}</span>
                   </p>
                 </div>
-                <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                <div className="px-3">
                   <p className="text-[11px] font-bold text-[#6B7566]">نوع المساحة</p>
                   <p className="mt-1 text-sm font-extrabold text-[#14201A]">{space.type.name}</p>
                 </div>
-                <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                <div className="px-3 last:pe-0">
                   <p className="text-[11px] font-bold text-[#6B7566]">السعة</p>
                   <p className="mt-1 text-sm font-extrabold text-[#14201A]">
                     {space.capacity ? `${space.capacity.toLocaleString('ar-SA')} شخص` : 'غير محددة'}
@@ -268,11 +289,11 @@ export default function SpaceDetailPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </section>
 
             {/* Working Hours */}
             {openDays.length > 0 && (
-              <div className="premium-card p-6">
+              <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -299,7 +320,7 @@ export default function SpaceDetailPage() {
 
             {/* Amenities */}
             {space.amenities.length > 0 && (
-              <div className="premium-card p-6">
+              <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -318,7 +339,7 @@ export default function SpaceDetailPage() {
 
             {/* Extra Services */}
             {space.services && space.services.length > 0 && (
-              <div className="premium-card p-6">
+              <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -344,7 +365,7 @@ export default function SpaceDetailPage() {
 
             {/* Rules */}
             {space.rules && space.rules.length > 0 && (
-              <div className="premium-card p-6">
+              <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -365,7 +386,7 @@ export default function SpaceDetailPage() {
             )}
 
             {/* Reviews */}
-            <div className="premium-card p-6 overflow-hidden">
+            <div className="space-detail-section overflow-hidden">
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="font-display font-extrabold text-[#14201A] text-base flex items-center gap-2">
@@ -422,7 +443,7 @@ export default function SpaceDetailPage() {
 
             {/* Map */}
             {space.latitude && space.longitude && (
-              <div className="premium-card p-6">
+              <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -452,7 +473,7 @@ export default function SpaceDetailPage() {
               </div>
             )}
             {(!space.latitude || !space.longitude) && (
-              <div className="premium-card p-6">
+              <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-2">الموقع</h3>
                 <p className="text-sm text-[#6B7566] mb-4">{fullAddress || space.city}</p>
                 <a
@@ -470,16 +491,23 @@ export default function SpaceDetailPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-4">
             {/* Pricing & Book */}
-            <div className="premium-card p-6 sticky top-20">
-              <div className="mb-4">
-                <span className="text-3xl font-extrabold text-[#1B3A2D]">{space.price.toLocaleString('ar-SA')}</span>
-                <span className="text-[#6B7566] text-sm me-1"> ر.س / {priceLabel}</span>
+            <div className="booking-panel sticky top-24">
+              <div className="booking-panel-head p-6">
+                <p className="mb-1 text-[11px] font-bold text-white/55">السعر يبدأ من</p>
+                <span className="text-3xl font-extrabold text-white">{space.price.toLocaleString('ar-SA')}</span>
+                <span className="me-1 text-sm text-white/65"> ر.س / {priceLabel}</span>
+                <div className="mt-4 flex items-center gap-2 text-[11px] text-white/65">
+                  <svg className="h-4 w-4 text-[#E4C878]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M12 3l7.5 3v5.25c0 4.14-3.2 7.85-7.5 9.75-4.3-1.9-7.5-5.61-7.5-9.75V6L12 3Z" /></svg>
+                  لن يتم تأكيد أي موعد قبل موافقة صاحب المساحة
+                </div>
               </div>
+
+              <div className="p-6">
 
               <button onClick={() => !hasSentBooking && setBookingOpen(true)}
                 disabled={hasSentBooking}
-                className="w-full bg-[#1B3A2D] text-white py-3.5 rounded-xl text-sm font-semibold hover:bg-[#0F2219] transition-colors mb-3 disabled:cursor-default disabled:bg-[#1B3A2D]/75">
-                {hasSentBooking ? 'تم إرسال طلب الحجز' : 'طلب حجز'}
+                className="btn-gold mb-3 flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-sm font-extrabold disabled:cursor-default disabled:opacity-75">
+                {hasSentBooking ? 'تم إرسال طلب الحجز' : 'اختر موعدك واطلب الحجز'}
               </button>
 
               {hasSentBooking && (
@@ -546,10 +574,26 @@ export default function SpaceDetailPage() {
                   </div>
                 </div>
               )}
+              <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#E8E3D8] pt-4 text-[11px] font-semibold text-[#6B7566]">
+                <svg className="h-4 w-4 text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2Zm3-11V7a3 3 0 0 1 6 0v3H9Z" /></svg>
+                طلبك وبياناتك محفوظة داخل منصة مساحة
+              </div>
+              </div>
             </div>
           </div>
         </div>
       </main>
+
+      <div className="mobile-booking-bar">
+        <div>
+          <p className="text-[10px] font-bold text-[#6B7566]">{space.name}</p>
+          <p className="font-display text-lg font-extrabold text-[#14201A]">{space.price.toLocaleString('ar-SA')} <span className="text-xs font-semibold text-[#6B7566]">ر.س / {priceLabel}</span></p>
+        </div>
+        <button onClick={() => !hasSentBooking && setBookingOpen(true)} disabled={hasSentBooking}
+          className="btn-primary min-w-36 rounded-lg px-5 py-3 text-sm font-bold disabled:opacity-70">
+          {hasSentBooking ? 'تم إرسال الطلب' : 'طلب الحجز'}
+        </button>
+      </div>
 
       {/* Booking Modal */}
       <Modal open={bookingOpen} onClose={() => { setBookingOpen(false); setBookingSuccess(false); setBookingError('') }} title="طلب حجز">

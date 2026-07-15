@@ -37,15 +37,23 @@ export default async function SpacesPage({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-paper">
+    <div className="public-shell min-h-screen flex flex-col">
       <PublicNavbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1">
-        <div className="page-hero mb-8 p-7 animate-in">
-          <div className="relative">
-            <p className="text-xs font-bold text-[#C49A3C] mb-2">اكتشف المساحة المناسبة</p>
-            <h1 className="text-3xl font-extrabold text-white">المساحات المتاحة</h1>
-            <p className="mt-2 text-sm text-white/65">فلتر حسب المدينة والنوع، ثم افتح التفاصيل للحجز والتواصل مع صاحب المساحة.</p>
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-10 flex-1">
+        <div className="page-hero mb-8 px-6 py-8 sm:px-8 lg:px-10 lg:py-10 animate-in">
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold text-[#D9B65C] mb-3">اكتشف المساحة المناسبة</p>
+              <h1 className="font-display text-3xl font-extrabold text-white sm:text-4xl">مكانك القادم يبدأ من هنا.</h1>
+              <p className="mt-3 text-sm leading-7 text-white/65">استخدم الفلاتر للوصول إلى مساحة تناسب ميزانيتك وموعدك وسعة فريقك، ثم راجع كل التفاصيل قبل إرسال الطلب.</p>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#C49A3C] text-[#14201A]">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2" /></svg>
+              </span>
+              <span><strong className="block text-xl text-white">{spaces.length.toLocaleString('ar-SA')}</strong><span className="text-[11px] text-white/55">مساحة مطابقة حالياً</span></span>
+            </div>
           </div>
         </div>
         <div className="flex flex-col lg:flex-row gap-8">
@@ -56,11 +64,12 @@ export default async function SpacesPage({
 
           {/* Main content */}
           <main className="flex-1">
-            <div className="flex items-center justify-between mb-6 animate-in">
-              <h1 className="text-xl font-bold text-gray-900">
-                المساحات المتاحة
-                <span className="text-gray-400 font-normal text-base me-2">({spaces.length})</span>
-              </h1>
+            <div className="flex items-center justify-between border-b border-[#DDD5C5] pb-5 mb-6 animate-in">
+              <div>
+                <p className="text-[11px] font-bold text-[#A3802F]">نتائج البحث</p>
+                <h2 className="mt-1 text-xl font-extrabold text-[#14201A]">المساحات المتاحة</h2>
+              </div>
+              <span className="rounded-full border border-[#DDD5C5] bg-white px-3 py-1.5 text-xs font-bold text-[#4A554D]">{spaces.length.toLocaleString('ar-SA')} نتيجة</span>
             </div>
 
             <SpaceGrid spaces={spaces} />

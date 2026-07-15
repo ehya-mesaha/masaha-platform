@@ -5,7 +5,6 @@ import Footer from '@/components/layout/Footer'
 import SpaceCard from '@/components/spaces/SpaceCard'
 
 export const dynamic = 'force-dynamic'
-
 export const revalidate = 0
 
 async function getFeaturedSpaces() {
@@ -32,258 +31,177 @@ async function getTypes() {
   }
 }
 
+const ArrowIcon = () => (
+  <svg className="h-4 w-4 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+  </svg>
+)
+
 export default async function HomePage() {
   const [spaces, types] = await Promise.all([getFeaturedSpaces(), getTypes()])
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F6F1]">
+    <div className="public-shell min-h-screen">
       <PublicNavbar />
 
-      {/* Hero Section */}
-      <section className="home-hero relative overflow-hidden text-white">
-        <div className="absolute inset-0 home-hero-photo" aria-hidden="true" />
-        <div className="absolute inset-0 home-hero-overlay" aria-hidden="true" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#D8B35B]/70 to-transparent" />
+      <section className="home-hero-premium relative overflow-hidden text-white">
+        <div className="home-hero-photo absolute inset-0 -z-20" aria-hidden="true" />
+        <div className="home-hero-overlay absolute inset-0 -z-10" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#E4C878]/70 to-transparent" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-16 lg:pb-20">
+        <div className="home-hero-content relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl fade-up">
-            <div className="inline-flex items-center gap-3 mb-6 text-[11px] sm:text-xs font-bold uppercase text-[#E4C878]">
-              <span className="h-px w-8 bg-[#C49A3C]" />
-              <span>منصة مساحة لحجز المساحات المرنة</span>
-            </div>
-            <h1 className="font-display max-w-4xl text-[42px] leading-[1.12] sm:text-6xl lg:text-[68px] font-extrabold text-white mb-6">
-              المكان المناسب،
+            <p className="home-hero-kicker mb-6">مساحات مختارة بعناية في المملكة</p>
+            <h1 className="font-display max-w-4xl text-[42px] font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-[72px]">
+              مساحة تليق بما
               <br />
-              <span className="text-[#D9B65C]">لعمل يستحق الأفضل.</span>
+              <span className="text-[#E0BE69]">تريد إنجازه.</span>
             </h1>
-            <p className="text-white/78 text-base sm:text-lg leading-8 max-w-2xl mb-9">
-              اكتشف مساحات عمل وقاعات تدريب واستوديوهات مختارة بعناية، واحجزها بثقة من منصة واحدة.
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
+              مكاتب وقاعات تدريب واستوديوهات موثوقة، بتفاصيل واضحة وحجز مرن وتجربة مصممة لتصل إلى المكان المناسب بثقة.
             </p>
 
-            <div className="home-search max-w-5xl">
-              <form action="/spaces" method="get" className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr_0.9fr_auto] items-stretch">
+            <div className="home-search mt-9 max-w-5xl">
+              <form action="/spaces" method="get" className="grid grid-cols-1 items-stretch md:grid-cols-[1.05fr_1fr_.85fr_auto]">
                 <label className="home-search-field">
-                  <span>الموقع</span>
+                  <span>أين تبحث؟</span>
                   <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#B28A32] flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 21s7-6.1 7-12A7 7 0 105 9c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>
+                    <svg className="h-4 w-4 flex-none text-[#B28A32]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 21s7-6.1 7-12A7 7 0 105 9c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>
                     <input type="text" name="city" placeholder="المدينة أو الحي" />
                   </span>
                 </label>
                 <label className="home-search-field">
                   <span>نوع المساحة</span>
                   <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#B28A32] flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2"/></svg>
+                    <svg className="h-4 w-4 flex-none text-[#B28A32]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2"/></svg>
                     <input type="text" name="type" placeholder="مكتب، قاعة، استوديو" />
                   </span>
                 </label>
                 <label className="home-search-field">
-                  <span>التاريخ</span>
+                  <span>موعدك</span>
                   <input type="date" name="date" />
                 </label>
                 <div className="p-2.5">
                   <button type="submit" className="home-search-button">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-5.2-5.2m2.2-5.3a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0Z" /></svg>
-                    ابحث الآن
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-5.2-5.2m2.2-5.3a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0Z" /></svg>
+                    اكتشف المساحات
                   </button>
                 </div>
               </form>
             </div>
+          </div>
+        </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-white/65">
-              {['مساحات موثقة', 'حجز مرن', 'دعم محلي'].map(item => (
-                <span key={item} className="inline-flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#D9B65C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 12 4 4L19 6" /></svg>
-                  {item}
+        <div className="home-proof-rail">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 sm:px-6 md:grid-cols-3 lg:px-8">
+            {[
+              ['M9 12.75 11.25 15 15 9.75M12 3l7.5 3v5.25c0 4.14-3.2 7.85-7.5 9.75-4.3-1.9-7.5-5.61-7.5-9.75V6L12 3Z', 'مساحات موثقة', 'معلومات وصور راجعها فريق مساحة'],
+              ['M8 7V3m8 4V3M6 11h12M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z', 'حجز واضح', 'تواريخ وأوقات وسياسات بلا مفاجآت'],
+              ['M8 10h8m-8 4h5m8-2a9 9 0 1 1-4.2-7.63L21 3l-1.37 4.22A8.96 8.96 0 0 1 21 12Z', 'تواصل مباشر', 'اسأل صاحب المساحة قبل إرسال الطلب'],
+            ].map(([path, title, desc]) => (
+              <div key={title} className="home-proof-item">
+                <span className="home-proof-icon">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={path} /></svg>
                 </span>
-              ))}
-            </div>
+                <span>
+                  <strong className="block text-sm text-white">{title}</strong>
+                  <span className="mt-0.5 block text-[11px] text-white/55">{desc}</span>
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Category tabs */}
       {types.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 relative z-10 w-full">
-          <div className="bg-white border border-[#E8E1D3] rounded-xl p-2.5 flex gap-2 overflow-x-auto shadow-[0_18px_50px_-38px_rgba(15,34,25,0.7)] animate-in">
-            <Link
-              href="/spaces"
-              className="flex-shrink-0 px-5 py-2.5 rounded-lg bg-[#1B3A2D] text-white text-sm font-semibold whitespace-nowrap"
-            >
-              جميع المساحات
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <div className="eyebrow mb-3"><span>ابدأ من احتياجك</span></div>
+              <h2 className="font-display text-3xl font-extrabold text-[#14201A] lg:text-4xl">لكل فكرة، مساحة مناسبة</h2>
+            </div>
+            <Link href="/spaces" className="inline-flex items-center gap-2 text-sm font-bold text-[#1B3A2D] transition-colors hover:text-[#C49A3C]">
+              عرض جميع المساحات <ArrowIcon />
             </Link>
-            {types.slice(0, 6).map(t => (
-              <Link
-                key={t.id}
-                href={`/spaces?typeId=${t.id}`}
-                className="flex-shrink-0 px-5 py-2.5 rounded-lg text-[#4A554D] text-sm font-medium hover:bg-[#F7F3EB] transition-colors whitespace-nowrap"
-              >
-                {t.name}
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 stagger-grid">
+            {types.slice(0, 5).map((type, index) => (
+              <Link key={type.id} href={`/spaces?typeId=${type.id}`} className="category-link group">
+                <span className="text-[11px] font-bold text-[#A3802F]">0{index + 1}</span>
+                <span className="relative z-10 flex items-end justify-between gap-2">
+                  <strong className="font-display text-base text-[#14201A] sm:text-lg">{type.name}</strong>
+                  <span className="grid h-8 w-8 flex-none place-items-center rounded-lg border border-[#E8E1D3] text-[#1B3A2D] transition-all group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white"><ArrowIcon /></span>
+                </span>
               </Link>
             ))}
           </div>
         </section>
       )}
 
-      {/* Featured Spaces */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <div className="eyebrow mb-3"><span>مختارات</span></div>
-            <h2 className="font-display text-3xl lg:text-4xl font-extrabold text-[#14201A]">
-              مساحات مميزة
-            </h2>
-            <p className="text-[#6B7566] mt-2">اكتشف أفضل المساحات المتاحة للحجز الآن</p>
-          </div>
-          <Link
-            href="/spaces"
-            className="hidden sm:inline-flex items-center gap-1 text-[#1B3A2D] text-sm font-semibold hover:gap-2 transition-all"
-          >
-            عرض الكل
-            <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-
-        {spaces.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger-grid">
-            {spaces.map((space) => (
-              <SpaceCard
-                key={space.id}
-                id={space.id}
-                name={space.name}
-                city={space.city}
-                district={space.district}
-                type={space.type.name}
-                price={space.price}
-                pricePeriod={space.pricePeriod}
-                capacity={space.capacity}
-                imageUrl={space.images[0]?.url}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="card-elevated py-20 px-6 text-center">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#F7F3EB] flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-[#C49A3C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+      <section className="border-y border-[#E8E1D3] bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mb-10 flex items-end justify-between gap-6">
+            <div>
+              <div className="eyebrow mb-3"><span>مختارات مساحة</span></div>
+              <h2 className="font-display text-3xl font-extrabold text-[#14201A] lg:text-4xl">أماكن تستحق الاكتشاف</h2>
+              <p className="mt-2 text-[#6B7566]">أحدث المساحات المعتمدة والمتاحة لطلب الحجز الآن.</p>
             </div>
-            <h3 className="font-bold text-lg text-[#14201A] mb-1">لا توجد مساحات بعد</h3>
-            <p className="text-[#6B7566] text-sm mb-6">كن أول من يعرض مساحته على المنصة</p>
-            <Link
-              href="/auth/register?seller=1"
-              className="inline-flex btn-primary px-6 py-2.5 rounded-xl text-sm font-semibold"
-            >
-              أضف مساحتك الآن
-            </Link>
+            <Link href="/spaces" className="hidden items-center gap-2 text-sm font-bold text-[#1B3A2D] transition-colors hover:text-[#C49A3C] sm:inline-flex">تصفح الكل <ArrowIcon /></Link>
           </div>
-        )}
+
+          {spaces.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 stagger-grid">
+              {spaces.map(space => (
+                <SpaceCard key={space.id} id={space.id} name={space.name} city={space.city} district={space.district}
+                  type={space.type.name} price={space.price} pricePeriod={space.pricePeriod} capacity={space.capacity}
+                  imageUrl={space.images[0]?.url} />
+              ))}
+            </div>
+          ) : (
+            <div className="border-y border-[#E8E1D3] py-16 text-center">
+              <h3 className="font-display text-xl font-extrabold text-[#14201A]">المختارات الجديدة قيد التجهيز</h3>
+              <p className="mt-2 text-sm text-[#6B7566]">يمكنك إضافة مساحتك الآن لتكون من أوائل المساحات المعروضة.</p>
+              <Link href="/auth/register?seller=1" className="btn-primary mt-6 inline-flex rounded-lg px-6 py-3 text-sm font-bold">أضف مساحتك</Link>
+            </div>
+          )}
+        </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="bg-white border-y border-[#ECE6D8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-14">
-            <div className="eyebrow mb-3 justify-center inline-flex"><span>خطوات بسيطة</span></div>
-            <h2 className="font-display text-3xl lg:text-4xl font-extrabold text-[#14201A]">
-              كيف تعمل مساحة؟
-            </h2>
-            <p className="text-[#6B7566] mt-3 max-w-md mx-auto">ثلاث خطوات تفصلك عن مساحتك التالية</p>
+      <section id="how-it-works" className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
+          <div className="lg:sticky lg:top-28">
+            <div className="eyebrow mb-3"><span>من البحث إلى الحجز</span></div>
+            <h2 className="font-display text-3xl font-extrabold leading-tight text-[#14201A] lg:text-5xl">رحلة بسيطة، وقرار أوضح.</h2>
+            <p className="mt-5 max-w-md text-sm leading-7 text-[#6B7566]">صممنا كل خطوة لتقلل الحيرة: تعرف ما تحصل عليه، ومتى يكون متاحاً، ومن صاحب المساحة قبل أن ترسل طلبك.</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 stagger-grid">
+          <div className="divide-y divide-[#DCD4C4] border-y border-[#DCD4C4] motion-list">
             {[
-              {
-                step: '01',
-                title: 'ابحث عن مساحتك',
-                desc: 'استخدم البحث والفلاتر لإيجاد المساحة المناسبة لك بالمدينة والنوع والتاريخ.',
-                icon: (
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                ),
-              },
-              {
-                step: '02',
-                title: 'اطلب الحجز',
-                desc: 'أرسل طلب حجز بالتاريخ والوقت والملاحظات، وسيتم مراجعته من صاحب المساحة.',
-                icon: (
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                  </svg>
-                ),
-              },
-              {
-                step: '03',
-                title: 'استمتع بمساحتك',
-                desc: 'بعد قبول الطلب، احضر في الموعد واستفد من مساحتك المرنة والمريحة.',
-                icon: (
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
-                ),
-              },
-            ].map((item) => (
-              <div key={item.step} className="relative card-elevated p-8">
-                {/* Corner accent */}
-                <div className="absolute top-6 end-6 text-4xl font-display font-extrabold text-[#F7F3EB] leading-none">
-                  {item.step}
-                </div>
-                <div className="w-14 h-14 rounded-xl bg-[#1B3A2D] text-[#C49A3C] flex items-center justify-center mb-5 relative">
-                  <div className="w-7 h-7">{item.icon}</div>
-                </div>
-                <h3 className="font-display text-xl font-extrabold text-[#14201A] mb-2">{item.title}</h3>
-                <p className="text-[#6B7566] text-sm leading-relaxed">{item.desc}</p>
+              ['01', 'ابحث بدقة', 'حدد المدينة والنوع والميزانية والسعة والأيام والأوقات التي تناسبك.'],
+              ['02', 'راجع كل التفاصيل', 'قارن الصور والمرافق والخدمات والقواعد والموقع وتقييمات المشترين السابقين.'],
+              ['03', 'احجز وتواصل', 'اختر موعدك من التقويم، أرسل الطلب، وتابع الرد مباشرة من حسابك.'],
+            ].map(([step, title, desc]) => (
+              <div key={step} className="group grid gap-4 py-8 sm:grid-cols-[4rem_1fr_auto] sm:items-center">
+                <span className="font-display text-2xl font-extrabold text-[#C49A3C]">{step}</span>
+                <span>
+                  <strong className="font-display block text-xl text-[#14201A]">{title}</strong>
+                  <span className="mt-1 block text-sm leading-6 text-[#6B7566]">{desc}</span>
+                </span>
+                <span className="hidden h-10 w-10 place-items-center rounded-lg border border-[#DCD4C4] text-[#1B3A2D] transition-all group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white sm:grid"><ArrowIcon /></span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trust / features strip */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 stagger-grid">
-          {[
-            { icon: '🛡️', title: 'مساحات موثقة', desc: 'مراجعة من فريق الإدارة' },
-            { icon: '⚡', title: 'حجز سريع', desc: 'خلال دقائق فقط' },
-            { icon: '💬', title: 'دعم فوري', desc: 'رد سريع على استفساراتك' },
-            { icon: '📍', title: 'مواقع متعددة', desc: 'في أهم المدن السعودية' },
-          ].map(f => (
-            <div key={f.title} className="flex items-start gap-4 premium-card p-4">
-              <div className="w-12 h-12 rounded-xl bg-[#F7F3EB] border border-[#ECE6D8] flex items-center justify-center text-2xl flex-shrink-0">
-                {f.icon}
-              </div>
-              <div>
-                <h4 className="font-bold text-[#14201A] text-sm mb-1">{f.title}</h4>
-                <p className="text-[#6B7566] text-xs leading-relaxed">{f.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="relative overflow-hidden rounded-3xl hero-pattern p-10 lg:p-16 text-center text-white animate-in">
-          <div className="relative max-w-2xl mx-auto">
-            <div className="eyebrow mb-4 justify-center inline-flex"><span>لأصحاب المساحات</span></div>
-            <h2 className="font-display text-3xl lg:text-4xl font-extrabold mb-4">
-              هل تمتلك مساحة غير مستغلة؟
-            </h2>
-            <p className="text-white/70 mb-8">
-              أضف مساحتك على منصة مساحة، واستقبل طلبات الحجز من عملاء محتملين، وابدأ في تحويل مساحتك إلى مصدر دخل.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/auth/register?seller=1" className="btn-gold px-8 py-3.5 rounded-xl inline-flex items-center justify-center gap-2">
-                أضف مساحتك مجاناً
-                <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-              <Link href="/spaces" className="border border-white/20 hover:bg-white/5 px-8 py-3.5 rounded-xl text-white font-semibold text-sm inline-flex items-center justify-center">
-                تصفح المساحات
-              </Link>
+      <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="home-owner-cta px-6 py-12 sm:px-10 lg:px-14 lg:py-16">
+          <div className="max-w-2xl">
+            <p className="home-hero-kicker mb-5">لأصحاب المساحات</p>
+            <h2 className="font-display text-3xl font-extrabold leading-tight text-white lg:text-5xl">حوّل المساحة غير المستغلة إلى فرصة مستمرة.</h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/68">أضف تفاصيل مساحتك ومواعيدها وخدماتها، وابدأ استقبال طلبات جادة من عملاء يبحثون عما تقدمه بالضبط.</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/auth/register?seller=1" className="btn-gold inline-flex items-center justify-center gap-2 rounded-lg px-7 py-3.5 text-sm">ابدأ عرض مساحتك <ArrowIcon /></Link>
+              <Link href="/spaces" className="inline-flex items-center justify-center rounded-lg border border-white/22 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/10">استكشف السوق</Link>
             </div>
           </div>
         </div>

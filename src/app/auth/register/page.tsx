@@ -3,6 +3,7 @@
 import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import LanguageToggle from '@/components/i18n/LanguageToggle'
 
 function RegisterForm() {
   const router = useRouter()
@@ -118,13 +119,9 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="auth-shell flex">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-[45%] relative hero-pattern flex-col justify-between p-12 text-white overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 -start-16 w-72 h-72 rounded-full bg-[#C49A3C]/20 blur-3xl" />
-          <div className="absolute bottom-0 -end-20 w-96 h-96 rounded-full bg-[#C49A3C]/10 blur-3xl" />
-        </div>
+      <div className="auth-visual hidden overflow-hidden p-12 text-white lg:flex lg:w-[46%] lg:flex-col lg:justify-between">
 
         <Link href="/" className="relative flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur border border-white/10 flex items-center justify-center">
@@ -188,7 +185,8 @@ function RegisterForm() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 bg-[#F7F3EB] bg-paper overflow-y-auto">
+      <div className="relative flex flex-1 items-center justify-center overflow-y-auto bg-[#F7F3EB] p-6 lg:p-10">
+        <div className="absolute end-6 top-6 lg:end-10 lg:top-8"><LanguageToggle /></div>
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-6 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#244A3A] to-[#0F2219] flex items-center justify-center">
@@ -199,7 +197,7 @@ function RegisterForm() {
             <span className="text-xl font-extrabold text-[#1B3A2D]">مساحة</span>
           </div>
 
-          <div className="card-elevated p-8">
+          <div className="auth-form-card p-8">
             <h1 className="font-display text-2xl lg:text-3xl font-extrabold text-[#14201A] mb-1.5">إنشاء حساب جديد</h1>
             <p className="text-[#6B7566] text-sm mb-6">أدخل بياناتك للبدء في استخدام المنصة</p>
 
