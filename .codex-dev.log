@@ -1,0 +1,10 @@
+
+> masaha-project@0.1.0 dev
+> next dev --port 3017
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3017
+- Network:       http://192.168.100.151:3017
+- Environments: .env.local, .env
+✓ Ready in 1993ms
+[?25h
