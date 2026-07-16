@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
+import Script from 'next/script'
 import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
+import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 
 export const metadata: Metadata = {
   title: 'مساحة | منصة حجز المساحات المرنة',
@@ -15,8 +17,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} dir={dir}>
+      <Script id="masaha-opening-state" strategy="beforeInteractive">
+        {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v1')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
+      </Script>
       <body>
-        <LanguageProvider initialLocale={locale}>{children}</LanguageProvider>
+        <LanguageProvider initialLocale={locale}>
+          <FirstVisitOpening />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   )

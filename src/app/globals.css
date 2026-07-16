@@ -477,6 +477,344 @@ html[dir="rtl"] .home-hero-overlay {
   background-size: 48px 48px;
 }
 
+/* First-visit opening */
+html[data-masaha-opening="seen"] .first-visit-opening {
+  display: none;
+}
+
+body.masaha-opening-active {
+  overflow: hidden;
+}
+
+.first-visit-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #0a1f17;
+  color: #fff;
+}
+
+.first-visit-opening.is-leaving {
+  pointer-events: none;
+  animation: openingLeave .76s cubic-bezier(.65,0,.35,1) forwards;
+}
+
+.opening-photo,
+.opening-shade,
+.opening-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.opening-photo {
+  z-index: -3;
+  background: url('/office.jpg') center / cover;
+  opacity: .22;
+  animation: openingPhoto 4.6s cubic-bezier(.2,.75,.2,1) both;
+}
+
+.opening-shade {
+  z-index: -2;
+  background:
+    linear-gradient(180deg, rgba(7,24,17,.65), rgba(7,24,17,.93)),
+    linear-gradient(90deg, rgba(7,24,17,.88), rgba(18,52,39,.58), rgba(7,24,17,.88));
+}
+
+.opening-grid {
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(228,200,120,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(228,200,120,.08) 1px, transparent 1px);
+  background-size: clamp(42px, 5vw, 76px) clamp(42px, 5vw, 76px);
+  mask-image: radial-gradient(circle at center, black, transparent 72%);
+  opacity: 0;
+  animation: openingGrid 1.2s .2s ease-out forwards;
+}
+
+.opening-skip {
+  position: absolute;
+  inset-inline-end: clamp(1.25rem, 4vw, 4rem);
+  top: clamp(1.25rem, 4vw, 3rem);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 9px;
+  background: rgba(255,255,255,.055);
+  padding: .65rem .9rem;
+  color: rgba(255,255,255,.66);
+  font-size: .7rem;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+  animation: openingFade .5s .35s both;
+}
+
+.opening-skip:hover {
+  border-color: rgba(228,200,120,.5);
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+
+.opening-stage {
+  position: relative;
+  width: min(92vw, 960px);
+  min-height: min(74vh, 620px);
+  display: grid;
+  place-items: center;
+}
+
+.opening-room {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: min(78vw, 720px);
+  height: min(58vh, 430px);
+  transform: translate(-50%, -50%);
+  perspective: 900px;
+}
+
+.opening-line {
+  position: absolute;
+  display: block;
+  background: rgba(228,200,120,.52);
+  box-shadow: 0 0 20px rgba(196,154,60,.14);
+}
+
+.opening-line-top {
+  top: 8%;
+  inset-inline: 0;
+  height: 1px;
+  transform: scaleX(0);
+  animation: openingDrawX .85s .3s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-line-side {
+  inset-inline-start: 0;
+  top: 8%;
+  bottom: 4%;
+  width: 1px;
+  transform: scaleY(0);
+  transform-origin: top;
+  animation: openingDrawY .75s .65s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-line-floor {
+  inset-inline: 0;
+  bottom: 4%;
+  height: 1px;
+  transform: scaleX(0);
+  animation: openingDrawX .8s .95s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-door {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  width: clamp(116px, 16vw, 170px);
+  height: 88%;
+  transform: translateX(-50%);
+  border: 1px solid rgba(228,200,120,.62);
+  border-bottom: 0;
+  opacity: 0;
+  animation: openingDoorFrame .7s 1.05s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-door::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #133429;
+  border-inline-start: 1px solid rgba(228,200,120,.35);
+  transform-origin: right center;
+  animation: openingDoor 1.15s 1.55s cubic-bezier(.5,0,.15,1) forwards;
+}
+
+.opening-door-light {
+  position: absolute;
+  inset: 0;
+  background: rgba(228,200,120,.72);
+  box-shadow: 0 0 90px 16px rgba(228,200,120,.25);
+  opacity: 0;
+  animation: openingLight 1.2s 1.6s ease-out forwards;
+}
+
+.opening-copy {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  max-width: 680px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.opening-kicker {
+  margin-bottom: 1.5rem;
+  color: #e4c878;
+  font-size: clamp(.72rem, 1vw, .82rem);
+  font-weight: 800;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: openingCopy .65s 1.85s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-brand {
+  display: flex;
+  align-items: center;
+  gap: clamp(.85rem, 2vw, 1.25rem);
+  opacity: 0;
+  transform: translateY(16px) scale(.97);
+  animation: openingBrand .75s 2.05s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-mark {
+  display: grid;
+  width: clamp(58px, 8vw, 82px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(228,200,120,.34);
+  border-radius: 14px;
+  background: rgba(7,24,17,.76);
+  color: #e4c878;
+  box-shadow: 0 20px 60px -30px rgba(0,0,0,.75);
+  backdrop-filter: blur(12px);
+}
+
+.opening-mark svg { width: 58%; }
+
+.opening-mark path {
+  stroke-dasharray: 90;
+  stroke-dashoffset: 90;
+  animation: openingMarkDraw .9s 2.25s ease-out forwards;
+}
+
+.opening-brand strong {
+  display: block;
+  color: #fff;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
+  font-size: clamp(2.75rem, 7vw, 5.7rem);
+  font-weight: 800;
+  line-height: .9;
+}
+
+.opening-brand small {
+  display: block;
+  margin-top: .75rem;
+  color: rgba(255,255,255,.48);
+  font-size: clamp(.54rem, .9vw, .72rem);
+  font-weight: 700;
+}
+
+.opening-message {
+  margin-top: 1.65rem;
+  color: rgba(255,255,255,.68);
+  font-size: clamp(.8rem, 1.3vw, 1rem);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: openingCopy .6s 2.75s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.opening-progress {
+  position: absolute;
+  inset-inline: clamp(1.25rem, 4vw, 4rem);
+  bottom: clamp(1.5rem, 4vw, 3rem);
+  height: 1px;
+  overflow: hidden;
+  background: rgba(255,255,255,.12);
+}
+
+.opening-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #e4c878;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: openingProgress 4.25s linear forwards;
+}
+
+html[dir="rtl"] .opening-progress span { transform-origin: right; }
+
+@keyframes openingPhoto {
+  from { transform: scale(1.1); filter: blur(5px); }
+  to { transform: scale(1.015); filter: blur(0); }
+}
+
+@keyframes openingGrid { to { opacity: .72; } }
+@keyframes openingFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes openingDrawX { to { transform: scaleX(1); } }
+@keyframes openingDrawY { to { transform: scaleY(1); } }
+
+@keyframes openingDoorFrame {
+  from { opacity: 0; transform: translateX(-50%) scaleY(.72); transform-origin: bottom; }
+  to { opacity: 1; transform: translateX(-50%) scaleY(1); }
+}
+
+@keyframes openingDoor {
+  from { transform: perspective(700px) rotateY(0); }
+  to { transform: perspective(700px) rotateY(-84deg); }
+}
+
+@keyframes openingLight {
+  0% { opacity: 0; }
+  45% { opacity: .82; }
+  100% { opacity: .16; }
+}
+
+@keyframes openingCopy {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes openingBrand {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes openingMarkDraw { to { stroke-dashoffset: 0; } }
+@keyframes openingProgress { to { transform: scaleX(1); } }
+
+@keyframes openingLeave {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.025); visibility: hidden; }
+}
+
+@media (max-width: 640px) {
+  .opening-stage { min-height: 70vh; }
+  .opening-room { width: 90vw; height: 58vh; }
+  .opening-door { width: 110px; }
+  .opening-copy { padding-inline: 1.25rem; }
+  .opening-brand { flex-direction: column; }
+  .opening-brand strong { font-size: 3.4rem; }
+  .opening-brand small { margin-top: .55rem; }
+  .opening-message { max-width: 19rem; line-height: 1.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-photo,
+  .opening-grid,
+  .opening-skip,
+  .opening-line,
+  .opening-door,
+  .opening-door::before,
+  .opening-door-light,
+  .opening-kicker,
+  .opening-brand,
+  .opening-mark path,
+  .opening-message,
+  .opening-progress span {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .opening-room { display: none; }
+}
+
 .page-hero {
   position: relative;
   overflow: hidden;
