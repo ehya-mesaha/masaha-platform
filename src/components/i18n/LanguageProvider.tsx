@@ -19,19 +19,19 @@ const ignoredTags = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'TEXTAREA'
 const translatedAttributes = ['placeholder', 'aria-label', 'title'] as const
 const arabicTextPattern = /[\u0600-\u06FF]/
 
-function getInitialLocale(): Locale {
-  if (typeof document === 'undefined') return 'ar'
+function getInitialLocale(fallback: Locale): Locale {
+  if (typeof document === 'undefined') return fallback
   const cookieLocale = document.cookie
     .split('; ')
     .find(row => row.startsWith('masaha_locale='))
     ?.split('=')[1]
   if (cookieLocale === 'en' || cookieLocale === 'ar') return cookieLocale
   const stored = window.localStorage.getItem('masaha_locale')
-  return stored === 'en' || stored === 'ar' ? stored : 'ar'
+  return stored === 'en' || stored === 'ar' ? stored : fallback
 }
 
-export default function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => getInitialLocale())
+export default function LanguageProvider({ children, initialLocale = 'ar' }: { children: React.ReactNode; initialLocale?: Locale }) {
+  const [locale, setLocaleState] = useState<Locale>(() => getInitialLocale(initialLocale))
 
   const dir = getDirection(locale)
 
