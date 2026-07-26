@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
+import BrandLogo from '@/components/brand/BrandLogo'
 
 const OPENING_KEY = 'masaha_opening_v3'
 
@@ -98,16 +99,13 @@ export default function FirstVisitOpening() {
           </p>
 
           <div className="opening-brand">
-            <span className="opening-mark" aria-hidden="true">
-              <svg viewBox="0 0 48 48" fill="none">
-                <path className="opening-mark-roof" d="M8 23.5 24 9l16 14.5" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-                <path className="opening-mark-home" d="M12 21v17h24V21M20 38V27h8v11" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <span>
-              <strong>{isEnglish ? 'EHYA MASAHA' : 'إحياء مساحة'}</strong>
-              <small>{isEnglish ? 'SPACE FOR WHAT COMES NEXT' : 'مساحة لما هو قادم'}</small>
-            </span>
+            <BrandLogo
+              variant="stacked"
+              tone="white"
+              className="opening-official-logo"
+              priority
+              alt={isEnglish ? 'Ehya Masaha' : 'إحياء مساحة'}
+            />
           </div>
 
           <p className="opening-message">

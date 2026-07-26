@@ -51,13 +51,13 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
 
   return (
     <div>
-      <h2 className="font-display mb-1 text-xl font-extrabold text-[#14201A]">إضافة خدمات المساحة</h2>
-      <p className="mb-6 text-sm text-[#6B7566]">اختر خدمة واحدة على الأقل من القائمة المعتمدة وحدد سعرها. لا يمكن إضافة خدمات خارج هذه القائمة.</p>
+      <h2 className="font-display mb-1 text-xl font-extrabold text-[#1B1B1B]">إضافة خدمات المساحة</h2>
+      <p className="mb-6 text-sm text-[#5F6764]">اختر خدمة واحدة على الأقل من القائمة المعتمدة وحدد سعرها. لا يمكن إضافة خدمات خارج هذه القائمة.</p>
 
-      <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <strong className="text-sm text-[#1B3A2D]">الخدمات المعتمدة من الإدارة</strong>
-          <p className="mt-1 text-xs text-[#6B7566]">{enabledCount} من {services.length} خدمات مفعلة لمساحتك.</p>
+          <strong className="text-sm text-[#0E3B34]">الخدمات المعتمدة من الإدارة</strong>
+          <p className="mt-1 text-xs text-[#5F6764]">{enabledCount} من {services.length} خدمات مفعلة لمساحتك.</p>
         </div>
         <Toggle checked={allEnabled} onChange={toggleAll} label="تفعيل جميع الخدمات" />
       </div>
@@ -68,31 +68,31 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
             type="button"
             key={value}
             onClick={() => setActiveTab(value)}
-            className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-bold transition ${activeTab === value ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white' : 'border-[#DDD5C5] bg-white text-[#58635B]'}`}
+            className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-bold transition ${activeTab === value ? 'border-[#0E3B34] bg-[#0E3B34] text-white' : 'border-[#D8D1C7] bg-white text-[#58635B]'}`}
           >{label}</button>
         ))}
       </div>
 
       {serviceCatalog.length === 0 || services.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#D8CFBE] p-8 text-center text-sm text-[#6B7566]">
+        <div className="rounded-2xl border border-dashed border-[#D8D1C7] p-8 text-center text-sm text-[#5F6764]">
           لم تُضف الإدارة خدمات إلى الدليل بعد.
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {visibleServices.map(service => (
-            <article key={service.catalogId} className={`service-option-card rounded-2xl border p-4 transition ${service.isEnabled ? 'is-enabled border-[#1B3A2D]/30 bg-[#FBFDFB]' : 'border-[#E8E1D3] bg-white'}`}>
+            <article key={service.catalogId} className={`service-option-card rounded-2xl border p-4 transition ${service.isEnabled ? 'is-enabled border-[#0E3B34]/30 bg-[#FBFDFB]' : 'border-[#D8D1C7] bg-white'}`}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-extrabold text-[#1B3A2D]">{service.name}</p>
-                  <p className="mt-1 text-xs leading-6 text-[#6B7566]">{service.description}</p>
+                  <p className="font-extrabold text-[#0E3B34]">{service.name}</p>
+                  <p className="mt-1 text-xs leading-6 text-[#5F6764]">{service.description}</p>
                 </div>
                 <Toggle checked={service.isEnabled} onChange={() => change(service.catalogId, { isEnabled: !service.isEnabled })} label={`تفعيل ${service.name}`} />
               </div>
 
               {service.isEnabled && (
-                <div className="mt-4 space-y-3 border-t border-[#E8E1D3] pt-4">
+                <div className="mt-4 space-y-3 border-t border-[#D8D1C7] pt-4">
                   <label className="block">
-                    <span className="mb-1 block text-[11px] font-bold text-[#6B7566]">السعر (ريال) · {pricingLabel(service.pricingType)}</span>
+                    <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">السعر (ريال) · {pricingLabel(service.pricingType)}</span>
                     <input
                       type="number"
                       min="0"
@@ -104,7 +104,7 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
                   </label>
                   {(service.name === 'المطبوعات' || service.name === 'ضيافة خفيفة') && (
                     <label className="block">
-                      <span className="mb-1 block text-[11px] font-bold text-[#6B7566]">تفاصيل الخدمة</span>
+                      <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">تفاصيل الخدمة</span>
                       <textarea
                         rows={2}
                         value={service.details}
@@ -142,7 +142,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
       onClick={onChange}
       aria-label={label}
       aria-pressed={checked}
-      className={`relative h-6 w-11 flex-none rounded-full transition ${checked ? 'bg-[#1B3A2D]' : 'bg-[#CDD2CE]'}`}
+      className={`relative h-6 w-11 flex-none rounded-full transition ${checked ? 'bg-[#0E3B34]' : 'bg-[#CDD2CE]'}`}
     >
       <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-all ${checked ? 'start-6' : 'start-1'}`} />
     </button>

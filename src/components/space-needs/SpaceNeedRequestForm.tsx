@@ -73,17 +73,17 @@ export default function SpaceNeedRequestForm({ types }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="premium-card overflow-hidden animate-in">
-      <div className="h-1.5 bg-gradient-to-l from-[#1B3A2D] via-[#C49A3C] to-[#1B3A2D]" />
+      <div className="h-1.5 bg-gradient-to-l from-[#0E3B34] via-[#B99A63] to-[#0E3B34]" />
       <div className="p-6 lg:p-7">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] text-[#C49A3C]">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] text-[#B99A63]">
             <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.77 59.77 0 0121.485 12 59.768 59.768 0 013.27 20.876L6 12zm0 0h7.5" />
             </svg>
           </div>
-          <p className="text-xs font-bold text-[#C49A3C]">تقديم احتياج مساحة</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-[#14201A]">لم تجد المساحة المناسبة؟</h1>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#6B7566]">
+          <p className="text-xs font-bold text-[#B99A63]">تقديم احتياج مساحة</p>
+          <h1 className="mt-1 text-2xl font-extrabold text-[#1B1B1B]">لم تجد المساحة المناسبة؟</h1>
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#5F6764]">
             قدم احتياجك وسيقوم فريقنا بتوفير خيارات مطابقة لمتطلباتك خلال 24 ساعة.
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">نوع المساحة المطلوبة</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">نوع المساحة المطلوبة</span>
             <select
               value={form.typeId}
               onChange={e => updateField('typeId', e.target.value)}
@@ -115,7 +115,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">نوع آخر إن لم يكن موجودا</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">نوع آخر إن لم يكن موجودا</span>
             <input
               value={form.spaceType}
               onChange={e => updateField('spaceType', e.target.value)}
@@ -126,7 +126,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">المدينة</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">المدينة</span>
             <input
               value={form.city}
               onChange={e => updateField('city', e.target.value)}
@@ -137,7 +137,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">الحي المفضل</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">الحي المفضل</span>
             <input
               value={form.district}
               onChange={e => updateField('district', e.target.value)}
@@ -147,7 +147,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">التاريخ المتوقع</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">التاريخ المتوقع</span>
             <input
               type="date"
               value={form.expectedDate}
@@ -157,7 +157,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">السعة المطلوبة</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">السعة المطلوبة</span>
             <input
               type="number"
               min={1}
@@ -170,7 +170,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">الميزانية من (ر.س / ساعة)</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">الميزانية من (ر.س / ساعة)</span>
             <input
               type="number"
               min={0}
@@ -182,7 +182,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">الميزانية إلى (ر.س / ساعة)</span>
+            <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">الميزانية إلى (ر.س / ساعة)</span>
             <input
               type="number"
               min={0}
@@ -195,7 +195,7 @@ export default function SpaceNeedRequestForm({ types }: Props) {
         </div>
 
         <label className="mt-4 block">
-          <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">تفاصيل إضافية (اختياري)</span>
+          <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">تفاصيل إضافية (اختياري)</span>
           <textarea
             value={form.details}
             onChange={e => updateField('details', e.target.value)}
@@ -205,8 +205,8 @@ export default function SpaceNeedRequestForm({ types }: Props) {
           />
         </label>
 
-        <div className="mt-5 flex flex-col gap-3 border-t border-[#E8E3D8] pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-[#6B7566]">سيتم التواصل معك عبر البريد الإلكتروني المسجل.</p>
+        <div className="mt-5 flex flex-col gap-3 border-t border-[#D8D1C7] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-[#5F6764]">سيتم التواصل معك عبر البريد الإلكتروني المسجل.</p>
           <button
             type="submit"
             disabled={loading}

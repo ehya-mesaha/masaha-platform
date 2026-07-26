@@ -60,7 +60,7 @@ export default async function SellerSpaceDetailPage({
             <h3 className="font-semibold text-gray-900 mb-3">الموقع</h3>
             <p className="text-sm text-gray-600 mb-3">{[space.district, space.city].filter(Boolean).join('، ')}</p>
             {space.latitude && space.longitude && (
-              <div className="rounded-xl overflow-hidden border border-[#E8E3D8] mb-3">
+              <div className="rounded-xl overflow-hidden border border-[#D8D1C7] mb-3">
                 <iframe
                   src={`https://www.openstreetmap.org/export/embed.html?bbox=${space.longitude - 0.01},${space.latitude - 0.01},${space.longitude + 0.01},${space.latitude + 0.01}&layer=mapnik&marker=${space.latitude},${space.longitude}`}
                   className="w-full h-56"
@@ -73,7 +73,7 @@ export default async function SellerSpaceDetailPage({
               href={mapHref}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-[#1B3A2D] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0F2219] transition-colors"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-[#0E3B34] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors"
             >
               فتح الموقع في الخرائط
             </a>
@@ -83,7 +83,7 @@ export default async function SellerSpaceDetailPage({
           <Badge variant={variant}>{label}</Badge>
           <Link
             href={`/seller/spaces/${id}/edit`}
-            className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium border border-[#E8E3D8] hover:bg-gray-50"
+            className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium border border-[#D8D1C7] hover:bg-gray-50"
           >
             تعديل
           </Link>
@@ -111,7 +111,7 @@ export default async function SellerSpaceDetailPage({
               <div><span className="text-gray-500">الطاقة</span><p className="font-medium mt-0.5">{space.capacity || '-'} شخص</p></div>
             </div>
             {space.description && (
-              <div className="mt-4 pt-4 border-t border-[#E8E3D8]">
+              <div className="mt-4 pt-4 border-t border-[#D8D1C7]">
                 <p className="text-gray-500 text-xs mb-1">الوصف</p>
                 <p className="text-gray-700 text-sm">{space.description}</p>
               </div>
@@ -130,7 +130,7 @@ export default async function SellerSpaceDetailPage({
               <h3 className="font-semibold text-gray-900 mb-3">المرافق</h3>
               <div className="flex flex-wrap gap-2">
                 {space.amenities.map(({ amenity }) => (
-                  <span key={amenity.id} className="bg-[#F5F0E6] text-[#1B3A2D] text-xs px-3 py-1.5 rounded-full">
+                  <span key={amenity.id} className="bg-[#F5F0E6] text-[#0E3B34] text-xs px-3 py-1.5 rounded-full">
                     {amenity.name}
                   </span>
                 ))}
@@ -142,13 +142,13 @@ export default async function SellerSpaceDetailPage({
         {/* Bookings */}
         <div>
           <Card padding={false}>
-            <div className="px-5 py-4 border-b border-[#E8E3D8]">
+            <div className="px-5 py-4 border-b border-[#D8D1C7]">
               <h3 className="font-semibold text-gray-900">الحجوزات</h3>
             </div>
             {space.bookings.length === 0 ? (
               <div className="p-6 text-center text-gray-500 text-sm">لا توجد حجوزات</div>
             ) : (
-              <div className="divide-y divide-[#E8E3D8]">
+              <div className="divide-y divide-[#D8D1C7]">
                 {space.bookings.map((b) => {
                   const { variant, label } = getBookingStatusBadge(b.status)
                   return (
@@ -158,7 +158,7 @@ export default async function SellerSpaceDetailPage({
                         <Badge variant={variant}>{label}</Badge>
                       </div>
                       <p className="text-xs text-gray-500">{b.date} · {b.startTime} - {b.endTime}</p>
-                      <Link href={`/seller/bookings/${b.id}`} className="text-xs text-[#1B3A2D] hover:underline mt-1 block">
+                      <Link href={`/seller/bookings/${b.id}`} className="text-xs text-[#0E3B34] hover:underline mt-1 block">
                         عرض التفاصيل
                       </Link>
                     </div>

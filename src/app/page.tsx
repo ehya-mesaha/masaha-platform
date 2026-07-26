@@ -54,7 +54,7 @@ export default async function HomePage() {
           <span className="hero-architecture-orbit" />
         </div>
         <div className="home-hero-index" aria-hidden="true"><span>01</span><i /><span>05</span></div>
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#E4C878]/70 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#B99A63]/70 to-transparent" />
 
         <div className="home-hero-content relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl fade-up">
@@ -62,7 +62,7 @@ export default async function HomePage() {
             <h1 className="font-display max-w-4xl text-[42px] font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-[72px]">
               مساحة تناسب
               <br />
-              <span className="text-[#E0BE69]">احتياجك</span>
+              <span className="text-[#C8AD7D]">احتياجك</span>
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
               قاعات دراسية، مكاتب، قاعات اجتماعات… مصممة لتصل للمكان الأنسب لك.
@@ -99,9 +99,9 @@ export default async function HomePage() {
           <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <div className="eyebrow mb-3"><span>ابدأ من احتياجك</span></div>
-              <h2 className="font-display text-3xl font-extrabold text-[#14201A] lg:text-4xl">لكل فكرة، مساحة مناسبة</h2>
+              <h2 className="font-display text-3xl font-extrabold text-[#1B1B1B] lg:text-4xl">لكل فكرة، مساحة مناسبة</h2>
             </div>
-            <Link href="/spaces" className="inline-flex items-center text-sm font-bold text-[#1B3A2D] transition-colors hover:text-[#C49A3C]">
+            <Link href="/spaces" className="inline-flex items-center text-sm font-bold text-[#0E3B34] transition-colors hover:text-[#B99A63]">
               عرض جميع المساحات
             </Link>
           </div>
@@ -110,7 +110,7 @@ export default async function HomePage() {
               <Link key={type.id} href={`/spaces?typeId=${type.id}`} className="category-link group">
                 <span className="text-[11px] font-bold text-[#A3802F]">0{index + 1}</span>
                 <span className="relative z-10 flex items-end">
-                  <strong className="font-display text-base text-[#14201A] sm:text-lg">{type.name}</strong>
+                  <strong className="font-display text-base text-[#1B1B1B] sm:text-lg">{type.name}</strong>
                 </span>
               </Link>
             ))}
@@ -118,15 +118,15 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="border-y border-[#E8E1D3] bg-white">
+      <section className="border-y border-[#D8D1C7] bg-white">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-10 flex items-end justify-between gap-6">
             <div>
               <div className="eyebrow mb-3"><span>مختارات إحياء مساحة</span></div>
-              <h2 className="font-display text-3xl font-extrabold text-[#14201A] lg:text-4xl">أماكن تستحق الاكتشاف</h2>
-              <p className="mt-2 text-[#6B7566]">أحدث المساحات المعتمدة والمتاحة لطلب الحجز الآن.</p>
+              <h2 className="font-display text-3xl font-extrabold text-[#1B1B1B] lg:text-4xl">أماكن تستحق الاكتشاف</h2>
+              <p className="mt-2 text-[#5F6764]">أحدث المساحات المعتمدة والمتاحة لطلب الحجز الآن.</p>
             </div>
-            <Link href="/spaces" className="hidden items-center gap-2 text-sm font-bold text-[#1B3A2D] transition-colors hover:text-[#C49A3C] sm:inline-flex">تصفح الكل <ArrowIcon /></Link>
+            <Link href="/spaces" className="hidden items-center gap-2 text-sm font-bold text-[#0E3B34] transition-colors hover:text-[#B99A63] sm:inline-flex">تصفح الكل <ArrowIcon /></Link>
           </div>
 
           {spaces.length > 0 ? (
@@ -138,9 +138,9 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="border-y border-[#E8E1D3] py-16 text-center">
-              <h3 className="font-display text-xl font-extrabold text-[#14201A]">المختارات الجديدة قيد التجهيز</h3>
-              <p className="mt-2 text-sm text-[#6B7566]">يمكنك إضافة مساحتك الآن لتكون من أوائل المساحات المعروضة.</p>
+            <div className="border-y border-[#D8D1C7] py-16 text-center">
+              <h3 className="font-display text-xl font-extrabold text-[#1B1B1B]">المختارات الجديدة قيد التجهيز</h3>
+              <p className="mt-2 text-sm text-[#5F6764]">يمكنك إضافة مساحتك الآن لتكون من أوائل المساحات المعروضة.</p>
               <Link href="/auth/register?seller=1" className="btn-primary mt-6 inline-flex rounded-lg px-6 py-3 text-sm font-bold">أضف مساحتك</Link>
             </div>
           )}
@@ -151,8 +151,8 @@ export default async function HomePage() {
         <div className="grid gap-12 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
           <div className="lg:sticky lg:top-28">
             <div className="eyebrow mb-3"><span>من البحث إلى الحجز</span></div>
-            <h2 className="font-display text-3xl font-extrabold leading-tight text-[#14201A] lg:text-5xl">رحلة بسيطة، وقرار أوضح.</h2>
-            <p className="mt-5 max-w-md text-sm leading-7 text-[#6B7566]">صممنا كل خطوة لتكون احتياجات برنامجك واضحة، من البحث وحتى تأكيد الحجز والخدمات.</p>
+            <h2 className="font-display text-3xl font-extrabold leading-tight text-[#1B1B1B] lg:text-5xl">رحلة بسيطة، وقرار أوضح.</h2>
+            <p className="mt-5 max-w-md text-sm leading-7 text-[#5F6764]">صممنا كل خطوة لتكون احتياجات برنامجك واضحة، من البحث وحتى تأكيد الحجز والخدمات.</p>
           </div>
           <div className="divide-y divide-[#DCD4C4] border-y border-[#DCD4C4] motion-list">
             {[
@@ -163,10 +163,10 @@ export default async function HomePage() {
               ['05', 'ادفع بأمان', 'راجع التكلفة بوضوح وأكمل حجزك بثقة من مكان واحد.'],
             ].map(([step, title, desc]) => (
               <div key={step} className="grid gap-4 py-8 sm:grid-cols-[4rem_1fr] sm:items-center">
-                <span className="font-display text-2xl font-extrabold text-[#C49A3C]">{step}</span>
+                <span className="font-display text-2xl font-extrabold text-[#B99A63]">{step}</span>
                 <span>
-                  <strong className="font-display block text-xl text-[#14201A]">{title}</strong>
-                  <span className="mt-1 block text-sm leading-6 text-[#6B7566]">{desc}</span>
+                  <strong className="font-display block text-xl text-[#1B1B1B]">{title}</strong>
+                  <span className="mt-1 block text-sm leading-6 text-[#5F6764]">{desc}</span>
                 </span>
               </div>
             ))}

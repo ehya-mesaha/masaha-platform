@@ -43,12 +43,12 @@ export default function StepTerms({ form, update }: StepProps) {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">الشروط والأحكام</h2>
-      <p className="text-[#6B7566] text-sm mb-6">حدد سياسة الإلغاء والقواعد الخاصة باستخدام مساحتك لضمان تجربة واضحة للعملاء وحماية حقوقك.</p>
+      <h2 className="font-display text-xl font-extrabold text-[#1B1B1B] mb-1">الشروط والأحكام</h2>
+      <p className="text-[#5F6764] text-sm mb-6">حدد سياسة الإلغاء والقواعد الخاصة باستخدام مساحتك لضمان تجربة واضحة للعملاء وحماية حقوقك.</p>
 
       {/* Cancellation Policy */}
       <div className="mb-8">
-        <h3 className="text-sm font-bold text-[#14201A] mb-3">سياسة الإلغاء</h3>
+        <h3 className="text-sm font-bold text-[#1B1B1B] mb-3">سياسة الإلغاء</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {POLICIES.map(p => (
             <button
@@ -57,16 +57,16 @@ export default function StepTerms({ form, update }: StepProps) {
               onClick={() => update('cancellationPolicy', p.value)}
               className={`p-4 rounded-xl border-2 text-start transition-all ${
                 form.cancellationPolicy === p.value
-                  ? 'border-[#1B3A2D] bg-[#1B3A2D]/5'
-                  : 'border-[#ECE6D8] hover:border-[#1B3A2D]/40'
+                  ? 'border-[#0E3B34] bg-[#0E3B34]/5'
+                  : 'border-[#D8D1C7] hover:border-[#0E3B34]/40'
               }`}
             >
               <div className={`text-sm font-bold mb-1 ${
-                form.cancellationPolicy === p.value ? 'text-[#1B3A2D]' : 'text-[#14201A]'
+                form.cancellationPolicy === p.value ? 'text-[#0E3B34]' : 'text-[#1B1B1B]'
               }`}>
                 {p.label}
               </div>
-              <p className="text-xs text-[#6B7566] leading-relaxed">{p.desc}</p>
+              <p className="text-xs text-[#5F6764] leading-relaxed">{p.desc}</p>
             </button>
           ))}
         </div>
@@ -74,17 +74,17 @@ export default function StepTerms({ form, update }: StepProps) {
 
       {/* Space Rules */}
       <div>
-        <h3 className="text-sm font-bold text-[#14201A] mb-3">قواعد المساحة</h3>
+        <h3 className="text-sm font-bold text-[#1B1B1B] mb-3">قواعد المساحة</h3>
         <div className="space-y-2 mb-4">
           {form.rules.map((r, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-[#ECE6D8] bg-white">
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-[#D8D1C7] bg-white">
               <button
                 type="button"
                 onClick={() => toggleRule(i)}
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                   r.isDefault
-                    ? 'border-[#1B3A2D] bg-[#1B3A2D]'
-                    : 'border-[#E8E3D8]'
+                    ? 'border-[#0E3B34] bg-[#0E3B34]'
+                    : 'border-[#D8D1C7]'
                 }`}
               >
                 {r.isDefault && (
@@ -93,7 +93,7 @@ export default function StepTerms({ form, update }: StepProps) {
                   </svg>
                 )}
               </button>
-              <span className={`text-sm flex-1 ${r.isDefault ? 'text-[#14201A]' : 'text-[#6B7566]'}`}>{r.rule}</span>
+              <span className={`text-sm flex-1 ${r.isDefault ? 'text-[#1B1B1B]' : 'text-[#5F6764]'}`}>{r.rule}</span>
               {!form.rules.slice(0, 4).includes(r) && (
                 <button type="button" onClick={() => removeRule(i)} className="text-red-400 hover:text-red-600">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -111,12 +111,12 @@ export default function StepTerms({ form, update }: StepProps) {
             onChange={e => setNewRule(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomRule())}
             placeholder="إضافة شرط أو قاعدة خاصة بمساحتك..."
-            className="flex-1 px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
+            className="flex-1 px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
           />
           <button
             type="button"
             onClick={addCustomRule}
-            className="px-4 py-2.5 rounded-lg bg-[#1B3A2D] text-white text-sm font-medium hover:bg-[#0F2219]"
+            className="px-4 py-2.5 rounded-lg bg-[#0E3B34] text-white text-sm font-medium hover:bg-[#092C27]"
           >
             + إضافة
           </button>

@@ -17,5 +17,5 @@ export default function SaveSearchButton({ criteria }: { criteria: { mode?: stri
     if (response.status === 401) return router.push('/auth/login')
     if (response.ok) setSaved(true)
   }
-  return <button onClick={save} disabled={loading || saved} className="rounded-full border border-[#DDD5C5] bg-white px-3 py-1.5 text-xs font-bold text-[#1B3A2D] disabled:opacity-60">{saved ? 'تم حفظ البحث' : loading ? 'جاري الحفظ...' : 'حفظ هذا البحث'}</button>
+  return <button onClick={save} disabled={loading || saved} className="rounded-full border border-[#D8D1C7] bg-white px-3 py-1.5 text-xs font-bold text-[#0E3B34] disabled:opacity-60">{saved ? 'تم حفظ البحث' : loading ? 'جاري الحفظ...' : 'حفظ هذا البحث'}</button>
 }

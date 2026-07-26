@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import LanguageToggle from '@/components/i18n/LanguageToggle'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 import type { TranslationKey } from '@/lib/i18n'
+import BrandLogo from '@/components/brand/BrandLogo'
 
 type Role = 'SELLER' | 'BUYER' | 'ADMIN'
 
@@ -131,7 +132,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
   return (
     <>
       {/* Mobile top bar */}
-      <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between border-b border-[#1B3A2D]/10 bg-[#1B3A2D] px-4 py-3 lg:hidden">
+      <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between border-b border-[#0E3B34]/10 bg-[#0E3B34] px-4 py-3 lg:hidden">
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
@@ -141,10 +142,10 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-base font-extrabold text-white">{t('brand')}</span>
+        <Link href="/" className="flex items-center" aria-label={t('brand')}>
+          <BrandLogo variant="horizontal" tone="white" className="dashboard-mobile-logo" alt={t('brand')} />
         </Link>
-        <Link href={settingsHref} className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-sm font-extrabold text-[#0F2219]">
+        <Link href={settingsHref} className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#B99A63] to-[#b08832] text-sm font-extrabold text-[#092C27]">
           {avatarUrl ? (
             <img src={avatarUrl} alt={userName || 'profile'} className="h-full w-full object-cover" />
           ) : (
@@ -162,7 +163,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
       )}
 
       <aside
-        className={`dashboard-sidebar fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden border-white/[0.06] bg-[#10271E] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
+        className={`dashboard-sidebar fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden border-white/[0.06] bg-[#092C27] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
           dir === 'rtl' ? 'right-0' : 'left-0'
         } ${
           open ? 'translate-x-0' : dir === 'rtl' ? 'max-lg:translate-x-full' : 'max-lg:-translate-x-full'
@@ -172,16 +173,8 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
 
       <div className="relative border-b border-white/[0.06] px-5 py-5">
         <div className="flex items-center justify-between">
-          <Link href="/" className="group flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-              <svg className="h-5 w-5 text-[#C49A3C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d={ICONS.dashboard} />
-              </svg>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-lg font-extrabold text-white">{t('brand')}</span>
-              <span className="text-[9px] text-white/40">{t('brandSub')}</span>
-            </div>
+          <Link href="/" className="group flex items-center" aria-label={t('brand')}>
+            <BrandLogo variant="horizontal" tone="white" className="dashboard-sidebar-logo" alt={t('brand')} />
           </Link>
           <button
             onClick={() => setOpen(false)}
@@ -195,7 +188,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
         </div>
 
         <Link href={settingsHref} onClick={() => setOpen(false)} className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3 transition-colors hover:bg-white/[0.08]">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#C49A3C] to-[#b08832] text-lg font-extrabold text-[#0F2219]">
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#B99A63] to-[#b08832] text-lg font-extrabold text-[#092C27]">
             {avatarUrl ? (
               <img src={avatarUrl} alt={userName || 'profile'} className="h-full w-full object-cover" />
             ) : (
@@ -228,17 +221,17 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
               onClick={() => setOpen(false)}
               className={`dashboard-nav-link relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'is-active bg-white text-[#1B3A2D] shadow-sm'
+                  ? 'is-active bg-white text-[#0E3B34] shadow-sm'
                   : 'text-white/70 hover:bg-white/[0.06] hover:text-white'
               }`}
             >
-              <span className={isActive ? 'text-[#1B3A2D]' : 'text-[#C49A3C]/80'}>
+              <span className={isActive ? 'text-[#0E3B34]' : 'text-[#B99A63]/80'}>
                 <SvgIcon d={link.icon} />
               </span>
               <span>{t(link.labelKey)}</span>
               {isConversations && unreadConversations > 0 && (
                 <span className={`ms-auto flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-extrabold ${
-                  isActive ? 'bg-[#C49A3C] text-[#14201A]' : 'bg-[#C49A3C] text-[#0F2219]'
+                  isActive ? 'bg-[#B99A63] text-[#1B1B1B]' : 'bg-[#B99A63] text-[#092C27]'
                 }`}>
                   {unreadConversations > 9 ? '9+' : unreadConversations}
                 </span>
@@ -254,7 +247,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
           onClick={handleLogout}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-red-500/15 hover:text-red-300"
         >
-          <span className="text-[#C49A3C]/80"><SvgIcon d={ICONS.logout} /></span>
+          <span className="text-[#B99A63]/80"><SvgIcon d={ICONS.logout} /></span>
           {t('logout')}
         </button>
       </div>

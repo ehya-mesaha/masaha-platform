@@ -90,19 +90,19 @@ export default function AdminCategoriesPage() {
   return (
     <div className="dashboard-page">
       <div className="page-hero mb-7 p-7">
-        <p className="text-xs font-bold text-[#C49A3C]">تحكم الإدارة</p>
+        <p className="text-xs font-bold text-[#B99A63]">تحكم الإدارة</p>
         <h1 className="mt-2 text-3xl font-extrabold text-white">التصنيفات والأدلة</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-white/65">إدارة الأنواع والمرافق وخدمات أصحاب المساحات وخدمات شركاء إحياء مساحة من مكان واحد.</p>
       </div>
-      {message && <p className="mb-4 rounded-xl border border-[#E8E1D3] bg-white px-4 py-3 text-sm text-[#1B3A2D]">{message}</p>}
+      {message && <p className="mb-4 rounded-xl border border-[#D8D1C7] bg-white px-4 py-3 text-sm text-[#0E3B34]">{message}</p>}
       <div className="grid gap-6 xl:grid-cols-2">
         {sections.map(section => {
           const draft = drafts[section.apiType]
           return (
-            <section key={section.key} className="rounded-2xl border border-[#E1D9CA] bg-white p-5 shadow-[0_20px_55px_-45px_rgba(15,34,25,.55)]">
+            <section key={section.key} className="rounded-2xl border border-[#D8D1C7] bg-white p-5 shadow-[0_20px_55px_-45px_rgba(9, 44, 39,.55)]">
               <div className="mb-5">
-                <h2 className="font-display text-xl font-extrabold text-[#1B3A2D]">{section.title}</h2>
-                <p className="mt-1 text-xs leading-6 text-[#6B7566]">{section.subtitle}</p>
+                <h2 className="font-display text-xl font-extrabold text-[#0E3B34]">{section.title}</h2>
+                <p className="mt-1 text-xs leading-6 text-[#5F6764]">{section.subtitle}</p>
               </div>
               <div className="grid gap-2">
                 <input value={draft.name} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, name: event.target.value } }))} placeholder="اسم العنصر" className="field py-2.5" />
@@ -119,13 +119,13 @@ export default function AdminCategoriesPage() {
               </div>
               <div className="mt-5 space-y-2">
                 {data[section.key].map(item => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F7F3EB] px-4 py-3">
+                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F5F1E8] px-4 py-3">
                     <div className="min-w-0">
-                      <strong className="block truncate text-sm text-[#1B3A2D]">{item.name}</strong>
-                      {item.description && <span className="mt-1 block truncate text-[11px] text-[#6B7566]">{item.description}</span>}
+                      <strong className="block truncate text-sm text-[#0E3B34]">{item.name}</strong>
+                      {item.description && <span className="mt-1 block truncate text-[11px] text-[#5F6764]">{item.description}</span>}
                     </div>
                     <div className="flex gap-3 text-xs font-bold">
-                      <button onClick={() => rename(section, item)} className="text-[#1B3A2D]">تعديل</button>
+                      <button onClick={() => rename(section, item)} className="text-[#0E3B34]">تعديل</button>
                       <button onClick={() => remove(section, item.id)} className="text-red-600">حذف</button>
                     </div>
                   </div>

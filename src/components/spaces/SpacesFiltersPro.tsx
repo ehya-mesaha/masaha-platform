@@ -100,26 +100,26 @@ export default function SpacesFiltersPro({ types, params }: Props) {
     <div className="spaces-filter-panel premium-card sticky top-20 animate-in">
       <div className="spaces-filter-header flex items-center justify-between gap-4 px-5 pb-4 pt-5">
         <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#1B3A2D] text-[#E4C878]">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0E3B34] text-[#B99A63]">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10m-7 6h4M8 4v4m8 2v4m-4 2v4" />
             </svg>
           </span>
           <div>
-            <h3 className="font-extrabold text-[#14201A]">
+            <h3 className="font-extrabold text-[#1B1B1B]">
               {locale === 'en' ? 'Tailor your search' : 'خصص بحثك'}
             </h3>
-            <p className="mt-0.5 text-xs text-[#6B7566]">{t('filterHint')}</p>
+            <p className="mt-0.5 text-xs text-[#5F6764]">{t('filterHint')}</p>
           </div>
         </div>
-        <Link href="/spaces" className="text-xs font-semibold text-[#C49A3C] hover:text-[#1B3A2D]">
+        <Link href="/spaces" className="text-xs font-semibold text-[#B99A63] hover:text-[#0E3B34]">
           {t('clear')}
         </Link>
       </div>
 
       <div className="spaces-filter-body space-y-5 px-5 pb-2">
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('cityDistrict')}</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('cityDistrict')}</label>
           <input
             value={city}
             onChange={e => setCity(e.target.value)}
@@ -129,7 +129,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('spaceType')}</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('spaceType')}</label>
           <select value={typeId} onChange={e => setTypeId(e.target.value)} className="field bg-white">
             <option value="">{t('allTypes')}</option>
             {types.map(type => (
@@ -140,12 +140,12 @@ export default function SpacesFiltersPro({ types, params }: Props) {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-xs font-bold text-[#4A554D]">{t('hourlyPriceRange')}</label>
-            <span className="text-[11px] font-semibold text-[#1B3A2D]">
+            <label className="text-xs font-bold text-[#3F4B47]">{t('hourlyPriceRange')}</label>
+            <span className="text-[11px] font-semibold text-[#0E3B34]">
               {Number(minPrice || 0).toLocaleString('en-US')} — {maxPrice ? Number(maxPrice).toLocaleString('en-US') : (locale === 'en' ? 'No maximum' : 'بدون حد أعلى')} {maxPrice ? (locale === 'ar' ? 'ر.س' : 'SAR') : ''}
             </span>
           </div>
-          <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-3">
+          <div className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-3">
             <div className="grid grid-cols-2 gap-2">
               <label>
                 <span className="mb-1 block text-[10px] font-bold text-[#7A837B]">{t('minPrice')}</span>
@@ -180,8 +180,8 @@ export default function SpacesFiltersPro({ types, params }: Props) {
                   onClick={() => setMaxPrice(String(value))}
                   className={`whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] font-bold transition ${
                     Number(maxPrice) === value
-                      ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white'
-                      : 'border-[#DDD5C5] bg-white text-[#59635B] hover:border-[#C49A3C]'
+                      ? 'border-[#0E3B34] bg-[#0E3B34] text-white'
+                      : 'border-[#D8D1C7] bg-white text-[#59635B] hover:border-[#B99A63]'
                   }`}
                 >
                   {value.toLocaleString('en-US')}
@@ -191,7 +191,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
             <button
               type="button"
               onClick={() => setMaxPrice('')}
-              className="mt-2 text-[10px] font-bold text-[#A27B25] hover:text-[#1B3A2D]"
+              className="mt-2 text-[10px] font-bold text-[#A27B25] hover:text-[#0E3B34]"
             >
               {locale === 'en' ? 'Remove maximum price' : 'إلغاء الحد الأعلى للسعر'}
             </button>
@@ -199,7 +199,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('capacity')}</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('capacity')}</label>
           <input
             type="number"
             min={1}
@@ -211,7 +211,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#4A554D]">{t('availableDays')}</label>
+          <label className="mb-2 block text-xs font-bold text-[#3F4B47]">{t('availableDays')}</label>
           <div className="grid grid-cols-2 gap-2">
             {DAY_OPTIONS.map(day => {
               const active = selectedDays.has(day.value)
@@ -222,8 +222,8 @@ export default function SpacesFiltersPro({ types, params }: Props) {
                   onClick={() => toggleDay(day.value)}
                   className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-all ${
                     active
-                      ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white shadow-sm'
-                      : 'border-[#E8E3D8] bg-white text-[#4A554D] hover:border-[#C49A3C]'
+                      ? 'border-[#0E3B34] bg-[#0E3B34] text-white shadow-sm'
+                      : 'border-[#D8D1C7] bg-white text-[#3F4B47] hover:border-[#B99A63]'
                   }`}
                 >
                   {t(day.labelKey)}
@@ -234,23 +234,23 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('specificDate')}</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('specificDate')}</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className="field" dir="ltr" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('from')}</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('from')}</label>
             <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="field" dir="ltr" />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('to')}</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('to')}</label>
             <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="field" dir="ltr" />
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('sort')}</label>
+          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('sort')}</label>
           <select value={sort} onChange={e => setSort(e.target.value)} className="field bg-white">
             <option value="newest">{t('newest')}</option>
             <option value="priceAsc">{t('priceAsc')}</option>
@@ -260,17 +260,17 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         </div>
 
         {params.mode === 'program' && (
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#E8E3D8] bg-[#FBFAF7] p-3">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D8D1C7] bg-[#FAF8F3] p-3">
             <input type="checkbox" checked={fullyAvailable} onChange={(event) => setFullyAvailable(event.target.checked)} className="mt-1" />
             <span>
-              <strong className="block text-xs text-[#14201A]">{locale === 'en' ? 'Fully available only' : 'متاحة لكل مواعيد البرنامج فقط'}</strong>
-              <small className="mt-1 block leading-5 text-[#6B7566]">{locale === 'en' ? 'Hide spaces missing any session.' : 'إخفاء أي مساحة لا تتوفر في أحد المواعيد.'}</small>
+              <strong className="block text-xs text-[#1B1B1B]">{locale === 'en' ? 'Fully available only' : 'متاحة لكل مواعيد البرنامج فقط'}</strong>
+              <small className="mt-1 block leading-5 text-[#5F6764]">{locale === 'en' ? 'Hide spaces missing any session.' : 'إخفاء أي مساحة لا تتوفر في أحد المواعيد.'}</small>
             </span>
           </label>
         )}
 
       </div>
-      <div className="filter-apply-bar sticky bottom-0 mt-3 border-t border-[#E8E1D3] bg-white/95 p-4 backdrop-blur">
+      <div className="filter-apply-bar sticky bottom-0 mt-3 border-t border-[#D8D1C7] bg-white/95 p-4 backdrop-blur">
         <button type="button" onClick={applyFilters} className="btn-primary w-full rounded-xl py-3 text-sm font-semibold">
           {t('applyFilters')}
         </button>

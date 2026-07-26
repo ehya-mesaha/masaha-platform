@@ -33,13 +33,13 @@ export default async function BuyerBookingsPage() {
       <div className="page-hero mb-6 p-6 animate-in">
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold text-[#C49A3C] mb-2">مركز الحجوزات</p>
+            <p className="text-xs font-bold text-[#B99A63] mb-2">مركز الحجوزات</p>
             <h1 className="text-2xl font-extrabold text-white">حجوزاتي</h1>
             <p className="text-white/65 text-sm mt-1">تابع حجوزاتك المؤكدة وجلساتك وخدماتك من مكان واحد</p>
           </div>
           <Link
             href="/spaces"
-            className="inline-flex items-center justify-center rounded-xl bg-[#C49A3C] px-5 py-2.5 text-sm font-bold text-[#14201A] transition-transform hover:-translate-y-0.5"
+            className="inline-flex items-center justify-center rounded-xl bg-[#B99A63] px-5 py-2.5 text-sm font-bold text-[#1B1B1B] transition-transform hover:-translate-y-0.5"
           >
             تصفح المساحات
           </Link>
@@ -49,14 +49,14 @@ export default async function BuyerBookingsPage() {
       {bookings.length === 0 ? (
         <Card>
           <div className="text-center py-14">
-            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-[#F7F3EB] text-[#1B3A2D] floating">
+            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-[#F5F1E8] text-[#0E3B34] floating">
               <svg className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" /></svg>
             </div>
             <p className="text-gray-900 font-bold mb-1">لا توجد حجوزات بعد</p>
             <p className="text-gray-500 text-sm mb-5">ابدأ باستكشاف المساحات المناسبة لاجتماعك أو فعاليتك.</p>
             <Link
               href="/spaces"
-              className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219]"
+              className="bg-[#0E3B34] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#092C27]"
             >
               تصفح المساحات
             </Link>
@@ -68,7 +68,7 @@ export default async function BuyerBookingsPage() {
             const { variant, label } = getBookingStatusBadge(b.status)
             return (
               <Card key={b.id} padding={false} className="overflow-hidden">
-                <div className="flex gap-4 p-4 transition-colors hover:bg-[#FBFAF7]">
+                <div className="flex gap-4 p-4 transition-colors hover:bg-[#FAF8F3]">
                   <div className="w-24 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100">
                     {b.space.images[0]?.url ? (
                       <img src={b.space.images[0].url} alt={b.space.name} className="w-full h-full object-cover" />
@@ -88,11 +88,11 @@ export default async function BuyerBookingsPage() {
                     )}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Link href={`/buyer/bookings/${b.id}`} className="text-xs text-[#1B3A2D] hover:underline font-medium whitespace-nowrap">
+                    <Link href={`/buyer/bookings/${b.id}`} className="text-xs text-[#0E3B34] hover:underline font-medium whitespace-nowrap">
                       عرض
                     </Link>
                     {b.status === 'COMPLETED' && (
-                      <span className="text-[11px] font-semibold text-[#C49A3C]">
+                      <span className="text-[11px] font-semibold text-[#B99A63]">
                         جاهز للتقييم
                       </span>
                     )}

@@ -221,13 +221,13 @@ export default function ConversationsClient({ currentUser }: Props) {
     <div className="p-4 sm:p-6" dir="rtl">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-[#14201A]">المحادثات</h1>
+          <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">المحادثات</h1>
         </div>
         {currentUser.role === 'ADMIN' ? (
           <button
             type="button"
             onClick={toggleAdminScope}
-            className="inline-flex items-center justify-center rounded-xl border border-[#D8CFBE] bg-white px-4 py-2.5 text-sm font-semibold text-[#1B3A2D] transition-colors hover:border-[#1B3A2D] hover:bg-[#F7F3EB]"
+            className="inline-flex items-center justify-center rounded-xl border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm font-semibold text-[#0E3B34] transition-colors hover:border-[#0E3B34] hover:bg-[#F5F1E8]"
           >
             {adminScope === 'support' ? 'عرض محادثات المستخدمين عند الحاجة' : 'إخفاء محادثات المستخدمين'}
           </button>
@@ -249,18 +249,18 @@ export default function ConversationsClient({ currentUser }: Props) {
         </div>
       )}
 
-      <div className="grid min-h-[calc(100dvh-11rem)] overflow-hidden rounded-2xl border border-[#E8E3D8] bg-white shadow-sm lg:grid-cols-[22rem_1fr]">
-        <aside className={`${activeConversation ? 'hidden lg:block' : 'block'} border-[#E8E3D8] lg:border-l`}>
-          <div className="border-b border-[#E8E3D8] px-4 py-3">
-            <p className="text-xs font-bold text-[#6B7566]">
+      <div className="grid min-h-[calc(100dvh-11rem)] overflow-hidden rounded-2xl border border-[#D8D1C7] bg-white shadow-sm lg:grid-cols-[22rem_1fr]">
+        <aside className={`${activeConversation ? 'hidden lg:block' : 'block'} border-[#D8D1C7] lg:border-l`}>
+          <div className="border-b border-[#D8D1C7] px-4 py-3">
+            <p className="text-xs font-bold text-[#5F6764]">
               {currentUser.role === 'ADMIN' && adminScope === 'all' ? 'محادثات المستخدمين' : 'قائمة المحادثات'}
             </p>
           </div>
           <div className="max-h-[calc(100dvh-15rem)] overflow-y-auto p-2">
             {loading ? (
-              <div className="p-6 text-center text-sm text-[#6B7566]">جاري تحميل المحادثات...</div>
+              <div className="p-6 text-center text-sm text-[#5F6764]">جاري تحميل المحادثات...</div>
             ) : conversations.length === 0 ? (
-              <div className="m-3 rounded-xl border border-dashed border-[#D8CFBE] bg-[#F7F3EB] p-5 text-center text-sm text-[#6B7566]">
+              <div className="m-3 rounded-xl border border-dashed border-[#D8D1C7] bg-[#F5F1E8] p-5 text-center text-sm text-[#5F6764]">
                 لا توجد محادثات بعد
               </div>
             ) : conversations.map(conversation => {
@@ -274,27 +274,27 @@ export default function ConversationsClient({ currentUser }: Props) {
                   onClick={() => setActiveId(conversation.id)}
                   className={`mb-1.5 flex w-full items-center gap-3 rounded-xl border p-3 text-right transition-colors ${
                     isActive
-                      ? 'border-[#C49A3C] bg-[#F7F3EB]'
-                      : 'border-transparent hover:border-[#E8E3D8] hover:bg-[#FAF8F2]'
+                      ? 'border-[#B99A63] bg-[#F5F1E8]'
+                      : 'border-transparent hover:border-[#D8D1C7] hover:bg-[#FAF8F2]'
                   }`}
                 >
-                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#1B3A2D] text-base font-extrabold text-[#C49A3C]">
+                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#0E3B34] text-base font-extrabold text-[#B99A63]">
                     {initials(title)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-bold text-[#14201A]">{title}</p>
+                      <p className="truncate text-sm font-bold text-[#1B1B1B]">{title}</p>
                       <span className="flex-shrink-0 text-[10px] text-[#8B9389]">
                         {formatTime(conversation.lastMessageAt || conversation.updatedAt)}
                       </span>
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-[#6B7566]">{subtitle}</p>
+                    <p className="mt-0.5 truncate text-xs text-[#5F6764]">{subtitle}</p>
                     <div className="mt-1 flex items-center justify-between gap-2">
                       <p className="truncate text-[11px] text-[#8B9389]">
                         {conversation.lastMessage?.content || 'ابدأ المحادثة الآن'}
                       </p>
                       {!!conversation.unreadCount && (
-                        <span className="rounded-full bg-[#C49A3C] px-2 py-0.5 text-[10px] font-bold text-[#14201A]">
+                        <span className="rounded-full bg-[#B99A63] px-2 py-0.5 text-[10px] font-bold text-[#1B1B1B]">
                           {conversation.unreadCount}
                         </span>
                       )}
@@ -306,45 +306,45 @@ export default function ConversationsClient({ currentUser }: Props) {
           </div>
         </aside>
 
-        <section className={`${activeConversation ? 'flex' : 'hidden lg:flex'} min-w-0 flex-col bg-[#FBFAF7]`}>
+        <section className={`${activeConversation ? 'flex' : 'hidden lg:flex'} min-w-0 flex-col bg-[#FAF8F3]`}>
           {activeConversation ? (
             <>
-              <div className="border-b border-[#E8E3D8] bg-white px-4 py-3">
+              <div className="border-b border-[#D8D1C7] bg-white px-4 py-3">
                 <button
                   type="button"
                   onClick={() => setActiveId(null)}
-                  className="mb-3 text-xs font-semibold text-[#1B3A2D] lg:hidden"
+                  className="mb-3 text-xs font-semibold text-[#0E3B34] lg:hidden"
                 >
                   العودة للمحادثات
                 </button>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#1B3A2D] text-lg font-extrabold text-[#C49A3C]">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#0E3B34] text-lg font-extrabold text-[#B99A63]">
                     {initials(getConversationTitle(activeConversation, currentUser))}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="truncate text-base font-extrabold text-[#14201A]">
+                    <h2 className="truncate text-base font-extrabold text-[#1B1B1B]">
                       {getConversationTitle(activeConversation, currentUser)}
                     </h2>
-                    <p className="mt-0.5 truncate text-xs text-[#6B7566]">
+                    <p className="mt-0.5 truncate text-xs text-[#5F6764]">
                       {getConversationSubtitle(activeConversation, currentUser)}
                     </p>
                   </div>
                 </div>
                 {activeConversation.space && (
-                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#E8E3D8] bg-[#F7F3EB] p-3">
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-3">
                     {activeConversation.space.images[0]?.url ? (
                       <img src={activeConversation.space.images[0].url} alt="" className="h-12 w-12 rounded-lg object-cover" />
                     ) : (
-                      <div className="h-12 w-12 rounded-lg bg-[#1B3A2D]/10" />
+                      <div className="h-12 w-12 rounded-lg bg-[#0E3B34]/10" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-[#14201A]">{activeConversation.space.name}</p>
-                      <p className="text-xs text-[#6B7566]">
+                      <p className="truncate text-sm font-bold text-[#1B1B1B]">{activeConversation.space.name}</p>
+                      <p className="text-xs text-[#5F6764]">
                         {activeConversation.space.city}
                         {activeConversation.space.district ? `، ${activeConversation.space.district}` : ''}
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-[#1B3A2D]">
+                    <span className="text-xs font-bold text-[#0E3B34]">
                       {activeConversation.space.price.toLocaleString('en-US')} ر.س
                     </span>
                   </div>
@@ -353,9 +353,9 @@ export default function ConversationsClient({ currentUser }: Props) {
 
               <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
                 {messagesLoading ? (
-                  <div className="mt-8 text-center text-sm text-[#6B7566]">جاري تحميل الرسائل...</div>
+                  <div className="mt-8 text-center text-sm text-[#5F6764]">جاري تحميل الرسائل...</div>
                 ) : messages.length === 0 ? (
-                  <div className="mx-auto mt-10 max-w-sm rounded-2xl border border-dashed border-[#D8CFBE] bg-white p-6 text-center text-sm text-[#6B7566]">
+                  <div className="mx-auto mt-10 max-w-sm rounded-2xl border border-dashed border-[#D8D1C7] bg-white p-6 text-center text-sm text-[#5F6764]">
                     لا توجد رسائل بعد
                   </div>
                 ) : messages.map(message => {
@@ -364,8 +364,8 @@ export default function ConversationsClient({ currentUser }: Props) {
                     <div key={message.id} className={`flex ${isMine ? 'justify-start' : 'justify-end'}`}>
                       <div className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm sm:max-w-[68%] ${
                         isMine
-                          ? 'rounded-br-md bg-[#1B3A2D] text-white'
-                          : 'rounded-bl-md border border-[#E8E3D8] bg-white text-[#14201A]'
+                          ? 'rounded-br-md bg-[#0E3B34] text-white'
+                          : 'rounded-bl-md border border-[#D8D1C7] bg-white text-[#1B1B1B]'
                       }`}>
                         <p className="whitespace-pre-wrap break-words">{message.content}</p>
                         <p className={`mt-1 text-[10px] ${isMine ? 'text-white/60' : 'text-[#8B9389]'}`}>
@@ -377,14 +377,14 @@ export default function ConversationsClient({ currentUser }: Props) {
                 })}
               </div>
 
-              <form onSubmit={sendMessage} className="border-t border-[#E8E3D8] bg-white p-3">
-                <div className="flex items-end gap-2 rounded-2xl border border-[#D8CFBE] bg-[#F7F3EB] p-1.5">
+              <form onSubmit={sendMessage} className="border-t border-[#D8D1C7] bg-white p-3">
+                <div className="flex items-end gap-2 rounded-2xl border border-[#D8D1C7] bg-[#F5F1E8] p-1.5">
                   <textarea
                     value={draft}
                     onChange={e => setDraft(e.target.value)}
                     placeholder="اكتب رسالتك..."
                     rows={1}
-                    className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-[#14201A] outline-none placeholder:text-[#8B9389]"
+                    className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-[#1B1B1B] outline-none placeholder:text-[#8B9389]"
                     onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
@@ -395,7 +395,7 @@ export default function ConversationsClient({ currentUser }: Props) {
                   <button
                     type="submit"
                     disabled={!draft.trim() || sending}
-                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#1B3A2D] text-white transition-colors hover:bg-[#0F2219] disabled:opacity-50"
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#0E3B34] text-white transition-colors hover:bg-[#092C27] disabled:opacity-50"
                     aria-label="إرسال"
                   >
                     ↵
@@ -404,7 +404,7 @@ export default function ConversationsClient({ currentUser }: Props) {
               </form>
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-[#6B7566]">
+            <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-[#5F6764]">
               لا توجد محادثة محددة
             </div>
           )}

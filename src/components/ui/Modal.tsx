@@ -38,7 +38,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
         className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-y-auto`}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E3D8]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#D8D1C7]">
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             <button
               onClick={onClose}

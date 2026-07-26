@@ -16,8 +16,8 @@ export default function StepReview({ form, types, amenities }: StepProps) {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">المراجعة والنشر</h2>
-      <p className="text-[#6B7566] text-sm mb-6">راجع جميع المعلومات قبل إرسال المساحة للمراجعة والنشر.</p>
+      <h2 className="font-display text-xl font-extrabold text-[#1B1B1B] mb-1">المراجعة والنشر</h2>
+      <p className="text-[#5F6764] text-sm mb-6">راجع جميع المعلومات قبل إرسال المساحة للمراجعة والنشر.</p>
 
       <div className="space-y-4">
         {/* Basic Info */}
@@ -56,7 +56,7 @@ export default function StepReview({ form, types, amenities }: StepProps) {
           <Section title="المرافق والتجهيزات">
             <div className="flex flex-wrap gap-2">
               {selectedAmenities.map(a => (
-                <span key={a.id} className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#1B3A2D]/5 text-[#1B3A2D] border border-[#1B3A2D]/10">
+                <span key={a.id} className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#0E3B34]/5 text-[#0E3B34] border border-[#0E3B34]/10">
                   {a.name}
                 </span>
               ))}
@@ -103,11 +103,11 @@ export default function StepReview({ form, types, amenities }: StepProps) {
           <Row label="سياسة الإلغاء" value={policyLabel[form.cancellationPolicy] || '—'} />
           {activeRules.length > 0 && (
             <div className="mt-2">
-              <span className="text-[11px] font-bold text-[#6B7566]">القواعد:</span>
+              <span className="text-[11px] font-bold text-[#5F6764]">القواعد:</span>
               <ul className="mt-1 space-y-1">
                 {activeRules.map((r, i) => (
-                  <li key={i} className="text-xs text-[#4A554D] flex items-center gap-2">
-                    <svg className="w-3 h-3 text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <li key={i} className="text-xs text-[#3F4B47] flex items-center gap-2">
+                    <svg className="w-3 h-3 text-[#0E3B34]" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {r.rule}
@@ -130,8 +130,8 @@ export default function StepReview({ form, types, amenities }: StepProps) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="p-4 rounded-xl border border-[#ECE6D8] bg-white">
-      <h3 className="text-sm font-bold text-[#14201A] mb-3">{title}</h3>
+    <div className="p-4 rounded-xl border border-[#D8D1C7] bg-white">
+      <h3 className="text-sm font-bold text-[#1B1B1B] mb-3">{title}</h3>
       {children}
     </div>
   )
@@ -140,8 +140,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between py-1.5 text-sm">
-      <span className="text-[#6B7566] text-xs">{label}</span>
-      <span className="text-[#14201A] font-medium text-xs text-end max-w-[60%]" dir={value.includes(':') ? 'ltr' : undefined}>{value}</span>
+      <span className="text-[#5F6764] text-xs">{label}</span>
+      <span className="text-[#1B1B1B] font-medium text-xs text-end max-w-[60%]" dir={value.includes(':') ? 'ltr' : undefined}>{value}</span>
     </div>
   )
 }

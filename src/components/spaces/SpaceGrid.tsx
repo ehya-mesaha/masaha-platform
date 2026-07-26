@@ -27,9 +27,9 @@ export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مسا
   if (spaces.length === 0) {
     return (
       <div className="premium-card animate-in text-center py-16 text-gray-500">
-        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-[#F7F3EB] text-[#1B3A2D] floating"><svg className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M4 20h16M6 20V5h12v15M9 9h2m2 0h2m-6 4h2m2 0h2" /></svg></div>
-        <p className="text-lg font-bold text-[#14201A]">{emptyMessage}</p>
-        <p className="mt-1 text-sm text-[#6B7566]">جرّب تعديل السعر أو الأيام أو وقت الحجز.</p>
+        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-[#F5F1E8] text-[#0E3B34] floating"><svg className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M4 20h16M6 20V5h12v15M9 9h2m2 0h2m-6 4h2m2 0h2" /></svg></div>
+        <p className="text-lg font-bold text-[#1B1B1B]">{emptyMessage}</p>
+        <p className="mt-1 text-sm text-[#5F6764]">جرّب تعديل السعر أو الأيام أو وقت الحجز.</p>
       </div>
     )
   }

@@ -50,8 +50,8 @@ export default function StartConversationButton({ sellerId, spaceId, admin, labe
   }
 
   const className = variant === 'primary'
-    ? 'bg-[#1B3A2D] text-white hover:bg-[#0F2219]'
-    : 'border border-[#D8CFBE] bg-white text-[#1B3A2D] hover:border-[#1B3A2D] hover:bg-[#F7F3EB]'
+    ? 'bg-[#0E3B34] text-white hover:bg-[#092C27]'
+    : 'border border-[#D8D1C7] bg-white text-[#0E3B34] hover:border-[#0E3B34] hover:bg-[#F5F1E8]'
 
   return (
     <div>

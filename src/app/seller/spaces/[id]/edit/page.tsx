@@ -119,13 +119,13 @@ export default function EditSpacePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المساحة *</label>
               <input value={form.name} onChange={e => update('name', e.target.value)} required
-                className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" />
+                className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">نوع المساحة *</label>
               <select value={form.typeId} onChange={e => update('typeId', e.target.value)} required
-                className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white">
+                className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white">
                 <option value="">اختر النوع</option>
                 {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
@@ -134,38 +134,38 @@ export default function EditSpacePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">الوصف</label>
               <textarea value={form.description} onChange={e => update('description', e.target.value)} rows={3}
-                className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] resize-none" />
+                className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] resize-none" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">المدينة *</label>
                 <input value={form.city} onChange={e => update('city', e.target.value)} required
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" />
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">الحي</label>
                 <input value={form.district} onChange={e => update('district', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" />
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">الطاقة الاستيعابية</label>
               <input type="number" value={form.capacity} onChange={e => update('capacity', e.target.value)} min={1}
-                className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" />
+                className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">السعر (ر.س) *</label>
                 <input type="number" value={form.price} onChange={e => update('price', e.target.value)} required min={0}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" />
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">الفترة</label>
                 <select value={form.pricePeriod} onChange={e => update('pricePeriod', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white">
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white">
                   <option value="hour">بالساعة</option>
                   <option value="day">باليوم</option>
                 </select>
@@ -187,8 +187,8 @@ export default function EditSpacePage() {
                   <button key={a.id} type="button" onClick={() => toggleAmenity(a.id)}
                     className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
                       form.amenityIds.includes(a.id)
-                        ? 'bg-[#1B3A2D] text-white border-[#1B3A2D]'
-                        : 'bg-white text-gray-600 border-[#E8E3D8] hover:border-[#1B3A2D]'
+                        ? 'bg-[#0E3B34] text-white border-[#0E3B34]'
+                        : 'bg-white text-gray-600 border-[#D8D1C7] hover:border-[#0E3B34]'
                     }`}>
                     {a.name}
                   </button>
@@ -196,14 +196,14 @@ export default function EditSpacePage() {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-[#E8E3D8]">
+            <div className="flex gap-3 pt-4 border-t border-[#D8D1C7]">
               <button type="submit" disabled={saving}
-                className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] disabled:opacity-60 flex items-center gap-2">
+                className="bg-[#0E3B34] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#092C27] disabled:opacity-60 flex items-center gap-2">
                 {saving && <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>}
                 {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
               </button>
               <button type="button" onClick={() => router.back()}
-                className="px-6 py-2.5 rounded-lg text-sm font-medium border border-[#E8E3D8] text-gray-600 hover:bg-gray-50">
+                className="px-6 py-2.5 rounded-lg text-sm font-medium border border-[#D8D1C7] text-gray-600 hover:bg-gray-50">
                 إلغاء
               </button>
             </div>

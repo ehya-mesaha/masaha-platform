@@ -120,7 +120,7 @@ export default function BuyerBookingDetailPage() {
         <div className="page-hero mb-6 p-6 animate-in">
           <div className="relative flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold text-[#C49A3C] mb-2">حجز موثق</p>
+              <p className="text-xs font-bold text-[#B99A63] mb-2">حجز موثق</p>
               <h1 className="text-2xl font-extrabold text-white">تفاصيل الحجز</h1>
               <p className="mt-1 text-sm text-white/65">{booking.space.name}</p>
             </div>
@@ -130,7 +130,7 @@ export default function BuyerBookingDetailPage() {
 
         <div className="space-y-4 motion-list">
           {booking.space.images[0]?.url && (
-            <div className="h-52 rounded-2xl overflow-hidden shadow-[0_24px_70px_-44px_rgba(15,34,25,0.7)]">
+            <div className="h-52 rounded-2xl overflow-hidden shadow-[0_24px_70px_-44px_rgba(9, 44, 39,0.7)]">
               <img src={booking.space.images[0].url} alt={booking.space.name} className="w-full h-full object-cover" />
             </div>
           )}
@@ -154,7 +154,7 @@ export default function BuyerBookingDetailPage() {
               <div><span className="text-gray-500">الوحدة</span><p className="font-medium mt-0.5">{booking.unit.label}</p></div>
             </div>
             {booking.notes && (
-              <div className="mt-4 pt-4 border-t border-[#E8E3D8]">
+              <div className="mt-4 pt-4 border-t border-[#D8D1C7]">
                 <p className="text-gray-500 text-xs mb-1">ملاحظاتك</p>
                 <p className="text-gray-700 text-sm">{booking.notes}</p>
               </div>
@@ -164,14 +164,14 @@ export default function BuyerBookingDetailPage() {
           {booking.services.length > 0 && (
             <Card>
               <h3 className="mb-4 font-semibold text-gray-900">خدمات المساحة</h3>
-              <div className="overflow-hidden rounded-xl border border-[#E8E3D8]">
+              <div className="overflow-hidden rounded-xl border border-[#D8D1C7]">
                 {booking.services.map(service => (
                   <div key={service.id} className="grid grid-cols-[1fr_auto] gap-3 border-b border-[#EEE8DC] px-4 py-3 text-sm last:border-0">
                     <div>
-                      <strong className="block text-[#1B3A2D]">{service.name}</strong>
+                      <strong className="block text-[#0E3B34]">{service.name}</strong>
                       <span className="text-xs text-gray-500">{service.quantity} × {formatNumber(service.unitPrice)} ر.س</span>
                     </div>
-                    <strong className="self-center text-[#1B3A2D]">{formatNumber(service.lineTotal)} ر.س</strong>
+                    <strong className="self-center text-[#0E3B34]">{formatNumber(service.lineTotal)} ر.س</strong>
                   </div>
                 ))}
               </div>
@@ -186,7 +186,7 @@ export default function BuyerBookingDetailPage() {
               <div className="flex justify-between"><span className="text-gray-500">السعر الأساسي</span><span>{formatNumber(booking.basePrice)} ر.س</span></div>
               {booking.discountAmount > 0 && <div className="flex justify-between text-emerald-700"><span>الخصم</span><span>-{formatNumber(booking.discountAmount)} ر.س</span></div>}
               {booking.servicesTotal > 0 && <div className="flex justify-between"><span className="text-gray-500">الخدمات</span><span>{formatNumber(booking.servicesTotal)} ر.س</span></div>}
-              <div className="flex justify-between border-t border-[#E8E3D8] pt-3 text-base font-extrabold text-[#1B3A2D]"><span>الإجمالي</span><span>{formatNumber(booking.grandTotal)} ر.س</span></div>
+              <div className="flex justify-between border-t border-[#D8D1C7] pt-3 text-base font-extrabold text-[#0E3B34]"><span>الإجمالي</span><span>{formatNumber(booking.grandTotal)} ر.س</span></div>
             </div>
           </Card>
 
@@ -204,7 +204,7 @@ export default function BuyerBookingDetailPage() {
                 <div className="rounded-2xl border border-green-200 bg-green-50 p-5 animate-in">
                   <div className="mb-2 flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
-                      <span key={star} className={star <= booking.review!.rating ? 'text-[#C49A3C] text-xl' : 'text-[#D8CFBE] text-xl'}>
+                      <span key={star} className={star <= booking.review!.rating ? 'text-[#B99A63] text-xl' : 'text-[#D8D1C7] text-xl'}>
                         ★
                       </span>
                     ))}
@@ -231,8 +231,8 @@ export default function BuyerBookingDetailPage() {
                           onClick={() => setReviewRating(star)}
                           className={`h-12 w-12 rounded-2xl border text-2xl transition-all hover:-translate-y-0.5 ${
                             star <= reviewRating
-                              ? 'border-[#C49A3C] bg-[#F7F3EB] text-[#C49A3C] shadow-sm'
-                              : 'border-[#E8E3D8] bg-white text-[#D8CFBE] hover:border-[#C49A3C]'
+                              ? 'border-[#B99A63] bg-[#F5F1E8] text-[#B99A63] shadow-sm'
+                              : 'border-[#D8D1C7] bg-white text-[#D8D1C7] hover:border-[#B99A63]'
                           }`}
                           aria-label={`${star} نجوم`}
                         >
@@ -249,13 +249,13 @@ export default function BuyerBookingDetailPage() {
                       rows={4}
                       maxLength={1000}
                       placeholder="شارك رأيك عن المساحة وتجربة الحجز..."
-                      className="w-full resize-none rounded-xl border border-[#E8E3D8] px-4 py-3 text-sm focus:border-[#1B3A2D] focus:outline-none"
+                      className="w-full resize-none rounded-xl border border-[#D8D1C7] px-4 py-3 text-sm focus:border-[#0E3B34] focus:outline-none"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={reviewLoading}
-                    className="w-full rounded-xl bg-[#1B3A2D] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0F2219] disabled:opacity-60"
+                    className="w-full rounded-xl bg-[#0E3B34] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#092C27] disabled:opacity-60"
                   >
                     {reviewLoading ? 'جاري إرسال التقييم...' : 'إرسال التقييم'}
                   </button>
@@ -269,7 +269,7 @@ export default function BuyerBookingDetailPage() {
               <h3 className="font-semibold text-gray-900">إلغاء الحجز</h3>
               <p className="mt-2 text-sm leading-7 text-gray-600">
                 تطبق سياسة الإلغاء المتفق عليها. مبلغ الاسترداد المتوقع حاليًا:
-                <strong className="mx-1 text-[#1B3A2D]">{formatNumber(cancellation?.refundAmount ?? 0)} ر.س</strong>
+                <strong className="mx-1 text-[#0E3B34]">{formatNumber(cancellation?.refundAmount ?? 0)} ر.س</strong>
                 ({cancellation?.refundPercent ?? 0}%).
               </p>
               <button

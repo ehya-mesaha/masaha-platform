@@ -51,7 +51,7 @@ export default async function AdminSpaceNeedsPage({
   }
 
   const statCards = [
-    { label: 'إجمالي الطلبات', value: stats.total, color: 'text-[#1B3A2D]' },
+    { label: 'إجمالي الطلبات', value: stats.total, color: 'text-[#0E3B34]' },
     { label: 'طلبات جديدة', value: stats.newCount, color: 'text-amber-700' },
     { label: 'قيد المراجعة', value: stats.inReview, color: 'text-blue-700' },
     { label: 'تم توفير خيارات', value: stats.matched, color: 'text-green-700' },
@@ -61,7 +61,7 @@ export default async function AdminSpaceNeedsPage({
     <div className="dashboard-page">
       <div className="page-hero mb-6 p-6 animate-in">
         <div className="relative">
-          <p className="mb-2 text-xs font-bold text-[#C49A3C]">طلبات لم يجد أصحابها مساحة مناسبة</p>
+          <p className="mb-2 text-xs font-bold text-[#B99A63]">طلبات لم يجد أصحابها مساحة مناسبة</p>
           <h1 className="text-2xl font-extrabold text-white">احتياجات المساحات</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/65">
             لوحة تشغيل واضحة لطلبات المستأجرين خارج نتائج البحث، مع الحالة وملاحظات الفريق ومعلومات التواصل.
@@ -72,8 +72,8 @@ export default async function AdminSpaceNeedsPage({
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map(card => (
           <div key={card.label} className="premium-card p-5 animate-in">
-            <p className="text-xs font-bold text-[#6B7566]">{card.label}</p>
-            <p className="mt-2 text-3xl font-extrabold text-[#1B3A2D]">{card.value.toLocaleString('en-US')}</p>
+            <p className="text-xs font-bold text-[#5F6764]">{card.label}</p>
+            <p className="mt-2 text-3xl font-extrabold text-[#0E3B34]">{card.value.toLocaleString('en-US')}</p>
           </div>
         ))}
       </div>
@@ -82,7 +82,7 @@ export default async function AdminSpaceNeedsPage({
         <Link
           href="/admin/space-needs"
           className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${
-            !status ? 'bg-[#1B3A2D] text-white' : 'border border-[#E8E3D8] bg-white text-[#4A554D] hover:border-[#C49A3C]'
+            !status ? 'bg-[#0E3B34] text-white' : 'border border-[#D8D1C7] bg-white text-[#3F4B47] hover:border-[#B99A63]'
           }`}
         >
           الكل
@@ -92,7 +92,7 @@ export default async function AdminSpaceNeedsPage({
             key={item.value}
             href={`/admin/space-needs?status=${item.value}`}
             className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${
-              status === item.value ? 'bg-[#1B3A2D] text-white' : 'border border-[#E8E3D8] bg-white text-[#4A554D] hover:border-[#C49A3C]'
+              status === item.value ? 'bg-[#0E3B34] text-white' : 'border border-[#D8D1C7] bg-white text-[#3F4B47] hover:border-[#B99A63]'
             }`}
           >
             {item.label}
@@ -102,8 +102,8 @@ export default async function AdminSpaceNeedsPage({
 
       {requests.length === 0 ? (
         <div className="premium-card p-10 text-center animate-in">
-          <p className="font-bold text-[#14201A]">لا توجد طلبات مطابقة</p>
-          <p className="mt-1 text-sm text-[#6B7566]">عند إرسال المستأجرين لاحتياجاتهم ستظهر هنا مباشرة.</p>
+          <p className="font-bold text-[#1B1B1B]">لا توجد طلبات مطابقة</p>
+          <p className="mt-1 text-sm text-[#5F6764]">عند إرسال المستأجرين لاحتياجاتهم ستظهر هنا مباشرة.</p>
         </div>
       ) : (
         <div className="grid gap-4 motion-list">
@@ -119,53 +119,53 @@ export default async function AdminSpaceNeedsPage({
                           <span className={`rounded-full border px-3 py-1 text-xs font-bold ${statusMeta.className}`}>
                             {statusMeta.label}
                           </span>
-                          <span className="rounded-full bg-[#F7F3EB] px-3 py-1 text-xs font-bold text-[#1B3A2D]">
+                          <span className="rounded-full bg-[#F5F1E8] px-3 py-1 text-xs font-bold text-[#0E3B34]">
                             {request.spaceType}
                           </span>
                         </div>
-                        <h2 className="text-xl font-extrabold text-[#14201A]">
+                        <h2 className="text-xl font-extrabold text-[#1B1B1B]">
                           {request.city}{request.district ? `، ${request.district}` : ''}
                         </h2>
-                        <p className="mt-1 text-sm text-[#6B7566]">
+                        <p className="mt-1 text-sm text-[#5F6764]">
                           أرسل في {new Date(request.createdAt).toLocaleDateString('en-US')}
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] px-4 py-3 text-center">
-                        <p className="text-[11px] font-bold text-[#6B7566]">السعة المطلوبة</p>
-                        <p className="mt-1 text-2xl font-extrabold text-[#1B3A2D]">{request.capacity.toLocaleString('en-US')}</p>
+                      <div className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] px-4 py-3 text-center">
+                        <p className="text-[11px] font-bold text-[#5F6764]">السعة المطلوبة</p>
+                        <p className="mt-1 text-2xl font-extrabold text-[#0E3B34]">{request.capacity.toLocaleString('en-US')}</p>
                       </div>
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-3">
-                      <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
-                        <p className="text-[11px] font-bold text-[#6B7566]">التاريخ المتوقع</p>
-                        <p className="mt-1 text-sm font-bold text-[#14201A]">{request.expectedDate || 'غير محدد'}</p>
+                      <div className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-4">
+                        <p className="text-[11px] font-bold text-[#5F6764]">التاريخ المتوقع</p>
+                        <p className="mt-1 text-sm font-bold text-[#1B1B1B]">{request.expectedDate || 'غير محدد'}</p>
                       </div>
-                      <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4 md:col-span-2">
-                        <p className="text-[11px] font-bold text-[#6B7566]">الميزانية المقترحة</p>
-                        <p className="mt-1 text-sm font-bold text-[#14201A]">{formatBudgetRange(request.budgetMin, request.budgetMax)}</p>
+                      <div className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-4 md:col-span-2">
+                        <p className="text-[11px] font-bold text-[#5F6764]">الميزانية المقترحة</p>
+                        <p className="mt-1 text-sm font-bold text-[#1B1B1B]">{formatBudgetRange(request.budgetMin, request.budgetMax)}</p>
                       </div>
                     </div>
 
                     {request.details && (
-                      <div className="mt-4 rounded-2xl border border-[#E8E3D8] bg-white p-4">
-                        <p className="mb-1 text-[11px] font-bold text-[#6B7566]">تفاصيل إضافية</p>
-                        <p className="text-sm leading-7 text-[#4A554D]">{request.details}</p>
+                      <div className="mt-4 rounded-2xl border border-[#D8D1C7] bg-white p-4">
+                        <p className="mb-1 text-[11px] font-bold text-[#5F6764]">تفاصيل إضافية</p>
+                        <p className="text-sm leading-7 text-[#3F4B47]">{request.details}</p>
                       </div>
                     )}
 
-                    <div className="mt-4 rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
-                      <p className="mb-2 text-[11px] font-bold text-[#6B7566]">بيانات المستأجر</p>
-                      <div className="grid gap-2 text-sm text-[#4A554D] md:grid-cols-3">
-                        <p className="font-bold text-[#14201A]">{request.buyer.name}</p>
+                    <div className="mt-4 rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-4">
+                      <p className="mb-2 text-[11px] font-bold text-[#5F6764]">بيانات المستأجر</p>
+                      <div className="grid gap-2 text-sm text-[#3F4B47] md:grid-cols-3">
+                        <p className="font-bold text-[#1B1B1B]">{request.buyer.name}</p>
                         <p dir="ltr">{request.buyer.email}</p>
                         <p dir="ltr">{request.buyer.phone || 'لا يوجد رقم'}</p>
                       </div>
                     </div>
                   </div>
 
-                  <aside className="border-t border-[#E8E3D8] bg-[#FBFAF7] p-5 lg:border-t-0 lg:border-r">
-                    <p className="mb-3 text-sm font-extrabold text-[#14201A]">إدارة الطلب</p>
+                  <aside className="border-t border-[#D8D1C7] bg-[#FAF8F3] p-5 lg:border-t-0 lg:border-r">
+                    <p className="mb-3 text-sm font-extrabold text-[#1B1B1B]">إدارة الطلب</p>
                     <AdminSpaceNeedActions
                       id={request.id}
                       initialStatus={request.status}

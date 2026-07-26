@@ -62,6 +62,7 @@ export default function NewSpacePage() {
 
   function update(field: string, value: unknown) {
     setForm(p => ({ ...p, [field]: value }))
+    setError('')
     setCompletedSteps(current => {
       const nextCompleted = new Set(current)
       nextCompleted.delete(step)
@@ -69,10 +70,6 @@ export default function NewSpacePage() {
     })
     setFurthestStep(current => Math.min(current, step))
   }
-
-  useEffect(() => {
-    if (error && !getStepError(step, form)) setError('')
-  }, [form, step, error])
 
   function next() {
     if (step === 1 && categoriesLoading) {
@@ -151,7 +148,7 @@ export default function NewSpacePage() {
         <div className="page-hero mb-6 overflow-hidden p-6 sm:p-8">
           <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>
-              <p className="mb-2 text-xs font-extrabold text-[#E4C878]">إضافة احترافية · 9 خطوات إلزامية</p>
+              <p className="mb-2 text-xs font-extrabold text-[#B99A63]">إضافة احترافية · 9 خطوات إلزامية</p>
               <h1 className="font-display text-2xl font-extrabold text-white sm:text-3xl">إضافة مساحة جديدة</h1>
               <p className="mt-2 text-sm text-white/65">أكمل كل خطوة لضمان نشر بيانات واضحة وجاهزة للحجز المباشر.</p>
             </div>
@@ -161,7 +158,7 @@ export default function NewSpacePage() {
                 <span>{progress}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
-                <span className="block h-full rounded-full bg-[#E4C878] transition-all duration-500" style={{ width: `${progress}%` }} />
+                <span className="block h-full rounded-full bg-[#B99A63] transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
             </div>
           </div>
@@ -185,10 +182,10 @@ export default function NewSpacePage() {
                   disabled={i + 1 > furthestStep}
                   className={`w-8 h-8 rounded-full flex-shrink-0 text-xs font-bold transition-colors ${
                     step === i + 1
-                      ? 'bg-[#1B3A2D] text-white'
+                      ? 'bg-[#0E3B34] text-white'
                     : completedSteps.has(i + 1)
-                      ? 'bg-[#1B3A2D]/10 text-[#1B3A2D]'
-                      : 'bg-[#F7F3EB] text-[#6B7566]'
+                      ? 'bg-[#0E3B34]/10 text-[#0E3B34]'
+                      : 'bg-[#F5F1E8] text-[#5F6764]'
                   }`}
                 >
                   {completedSteps.has(i + 1) ? '✓' : i + 1}
@@ -196,7 +193,7 @@ export default function NewSpacePage() {
               ))}
             </div>
 
-            <div className="space-wizard-card bg-white rounded-2xl border border-[#ECE6D8] p-5 sm:p-7">
+            <div className="space-wizard-card bg-white rounded-2xl border border-[#D8D1C7] p-5 sm:p-7">
               {error && (
                 <div ref={errorRef} role="alert" aria-live="assertive" className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   <span className="mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full bg-red-100 font-bold">!</span>
@@ -207,19 +204,19 @@ export default function NewSpacePage() {
               <div className="mb-6 flex items-center justify-between border-b border-[#EEE8DC] pb-4">
                 <div>
                   <span className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#A27B25]">الخطوة {step}</span>
-                  <p className="mt-1 text-sm font-extrabold text-[#14201A]">{STEP_LABELS[step - 1]}</p>
+                  <p className="mt-1 text-sm font-extrabold text-[#1B1B1B]">{STEP_LABELS[step - 1]}</p>
                 </div>
-                <span className="rounded-full bg-[#F7F3EB] px-3 py-1.5 text-[10px] font-bold text-[#6B7566]">جميع الحقول الأساسية مطلوبة</span>
+                <span className="rounded-full bg-[#F5F1E8] px-3 py-1.5 text-[10px] font-bold text-[#5F6764]">جميع الحقول الأساسية مطلوبة</span>
               </div>
 
               <StepComponent {...stepProps} />
 
-              <div className="flex justify-between mt-8 pt-6 border-t border-[#ECE6D8]">
+              <div className="flex justify-between mt-8 pt-6 border-t border-[#D8D1C7]">
                 {step > 1 ? (
                   <button
                     type="button"
                     onClick={prev}
-                    className="px-6 py-2.5 rounded-xl text-sm font-medium border border-[#E8E3D8] text-[#4A554D] hover:bg-[#F7F3EB] transition-colors"
+                    className="px-6 py-2.5 rounded-xl text-sm font-medium border border-[#D8D1C7] text-[#3F4B47] hover:bg-[#F5F1E8] transition-colors"
                   >
                     السابق
                   </button>
@@ -229,7 +226,7 @@ export default function NewSpacePage() {
                   <button
                     type="button"
                     onClick={next}
-                    className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-[#1B3A2D] text-white hover:bg-[#0F2219] transition-colors"
+                    className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-[#0E3B34] text-white hover:bg-[#092C27] transition-colors"
                   >
                     التالي
                   </button>
@@ -238,7 +235,7 @@ export default function NewSpacePage() {
                     type="button"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-[#C49A3C] text-white hover:bg-[#A3802F] disabled:opacity-60 transition-colors flex items-center gap-2"
+                    className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-[#B99A63] text-white hover:bg-[#A3802F] disabled:opacity-60 transition-colors flex items-center gap-2"
                   >
                     {loading && (
                       <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

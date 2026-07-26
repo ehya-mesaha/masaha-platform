@@ -1,10 +1,17 @@
 import type { Metadata } from 'next'
+import { Cairo } from 'next/font/google'
 import { cookies, headers } from 'next/headers'
 import Script from 'next/script'
 import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 import ExperienceLayer from '@/components/layout/ExperienceLayer'
+
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  display: 'swap',
+  variable: '--font-cairo',
+})
 
 export async function generateMetadata(): Promise<Metadata> {
   const [cookieStore, headerStore] = await Promise.all([cookies(), headers()])
@@ -58,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const dir = locale === 'en' ? 'ltr' : 'rtl'
 
   return (
-    <html lang={locale} dir={dir}>
+    <html lang={locale} dir={dir} className={cairo.variable}>
       <Script id="masaha-opening-state" strategy="beforeInteractive">
         {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v3')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
       </Script>

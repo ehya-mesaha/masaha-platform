@@ -91,7 +91,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
     <div className="dashboard-page">
       <div className="page-hero mb-6 p-6 animate-in">
         <div className="relative">
-          <p className="mb-2 text-xs font-bold text-[#C49A3C]">{t('profile')}</p>
+          <p className="mb-2 text-xs font-bold text-[#B99A63]">{t('profile')}</p>
           <h1 className="text-2xl font-extrabold text-white">{t('settingsTitle')}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">{t('settingsDesc')}</p>
         </div>
@@ -101,11 +101,11 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
         <aside className="premium-card h-fit p-6 animate-in">
           <div className="flex flex-col items-center text-center">
             <div className="relative">
-              <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-[#1B3A2D] shadow-xl">
+              <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-[#0E3B34] shadow-xl">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-5xl font-extrabold text-[#C49A3C]">
+                  <div className="flex h-full w-full items-center justify-center text-5xl font-extrabold text-[#B99A63]">
                     {name.charAt(0) || '?'}
                   </div>
                 )}
@@ -114,7 +114,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={avatarSaving}
-                className="absolute bottom-1 left-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#C49A3C] text-[#14201A] shadow-lg transition-transform hover:scale-105 disabled:opacity-70"
+                className="absolute bottom-1 left-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#B99A63] text-[#1B1B1B] shadow-lg transition-transform hover:scale-105 disabled:opacity-70"
                 aria-label={t('changePhoto')}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -133,9 +133,9 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 e.target.value = ''
               }}
             />
-            <h2 className="mt-4 text-xl font-extrabold text-[#14201A]">{name}</h2>
-            <p className="text-sm text-[#6B7566]" dir="ltr">{user.email}</p>
-            <span className="mt-3 rounded-full bg-[#F7F3EB] px-3 py-1 text-xs font-bold text-[#1B3A2D]">
+            <h2 className="mt-4 text-xl font-extrabold text-[#1B1B1B]">{name}</h2>
+            <p className="text-sm text-[#5F6764]" dir="ltr">{user.email}</p>
+            <span className="mt-3 rounded-full bg-[#F5F1E8] px-3 py-1 text-xs font-bold text-[#0E3B34]">
               {roleLabelKey[user.role] ? t(roleLabelKey[user.role]) : user.role}
             </span>
             <div className="mt-5 flex w-full gap-2">
@@ -151,7 +151,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 type="button"
                 onClick={deleteAvatar}
                 disabled={avatarSaving || !avatarUrl}
-                className="rounded-xl border border-[#E8E3D8] bg-white px-4 py-2.5 text-sm font-bold text-[#4A554D] transition-colors hover:border-red-200 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm font-bold text-[#3F4B47] transition-colors hover:border-red-200 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t('delete')}
               </button>
@@ -169,19 +169,19 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
           )}
 
           <section className="premium-card p-6 animate-in">
-            <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">{t('accountInfo')}</h2>
+            <h2 className="mb-4 text-sm font-extrabold text-[#1B1B1B]">{t('accountInfo')}</h2>
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-xl bg-[#F7F3EB] p-3">
-                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">{t('email')}</p>
-                <p className="text-sm font-medium text-[#14201A]" dir="ltr">{user.email}</p>
+              <div className="rounded-xl bg-[#F5F1E8] p-3">
+                <p className="mb-0.5 text-[10px] font-bold text-[#5F6764]">{t('email')}</p>
+                <p className="text-sm font-medium text-[#1B1B1B]" dir="ltr">{user.email}</p>
               </div>
-              <div className="rounded-xl bg-[#F7F3EB] p-3">
-                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">{t('accountType')}</p>
-                <p className="text-sm font-medium text-[#14201A]">{roleLabelKey[user.role] ? t(roleLabelKey[user.role]) : user.role}</p>
+              <div className="rounded-xl bg-[#F5F1E8] p-3">
+                <p className="mb-0.5 text-[10px] font-bold text-[#5F6764]">{t('accountType')}</p>
+                <p className="text-sm font-medium text-[#1B1B1B]">{roleLabelKey[user.role] ? t(roleLabelKey[user.role]) : user.role}</p>
               </div>
-              <div className="rounded-xl bg-[#F7F3EB] p-3">
-                <p className="mb-0.5 text-[10px] font-bold text-[#6B7566]">{t('joinedAt')}</p>
-                <p className="text-sm font-medium text-[#14201A]">
+              <div className="rounded-xl bg-[#F5F1E8] p-3">
+                <p className="mb-0.5 text-[10px] font-bold text-[#5F6764]">{t('joinedAt')}</p>
+                <p className="text-sm font-medium text-[#1B1B1B]">
                   {new Date(user.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
@@ -189,14 +189,14 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
           </section>
 
           <section className="premium-card p-6 animate-in">
-            <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">{t('editPersonalInfo')}</h2>
+            <h2 className="mb-4 text-sm font-extrabold text-[#1B1B1B]">{t('editPersonalInfo')}</h2>
             <div className="mb-4 grid gap-4 md:grid-cols-2">
               <label>
-                <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('fullName')}</span>
+                <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('fullName')}</span>
                 <input value={name} onChange={e => setName(e.target.value)} className="field" />
               </label>
               <label>
-                <span className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('phone')}</span>
+                <span className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('phone')}</span>
                 <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="05X XXX XXXX" dir="ltr" className="field" />
               </label>
             </div>
@@ -206,7 +206,7 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
           </section>
 
           <section className="premium-card p-6 animate-in">
-            <h2 className="mb-3 text-sm font-extrabold text-[#14201A]">{t('policiesTerms')}</h2>
+            <h2 className="mb-3 text-sm font-extrabold text-[#1B1B1B]">{t('policiesTerms')}</h2>
             <div className="grid gap-2 md:grid-cols-3">
               <PolicyLink href="/policies#terms" label={t('terms')} />
               <PolicyLink href="/policies#privacy" label={t('privacy')} />
@@ -223,9 +223,9 @@ function PolicyLink({ href, label }: { href: string; label: string }) {
   const { dir } = useLanguage()
 
   return (
-    <Link href={href} className="flex items-center justify-between rounded-xl border border-[#E8E3D8] bg-white p-3 text-sm font-bold text-[#14201A] transition-colors hover:border-[#C49A3C] hover:bg-[#FBFAF7]">
+    <Link href={href} className="flex items-center justify-between rounded-xl border border-[#D8D1C7] bg-white p-3 text-sm font-bold text-[#1B1B1B] transition-colors hover:border-[#B99A63] hover:bg-[#FAF8F3]">
       {label}
-      <svg className={`h-4 w-4 text-[#C49A3C] ${dir === 'rtl' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <svg className={`h-4 w-4 text-[#B99A63] ${dir === 'rtl' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
       </svg>
     </Link>

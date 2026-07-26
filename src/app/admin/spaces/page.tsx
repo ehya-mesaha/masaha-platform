@@ -54,7 +54,7 @@ export default async function AdminSpacesPage({
       <div className="page-hero mb-6 p-6 sm:p-8">
         <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div>
-            <p className="mb-2 text-xs font-extrabold text-[#E4C878]">إدارة المحتوى والتراخيص</p>
+            <p className="mb-2 text-xs font-extrabold text-[#B99A63]">إدارة المحتوى والتراخيص</p>
             <h1 className="text-2xl font-extrabold text-white sm:text-3xl">المساحات</h1>
             <p className="mt-2 text-sm text-white/65">راجع بيانات المساحات وصورها وتواريخها واتخذ القرار الإداري من مكان واحد.</p>
           </div>
@@ -76,8 +76,8 @@ export default async function AdminSpacesPage({
             href={tab.value ? `/admin/spaces?status=${tab.value}` : '/admin/spaces'}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               status === tab.value || (!status && tab.value === '')
-                ? 'bg-[#1B3A2D] text-white'
-                : 'bg-white text-gray-600 border border-[#E8E3D8] hover:border-[#1B3A2D]'
+                ? 'bg-[#0E3B34] text-white'
+                : 'bg-white text-gray-600 border border-[#D8D1C7] hover:border-[#0E3B34]'
             }`}
           >
             {tab.label}
@@ -88,7 +88,7 @@ export default async function AdminSpacesPage({
       <Card padding={false}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-[#E8E3D8]">
+            <thead className="bg-gray-50 border-b border-[#D8D1C7]">
               <tr>
                 <th className="text-right px-5 py-3 text-gray-600 font-medium">المساحة</th>
                 <th className="text-right px-5 py-3 text-gray-600 font-medium">المالك</th>
@@ -101,7 +101,7 @@ export default async function AdminSpacesPage({
                 <th className="text-right px-5 py-3 text-gray-600 font-medium">إجراء</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E8E3D8]">
+            <tbody className="divide-y divide-[#D8D1C7]">
               {spaces.length === 0 ? (
                 <tr><td colSpan={9} className="text-center text-gray-500 py-10">لا توجد مساحات</td></tr>
               ) : spaces.map((s) => {
@@ -124,10 +124,10 @@ export default async function AdminSpacesPage({
                     <td className="px-5 py-4 text-gray-700">{s.city}</td>
                     <td className="whitespace-nowrap px-5 py-4 text-xs text-gray-600">{formatAdminDate(s.createdAt)}</td>
                     <td className="whitespace-nowrap px-5 py-4 text-xs text-gray-600">{formatAdminDate(s.updatedAt)}</td>
-                    <td className="px-5 py-4"><span className="rounded-full bg-[#F7F3EB] px-2.5 py-1 text-xs font-bold text-[#1B3A2D]">{s._count.bookings}</span></td>
+                    <td className="px-5 py-4"><span className="rounded-full bg-[#F5F1E8] px-2.5 py-1 text-xs font-bold text-[#0E3B34]">{s._count.bookings}</span></td>
                     <td className="px-5 py-4"><Badge variant={variant}>{label}</Badge></td>
                     <td className="px-5 py-4">
-                      <Link href={`/admin/spaces/${s.id}`} className="text-[#1B3A2D] font-medium hover:underline text-xs">
+                      <Link href={`/admin/spaces/${s.id}`} className="text-[#0E3B34] font-medium hover:underline text-xs">
                         مراجعة
                       </Link>
                     </td>
@@ -161,12 +161,12 @@ function formatAdminDate(value: Date) {
 
 function StatCard({ label, value, tone }: { label: string; value: number; tone: 'dark' | 'gold' | 'green' }) {
   const tones = {
-    dark: 'border-[#1B3A2D]/15 bg-[#1B3A2D] text-white',
-    gold: 'border-[#C49A3C]/25 bg-[#FFF9EA] text-[#8A671D]',
+    dark: 'border-[#0E3B34]/15 bg-[#0E3B34] text-white',
+    gold: 'border-[#B99A63]/25 bg-[#FFF9EA] text-[#8A671D]',
     green: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   }
   return (
-    <div className={`rounded-2xl border p-5 shadow-[0_18px_50px_-42px_rgba(15,34,25,.7)] ${tones[tone]}`}>
+    <div className={`rounded-2xl border p-5 shadow-[0_18px_50px_-42px_rgba(9, 44, 39,.7)] ${tones[tone]}`}>
       <span className="text-[11px] font-bold opacity-70">{label}</span>
       <strong className="mt-2 block text-3xl font-extrabold">{value.toLocaleString('en-US')}</strong>
     </div>

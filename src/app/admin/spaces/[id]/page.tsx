@@ -132,7 +132,7 @@ export default function AdminSpaceDetailPage() {
 
   return (
     <div className="dashboard-page">
-      <Link href="/admin/spaces" className="text-[#6B7566] hover:text-[#1B3A2D] text-sm font-medium mb-6 inline-flex items-center gap-1">
+      <Link href="/admin/spaces" className="text-[#5F6764] hover:text-[#0E3B34] text-sm font-medium mb-6 inline-flex items-center gap-1">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -148,9 +148,9 @@ export default function AdminSpaceDetailPage() {
       {/* Header */}
       <div className="card-elevated p-6 mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{space.name}</h1>
-          <p className="text-[#6B7566] text-sm mt-1">{space.type.name} · {space.city}{space.district ? ` · ${space.district}` : ''}</p>
-          <p className="text-xs text-[#6B7566] mt-1">تاريخ الإنشاء: {new Date(space.createdAt).toLocaleDateString('en-US')}</p>
+          <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">{space.name}</h1>
+          <p className="text-[#5F6764] text-sm mt-1">{space.type.name} · {space.city}{space.district ? ` · ${space.district}` : ''}</p>
+          <p className="text-xs text-[#5F6764] mt-1">تاريخ الإنشاء: {new Date(space.createdAt).toLocaleDateString('en-US')}</p>
         </div>
         <Badge variant={variant}>{label}</Badge>
       </div>
@@ -159,13 +159,13 @@ export default function AdminSpaceDetailPage() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-4">
           {/* Images */}
-          <div className="rounded-2xl border border-[#E8E1D3] bg-white p-3">
+          <div className="rounded-2xl border border-[#D8D1C7] bg-white p-3">
             <div className="mb-3 flex items-center justify-between gap-3 px-1">
               <div>
-                <h2 className="text-sm font-extrabold text-[#14201A]">صور المساحة</h2>
-                <p className="mt-0.5 text-[11px] text-[#6B7566]">يمكنك معاينة أي صورة أو حذفها، ثم حفظ التغيير من لوحة الإدارة.</p>
+                <h2 className="text-sm font-extrabold text-[#1B1B1B]">صور المساحة</h2>
+                <p className="mt-0.5 text-[11px] text-[#5F6764]">يمكنك معاينة أي صورة أو حذفها، ثم حفظ التغيير من لوحة الإدارة.</p>
               </div>
-              <span className="rounded-full bg-[#F7F3EB] px-3 py-1 text-[10px] font-bold text-[#1B3A2D]">{sortedImages.length} صور</span>
+              <span className="rounded-full bg-[#F5F1E8] px-3 py-1 text-[10px] font-bold text-[#0E3B34]">{sortedImages.length} صور</span>
             </div>
             {sortedImages.length > 0 ? (
               <>
@@ -174,7 +174,7 @@ export default function AdminSpaceDetailPage() {
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
                   {sortedImages.map((img, i) => (
-                    <div key={`${img.url}-${i}`} className={`group relative aspect-square overflow-hidden rounded-xl border-2 transition-colors ${i === safeActiveImage ? 'border-[#1B3A2D]' : 'border-transparent'}`}>
+                    <div key={`${img.url}-${i}`} className={`group relative aspect-square overflow-hidden rounded-xl border-2 transition-colors ${i === safeActiveImage ? 'border-[#0E3B34]' : 'border-transparent'}`}>
                       <button type="button" onClick={() => setActiveImage(i)} className="h-full w-full">
                         <img src={img.url} alt="" className="h-full w-full object-cover" />
                       </button>
@@ -192,10 +192,10 @@ export default function AdminSpaceDetailPage() {
               </div>
               </>
             ) : (
-              <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] text-center">
+              <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] text-center">
                 <div>
-                  <p className="text-sm font-bold text-[#14201A]">لا توجد صور حالياً</p>
-                  <p className="mt-1 text-xs text-[#6B7566]">يمكن إضافة رابط جديد من لوحة البيانات.</p>
+                  <p className="text-sm font-bold text-[#1B1B1B]">لا توجد صور حالياً</p>
+                  <p className="mt-1 text-xs text-[#5F6764]">يمكن إضافة رابط جديد من لوحة البيانات.</p>
                 </div>
               </div>
             )}
@@ -203,7 +203,7 @@ export default function AdminSpaceDetailPage() {
 
           {/* Space Details */}
           <Card>
-            <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">تفاصيل المساحة</h3>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">تفاصيل المساحة</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
               <InfoRow label="المدينة" value={space.city} />
               <InfoRow label="الحي" value={space.district || '—'} />
@@ -215,8 +215,8 @@ export default function AdminSpaceDetailPage() {
 
             {/* Full Address */}
             {(space.address || space.streetName || space.buildingNumber || space.postalCode) && (
-              <div className="mt-4 pt-4 border-t border-[#E8E3D8]">
-                <p className="text-[11px] font-bold text-[#6B7566] mb-2">العنوان التفصيلي</p>
+              <div className="mt-4 pt-4 border-t border-[#D8D1C7]">
+                <p className="text-[11px] font-bold text-[#5F6764] mb-2">العنوان التفصيلي</p>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   {space.streetName && <InfoRow label="الشارع" value={space.streetName} />}
                   {space.buildingNumber && <InfoRow label="رقم المبنى" value={space.buildingNumber} />}
@@ -224,23 +224,23 @@ export default function AdminSpaceDetailPage() {
                   {space.address && <InfoRow label="العنوان" value={space.address} />}
                 </div>
                 {space.landmarks && (
-                  <p className="text-xs text-[#6B7566] mt-2">معالم قريبة: {space.landmarks}</p>
+                  <p className="text-xs text-[#5F6764] mt-2">معالم قريبة: {space.landmarks}</p>
                 )}
               </div>
             )}
 
             {/* Coordinates */}
             {space.latitude && space.longitude && (
-              <div className="mt-3 pt-3 border-t border-[#E8E3D8]">
-                <p className="text-[11px] font-bold text-[#6B7566] mb-1">الإحداثيات</p>
-                <p className="text-xs text-[#4A554D]" dir="ltr">{space.latitude}, {space.longitude}</p>
+              <div className="mt-3 pt-3 border-t border-[#D8D1C7]">
+                <p className="text-[11px] font-bold text-[#5F6764] mb-1">الإحداثيات</p>
+                <p className="text-xs text-[#3F4B47]" dir="ltr">{space.latitude}, {space.longitude}</p>
               </div>
             )}
 
             {space.description && (
-              <div className="mt-4 pt-4 border-t border-[#E8E3D8]">
-                <p className="text-[11px] font-bold text-[#6B7566] mb-1">الوصف</p>
-                <p className="text-sm text-[#4A554D] leading-relaxed">{space.description}</p>
+              <div className="mt-4 pt-4 border-t border-[#D8D1C7]">
+                <p className="text-[11px] font-bold text-[#5F6764] mb-1">الوصف</p>
+                <p className="text-sm text-[#3F4B47] leading-relaxed">{space.description}</p>
               </div>
             )}
           </Card>
@@ -248,17 +248,17 @@ export default function AdminSpaceDetailPage() {
           {/* Working Hours */}
           {openDays.length > 0 && (
             <Card>
-              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">أيام وساعات العمل</h3>
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">أيام وساعات العمل</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {DAY_NAMES.map((name, i) => {
                   const wh = openDays.find(d => d.dayOfWeek === i)
                   return (
-                    <div key={i} className={`flex items-center justify-between p-3 rounded-xl text-sm ${wh ? 'bg-[#F7F3EB]' : 'bg-gray-50'}`}>
-                      <span className={`font-medium ${wh ? 'text-[#14201A]' : 'text-[#6B7566]'}`}>{name}</span>
+                    <div key={i} className={`flex items-center justify-between p-3 rounded-xl text-sm ${wh ? 'bg-[#F5F1E8]' : 'bg-gray-50'}`}>
+                      <span className={`font-medium ${wh ? 'text-[#1B1B1B]' : 'text-[#5F6764]'}`}>{name}</span>
                       {wh ? (
-                        <span className="text-[#1B3A2D] font-medium" dir="ltr">{wh.openTime} - {wh.closeTime}</span>
+                        <span className="text-[#0E3B34] font-medium" dir="ltr">{wh.openTime} - {wh.closeTime}</span>
                       ) : (
-                        <span className="text-[#6B7566] text-xs">مغلق</span>
+                        <span className="text-[#5F6764] text-xs">مغلق</span>
                       )}
                     </div>
                   )
@@ -270,10 +270,10 @@ export default function AdminSpaceDetailPage() {
           {/* Amenities */}
           {space.amenities.length > 0 && (
             <Card>
-              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-3">المرافق والتجهيزات</h3>
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-3">المرافق والتجهيزات</h3>
               <div className="flex flex-wrap gap-2">
                 {space.amenities.map(({ amenity }, i) => (
-                  <span key={i} className="bg-[#F7F3EB] text-[#1B3A2D] text-xs px-3 py-1.5 rounded-full border border-[#E8E3D8]">{amenity.name}</span>
+                  <span key={i} className="bg-[#F5F1E8] text-[#0E3B34] text-xs px-3 py-1.5 rounded-full border border-[#D8D1C7]">{amenity.name}</span>
                 ))}
               </div>
             </Card>
@@ -281,35 +281,35 @@ export default function AdminSpaceDetailPage() {
 
           {/* Services */}
           <Card>
-              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">خدمات إضافية</h3>
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">خدمات إضافية</h3>
               {space.services && space.services.length > 0 ? (
                 <div className="space-y-2">
                   {space.services.map(s => (
-                  <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F3EB]">
+                  <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F5F1E8]">
                     <div>
-                      <p className="text-sm font-medium text-[#14201A]">{s.name}</p>
-                      {s.description && <p className="text-xs text-[#6B7566] mt-0.5">{s.description}</p>}
+                      <p className="text-sm font-medium text-[#1B1B1B]">{s.name}</p>
+                      {s.description && <p className="text-xs text-[#5F6764] mt-0.5">{s.description}</p>}
                     </div>
                     <div className="text-end">
-                      <span className="text-sm font-bold text-[#1B3A2D]">{s.price.toLocaleString('en-US')} ر.س</span>
-                      <p className="text-[10px] text-[#6B7566]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
+                      <span className="text-sm font-bold text-[#0E3B34]">{s.price.toLocaleString('en-US')} ر.س</span>
+                      <p className="text-[10px] text-[#5F6764]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
                     </div>
                   </div>
                   ))}
                 </div>
               ) : (
-                <p className="rounded-xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-4 text-sm text-[#6B7566]">لا توجد خدمات مفعلة لهذه المساحة.</p>
+                <p className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">لا توجد خدمات مفعلة لهذه المساحة.</p>
               )}
             </Card>
 
           {/* Rules */}
           <Card>
-              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-3">قواعد الاستخدام</h3>
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-3">قواعد الاستخدام</h3>
               {space.rules && space.rules.length > 0 ? (
                 <ul className="space-y-2">
                   {space.rules.map(r => (
-                  <li key={r.id} className="flex items-center gap-2 text-sm text-[#4A554D]">
-                    <svg className="w-3.5 h-3.5 text-[#C49A3C] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <li key={r.id} className="flex items-center gap-2 text-sm text-[#3F4B47]">
+                    <svg className="w-3.5 h-3.5 text-[#B99A63] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {r.rule}
@@ -317,15 +317,15 @@ export default function AdminSpaceDetailPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="rounded-xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-4 text-sm text-[#6B7566]">لم تُسجل قواعد استخدام لهذه المساحة.</p>
+                <p className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">لم تُسجل قواعد استخدام لهذه المساحة.</p>
               )}
             </Card>
 
           {/* Map */}
           {space.latitude && space.longitude && (
             <Card>
-              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">الموقع على الخريطة</h3>
-              <div className="rounded-xl overflow-hidden border border-[#E8E3D8]">
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">الموقع على الخريطة</h3>
+              <div className="rounded-xl overflow-hidden border border-[#D8D1C7]">
                 <iframe
                   src={`https://www.openstreetmap.org/export/embed.html?bbox=${space.longitude - 0.01},${space.latitude - 0.01},${space.longitude + 0.01},${space.latitude + 0.01}&layer=mapnik&marker=${space.latitude},${space.longitude}`}
                   className="w-full h-64"
@@ -341,30 +341,30 @@ export default function AdminSpaceDetailPage() {
         <div className="space-y-4">
           {/* Seller Info */}
           <Card>
-            <h3 className="font-display font-extrabold text-[#14201A] text-base mb-3">صاحب المساحة</h3>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-3">صاحب المساحة</h3>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] flex items-center justify-center text-[#C49A3C] font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0E3B34] to-[#092C27] flex items-center justify-center text-[#B99A63] font-bold">
                 {space.seller.name.charAt(0)}
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#14201A]">{space.seller.name}</p>
-                <p className="text-xs text-[#6B7566]" dir="ltr">{space.seller.email}</p>
+                <p className="text-sm font-semibold text-[#1B1B1B]">{space.seller.name}</p>
+                <p className="text-xs text-[#5F6764]" dir="ltr">{space.seller.email}</p>
               </div>
             </div>
             {space.seller.phone && (
-              <div className="text-sm text-[#4A554D]">
-                <span className="text-[11px] font-bold text-[#6B7566]">الجوال</span>
+              <div className="text-sm text-[#3F4B47]">
+                <span className="text-[11px] font-bold text-[#5F6764]">الجوال</span>
                 <p className="font-medium" dir="ltr">{space.seller.phone}</p>
               </div>
             )}
-            <Link href={`/admin/users/${space.seller.id}`} className="block mt-3 text-xs text-[#1B3A2D] font-semibold hover:underline text-center">
+            <Link href={`/admin/users/${space.seller.id}`} className="block mt-3 text-xs text-[#0E3B34] font-semibold hover:underline text-center">
               عرض ملف البائع
             </Link>
           </Card>
 
           {/* Cancellation Policy */}
           <Card>
-            <h3 className="font-display font-extrabold text-[#14201A] text-base mb-3">سياسة الإلغاء</h3>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-3">سياسة الإلغاء</h3>
             <div className={`p-3 rounded-xl border text-center ${policy.color}`}>
               <p className="text-sm font-bold">{policy.name}</p>
               <p className="text-xs mt-0.5">{policy.desc}</p>
@@ -372,34 +372,34 @@ export default function AdminSpaceDetailPage() {
           </Card>
 
           <Card>
-            <h3 className="mb-3 font-display text-base font-extrabold text-[#14201A]">بيانات تديرها الإدارة</h3>
-            <label className="mb-3 block text-xs font-bold text-[#4A554D]">
+            <h3 className="mb-3 font-display text-base font-extrabold text-[#1B1B1B]">بيانات تديرها الإدارة</h3>
+            <label className="mb-3 block text-xs font-bold text-[#3F4B47]">
               رقم الترخيص الإعلاني
-              <input dir="ltr" value={licenseNumber} onChange={(event) => setLicenseNumber(event.target.value)} className="mt-1.5 w-full rounded-xl border border-[#E8E3D8] px-3 py-2.5 text-sm font-normal" />
+              <input dir="ltr" value={licenseNumber} onChange={(event) => setLicenseNumber(event.target.value)} className="mt-1.5 w-full rounded-xl border border-[#D8D1C7] px-3 py-2.5 text-sm font-normal" />
             </label>
-            <label className="block text-xs font-bold text-[#4A554D]">
+            <label className="block text-xs font-bold text-[#3F4B47]">
               روابط الصور (رابط في كل سطر)
-              <textarea dir="ltr" value={imageUrls} onChange={(event) => setImageUrls(event.target.value)} rows={5} className="mt-1.5 w-full resize-y rounded-xl border border-[#E8E3D8] px-3 py-2.5 text-left text-xs font-normal" />
+              <textarea dir="ltr" value={imageUrls} onChange={(event) => setImageUrls(event.target.value)} rows={5} className="mt-1.5 w-full resize-y rounded-xl border border-[#D8D1C7] px-3 py-2.5 text-left text-xs font-normal" />
             </label>
-            <p className="mt-2 text-[10px] leading-5 text-[#6B7566]">يمكنك حذف الصور مباشرة من المعرض أو تعديل الروابط هنا. لن يُطبق التغيير حتى تضغط حفظ.</p>
-            <button onClick={saveManagedData} disabled={actionLoading} className="mt-3 w-full rounded-xl bg-[#C49A3C] py-2.5 text-sm font-bold text-[#14201A] disabled:opacity-50">حفظ البيانات</button>
+            <p className="mt-2 text-[10px] leading-5 text-[#5F6764]">يمكنك حذف الصور مباشرة من المعرض أو تعديل الروابط هنا. لن يُطبق التغيير حتى تضغط حفظ.</p>
+            <button onClick={saveManagedData} disabled={actionLoading} className="mt-3 w-full rounded-xl bg-[#B99A63] py-2.5 text-sm font-bold text-[#1B1B1B] disabled:opacity-50">حفظ البيانات</button>
           </Card>
 
           {/* Admin Actions */}
           <Card>
-            <h3 className="font-display font-extrabold text-[#14201A] text-base mb-3">قرار الإدارة</h3>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-3">قرار الإدارة</h3>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={4}
               placeholder="ملاحظات للبائع (سبب الرفض أو أي ملاحظات)..."
-              className="w-full px-3 py-2.5 rounded-xl border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] resize-none mb-3"
+              className="w-full px-3 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] resize-none mb-3"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => handleAction('APPROVED')}
                 disabled={actionLoading || space.status === 'APPROVED'}
-                className="flex-1 bg-[#1B3A2D] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0F2219] disabled:opacity-50"
+                className="flex-1 bg-[#0E3B34] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#092C27] disabled:opacity-50"
               >
                 اعتماد
               </button>
@@ -428,8 +428,8 @@ export default function AdminSpaceDetailPage() {
 function InfoRow({ label, value, dir }: { label: string; value: string; dir?: 'ltr' | 'rtl' }) {
   return (
     <div>
-      <div className="text-[11px] font-bold text-[#6B7566] tracking-wide mb-1">{label}</div>
-      <div className="text-sm text-[#14201A] font-medium" dir={dir}>{value}</div>
+      <div className="text-[11px] font-bold text-[#5F6764] tracking-wide mb-1">{label}</div>
+      <div className="text-sm text-[#1B1B1B] font-medium" dir={dir}>{value}</div>
     </div>
   )
 }

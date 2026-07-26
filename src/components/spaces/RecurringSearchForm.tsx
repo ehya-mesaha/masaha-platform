@@ -95,19 +95,19 @@ export default function RecurringSearchForm() {
   })
 
   return (
-    <div className="mt-9 max-w-5xl overflow-hidden rounded-2xl border border-white/35 bg-white text-[#14201A] shadow-[0_28px_70px_-32px_rgba(0,0,0,.85)]">
-      <div className="flex border-b border-[#E8E1D3] bg-[#FBF8F1] p-1.5">
+    <div className="mt-9 max-w-5xl overflow-hidden rounded-2xl border border-white/35 bg-white text-[#1B1B1B] shadow-[0_28px_70px_-32px_rgba(0,0,0,.85)]">
+      <div className="flex border-b border-[#D8D1C7] bg-[#FAF8F3] p-1.5">
         <button
           type="button"
           onClick={() => setMode('program')}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${mode === 'program' ? 'bg-[#1B3A2D] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}
+          className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${mode === 'program' ? 'bg-[#0E3B34] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}
         >
           {isEnglish ? 'Recurring program' : 'برنامج متكرر'}
         </button>
         <button
           type="button"
           onClick={() => setMode('single')}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${mode === 'single' ? 'bg-[#1B3A2D] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}
+          className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${mode === 'single' ? 'bg-[#0E3B34] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}
         >
           {isEnglish ? 'One-time booking' : 'حجز مرة واحدة'}
         </button>
@@ -150,7 +150,7 @@ export default function RecurringSearchForm() {
                 type="button"
                 key={day.value}
                 onClick={() => toggleDay(day.value)}
-                className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${weekdays.includes(day.value) ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white' : 'border-[#DDD5C5] bg-white text-[#556159] hover:border-[#C49A3C]'}`}
+                className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${weekdays.includes(day.value) ? 'border-[#0E3B34] bg-[#0E3B34] text-white' : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'}`}
               >
                 {isEnglish ? day.en : day.ar}
               </button>
@@ -159,10 +159,10 @@ export default function RecurringSearchForm() {
         </div>
       )}
 
-      <div className="grid gap-4 border-t border-[#E8E1D3] bg-[#F7F3EB] p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="grid gap-4 border-t border-[#D8D1C7] bg-[#F5F1E8] p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#566259]">
-            <strong className="text-[#1B3A2D]">{isEnglish ? 'Program summary' : 'ملخص البرنامج'}</strong>
+            <strong className="text-[#0E3B34]">{isEnglish ? 'Program summary' : 'ملخص البرنامج'}</strong>
             <span>{summary.durationHours.toLocaleString('en-US')} {isEnglish ? 'hours per session' : 'ساعة لكل جلسة'}</span>
             <span>{summary.sessions.toLocaleString('en-US')} {isEnglish ? 'sessions' : 'جلسة'}</span>
             <span>{isEnglish ? 'Total' : 'الإجمالي'}: {summary.totalHours.toLocaleString('en-US')} {isEnglish ? 'hours' : 'ساعة'}</span>

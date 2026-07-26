@@ -72,17 +72,17 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
         <section className="page-hero mb-8 p-7 animate-in">
           <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="flex items-center gap-5">
-              <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-white/15 bg-[#0F2219]">
+              <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-white/15 bg-[#092C27]">
                 {seller.avatarUrl ? (
                   <img src={seller.avatarUrl} alt={seller.name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-4xl font-extrabold text-[#C49A3C]">
+                  <div className="flex h-full w-full items-center justify-center text-4xl font-extrabold text-[#B99A63]">
                     {seller.name.charAt(0)}
                   </div>
                 )}
               </div>
               <div>
-                <p className="mb-2 text-xs font-bold text-[#C49A3C]">ملف صاحب المساحة</p>
+                <p className="mb-2 text-xs font-bold text-[#B99A63]">ملف صاحب المساحة</p>
                 <h1 className="text-3xl font-extrabold text-white">{seller.name}</h1>
                 <p className="mt-2 text-sm text-white/65">
                   عضو منذ {new Date(seller.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
@@ -100,22 +100,22 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
         <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="space-y-4">
             <section className="premium-card p-5 animate-in">
-              <h2 className="mb-4 text-sm font-extrabold text-[#14201A]">معلومات التواصل</h2>
-              <div className="space-y-3 text-sm text-[#4A554D]">
+              <h2 className="mb-4 text-sm font-extrabold text-[#1B1B1B]">معلومات التواصل</h2>
+              <div className="space-y-3 text-sm text-[#3F4B47]">
                 <p dir="ltr">{seller.email}</p>
                 <p dir="ltr">{seller.phone || 'لا يوجد رقم ظاهر'}</p>
               </div>
             </section>
 
             <section className="premium-card p-5 animate-in">
-              <h2 className="mb-3 text-sm font-extrabold text-[#14201A]">ملخص التقييمات</h2>
+              <h2 className="mb-3 text-sm font-extrabold text-[#1B1B1B]">ملخص التقييمات</h2>
               <div className="flex items-center gap-3">
-                <span className="text-4xl font-extrabold text-[#1B3A2D]">
+                <span className="text-4xl font-extrabold text-[#0E3B34]">
                   {summary.count > 0 ? summary.average.toLocaleString('en-US') : '-'}
                 </span>
                 <div>
                   <Stars rating={summary.average} />
-                  <p className="mt-1 text-xs text-[#6B7566]">
+                  <p className="mt-1 text-xs text-[#5F6764]">
                     {summary.count > 0 ? `${summary.count.toLocaleString('en-US')} تقييم موثق` : 'لا توجد تقييمات بعد'}
                   </p>
                 </div>
@@ -127,13 +127,13 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
             <section>
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-[#C49A3C]">المساحات المعتمدة</p>
-                  <h2 className="text-xl font-extrabold text-[#14201A]">مساحات {seller.name}</h2>
+                  <p className="text-xs font-bold text-[#B99A63]">المساحات المعتمدة</p>
+                  <h2 className="text-xl font-extrabold text-[#1B1B1B]">مساحات {seller.name}</h2>
                 </div>
               </div>
 
               {seller.spaces.length === 0 ? (
-                <div className="premium-card p-8 text-center text-[#6B7566]">لا توجد مساحات معتمدة حاليا</div>
+                <div className="premium-card p-8 text-center text-[#5F6764]">لا توجد مساحات معتمدة حاليا</div>
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 stagger-grid">
                   {seller.spaces.map(space => (
@@ -156,37 +156,37 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
 
             <section className="premium-card p-6 animate-in">
               <div className="mb-5">
-                <p className="text-xs font-bold text-[#C49A3C]">آراء المستأجرين</p>
-                <h2 className="text-xl font-extrabold text-[#14201A]">التقييمات والتجارب</h2>
+                <p className="text-xs font-bold text-[#B99A63]">آراء المستأجرين</p>
+                <h2 className="text-xl font-extrabold text-[#1B1B1B]">التقييمات والتجارب</h2>
               </div>
               {reviews.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-8 text-center">
-                  <p className="font-bold text-[#14201A]">التقييمات غير متاحة حاليا</p>
-                  <p className="mt-1 text-sm text-[#6B7566]">ستظهر آراء المستأجرين بعد اكتمال الحجوزات وإضافة تقييماتهم.</p>
+                <div className="rounded-2xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-8 text-center">
+                  <p className="font-bold text-[#1B1B1B]">التقييمات غير متاحة حاليا</p>
+                  <p className="mt-1 text-sm text-[#5F6764]">ستظهر آراء المستأجرين بعد اكتمال الحجوزات وإضافة تقييماتهم.</p>
                 </div>
               ) : (
                 <div className="grid gap-3 md:grid-cols-2 motion-list">
                   {reviews.map(review => (
-                    <article key={review.id} className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-4">
+                    <article key={review.id} className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-4">
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <div className="h-9 w-9 overflow-hidden rounded-full bg-[#1B3A2D]">
+                          <div className="h-9 w-9 overflow-hidden rounded-full bg-[#0E3B34]">
                             {review.buyer.avatarUrl ? (
                               <img src={review.buyer.avatarUrl} alt={review.buyer.name} className="h-full w-full object-cover" />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#C49A3C]">
+                              <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#B99A63]">
                                 {review.buyer.name.charAt(0)}
                               </div>
                             )}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-[#14201A]">{review.buyer.name}</p>
-                            <p className="text-[11px] text-[#6B7566]">{review.space.name}</p>
+                            <p className="text-sm font-bold text-[#1B1B1B]">{review.buyer.name}</p>
+                            <p className="text-[11px] text-[#5F6764]">{review.space.name}</p>
                           </div>
                         </div>
                         <Stars rating={review.rating} />
                       </div>
-                      <p className="text-sm leading-7 text-[#4A554D]">{review.comment || 'تقييم بدون تعليق'}</p>
+                      <p className="text-sm leading-7 text-[#3F4B47]">{review.comment || 'تقييم بدون تعليق'}</p>
                     </article>
                   ))}
                 </div>
@@ -213,7 +213,7 @@ function Stars({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5 text-sm">
       {[1, 2, 3, 4, 5].map(star => (
-        <span key={star} className={star <= Math.round(rating) ? 'text-[#C49A3C]' : 'text-[#D8CFBE]'}>★</span>
+        <span key={star} className={star <= Math.round(rating) ? 'text-[#B99A63]' : 'text-[#D8D1C7]'}>★</span>
       ))}
     </div>
   )

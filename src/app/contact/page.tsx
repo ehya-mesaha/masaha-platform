@@ -77,11 +77,11 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F3EB]">
+    <div className="min-h-screen bg-[#F5F1E8]">
       <PublicNavbar />
       <main className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[.72fr_1.28fr] lg:px-8 lg:py-20">
-        <aside className="rounded-3xl bg-[#10281E] p-7 text-white sm:p-9 lg:sticky lg:top-24 lg:self-start">
-          <p className="text-xs font-extrabold text-[#D8B455]">{text.eyebrow}</p>
+        <aside className="rounded-3xl bg-[#092C27] p-7 text-white sm:p-9 lg:sticky lg:top-24 lg:self-start">
+          <p className="text-xs font-extrabold text-[#B99A63]">{text.eyebrow}</p>
           <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight">{text.title}</h1>
           <p className="mt-5 text-sm leading-8 text-white/70">{text.intro}</p>
           <div className="mt-10 border-t border-white/12 pt-7">
@@ -94,9 +94,9 @@ export default function ContactPage() {
           </div>
         </aside>
 
-        <form onSubmit={submit} className="rounded-3xl border border-[#E1D9CA] bg-white p-6 shadow-[0_24px_60px_-45px_rgba(15,34,25,.5)] sm:p-9">
+        <form onSubmit={submit} className="rounded-3xl border border-[#D8D1C7] bg-white p-6 shadow-[0_24px_60px_-45px_rgba(9, 44, 39,.5)] sm:p-9">
           <fieldset className="grid grid-cols-3 gap-2">
-            <legend className="mb-3 text-sm font-extrabold text-[#1B3A2D]">{text.type}</legend>
+            <legend className="mb-3 text-sm font-extrabold text-[#0E3B34]">{text.type}</legend>
             {[
               ['INQUIRY', text.inquiry],
               ['SUGGESTION', text.suggestion],
@@ -104,7 +104,7 @@ export default function ContactPage() {
             ].map(([value, label], index) => (
               <label key={value} className="cursor-pointer">
                 <input className="peer sr-only" type="radio" name="type" value={value} defaultChecked={index === 0} />
-                <span className="block rounded-xl border border-[#DDD5C5] px-3 py-3 text-center text-xs font-bold text-[#566159] transition peer-checked:border-[#1B3A2D] peer-checked:bg-[#1B3A2D] peer-checked:text-white">{label}</span>
+                <span className="block rounded-xl border border-[#D8D1C7] px-3 py-3 text-center text-xs font-bold text-[#566159] transition peer-checked:border-[#0E3B34] peer-checked:bg-[#0E3B34] peer-checked:text-white">{label}</span>
               </label>
             ))}
           </fieldset>

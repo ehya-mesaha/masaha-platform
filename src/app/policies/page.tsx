@@ -1,13 +1,19 @@
 import Link from 'next/link'
+import BrandLogo from '@/components/brand/BrandLogo'
 
 export default function PoliciesPage() {
-  return <div className="min-h-screen bg-[#F7F3EB]">
-    <header className="bg-gradient-to-b from-[#1B3A2D] to-[#0F2219] text-white">
+  return <div className="min-h-screen bg-[#F5F1E8]">
+    <header className="bg-gradient-to-b from-[#0E3B34] to-[#092C27] text-white">
       <div className="mx-auto max-w-4xl px-6 py-12">
+        <Link href="/" className="mb-8 inline-flex" aria-label="إحياء مساحة">
+          <BrandLogo variant="horizontal" tone="white" className="policy-brand-logo" priority />
+        </Link>
+        <div>
         <Link href="/" className="text-sm font-bold text-white/70">العودة إلى الرئيسية</Link>
         <h1 className="mt-6 text-4xl font-extrabold">السياسات والأحكام</h1>
         <p className="mt-3 max-w-xl text-sm leading-7 text-white/70">نلتزم في إحياء مساحة بالوضوح وحماية حقوق أصحاب المساحات وطلابها.</p>
         <nav className="mt-6 flex flex-wrap gap-2">{[['#terms', 'شروط الاستخدام'], ['#privacy', 'الخصوصية'], ['#cancellation', 'الإلغاء'], ['#usage', 'الاستخدام المقبول']].map(([href, label]) => <a key={href} href={href} className="rounded-full bg-white/10 px-4 py-2 text-xs font-bold hover:bg-white/20">{label}</a>)}</nav>
+        </div>
       </div>
     </header>
     <main className="mx-auto max-w-4xl space-y-7 px-6 py-10">
@@ -27,7 +33,7 @@ export default function PoliciesPage() {
         <Item num="1" title="البيانات التي نجمعها">بيانات الحساب والتواصل، ومستندات التحقق لأصحاب المساحات، وبيانات الحجوزات والرسائل والتقييمات.</Item>
         <Item num="2" title="أغراض الاستخدام">تشغيل الحساب والحجوزات، التحقق من الجهات، التواصل بين الأطراف، تحسين الخدمة، والامتثال للمتطلبات النظامية.</Item>
         <Item num="3" title="الوصول والحماية">يقتصر الوصول إلى المستندات والبيانات الحساسة على الأشخاص المخولين، مع تطبيق ضوابط أمنية وسجل لإجراءات الإدارة.</Item>
-        <Item num="4" title="حقوق المستخدم">يمكنك طلب تصحيح بياناتك أو الاستفسار عن معالجتها عبر <a dir="ltr" href="mailto:info@ehyamesaha.sa" className="font-bold text-[#1B3A2D]">info@ehyamesaha.sa</a>.</Item>
+        <Item num="4" title="حقوق المستخدم">يمكنك طلب تصحيح بياناتك أو الاستفسار عن معالجتها عبر <a dir="ltr" href="mailto:info@ehyamesaha.sa" className="font-bold text-[#0E3B34]">info@ehyamesaha.sa</a>.</Item>
       </PolicyCard>
 
       <PolicyCard id="cancellation" title="سياسة الإلغاء">
@@ -40,7 +46,7 @@ export default function PoliciesPage() {
         <Item num="1" title="طريقة الاحتساب">تُطبق نسبة الاسترداد المحددة للمساحة مباشرة، وتُحفظ نتيجة الاحتساب ضمن سجل الحجز.</Item>
         <Item num="2" title="إلغاء صاحب المساحة">يُسجل الإلغاء ويُشعر طالب المساحة، وقد تتخذ الإدارة إجراءً عند تكراره.</Item>
         <Item num="3" title="الظروف الاستثنائية">تراجع الإدارة الحالات القاهرة أو النزاعات بناءً على المستندات والأنظمة السارية.</Item>
-        <p className="rounded-xl border border-[#E8E3D8] bg-[#FBFAF7] p-4 text-xs leading-6 text-[#6B7566]">ملاحظة: المنصة لا تنفذ تحصيلًا أو استردادًا ماليًا في الإصدار الحالي؛ تظهر القيم للاحتساب والتوثيق فقط.</p>
+        <p className="rounded-xl border border-[#D8D1C7] bg-[#FAF8F3] p-4 text-xs leading-6 text-[#5F6764]">ملاحظة: المنصة لا تنفذ تحصيلًا أو استردادًا ماليًا في الإصدار الحالي؛ تظهر القيم للاحتساب والتوثيق فقط.</p>
       </PolicyCard>
 
       <PolicyCard id="usage" title="سياسة الاستخدام المقبول">
@@ -49,14 +55,17 @@ export default function PoliciesPage() {
         <Item num="3" title="الإشراف">يحق للإدارة إخفاء المحتوى المخالف، وتعليق الحساب، والاحتفاظ بسجل القرار الإداري.</Item>
       </PolicyCard>
     </main>
-    <footer className="pb-10 text-center text-xs text-[#6B7566]">جميع الحقوق محفوظة © {new Date().getFullYear()} إحياء مساحة · <span dir="ltr">+966 50 491 3274</span></footer>
+    <footer className="flex flex-col items-center gap-3 pb-10 text-center text-xs text-[#5F6764]">
+      <BrandLogo variant="horizontal" tone="green" className="policy-footer-logo" />
+      <span>جميع الحقوق محفوظة © {new Date().getFullYear()} إحياء مساحة · <span dir="ltr">+966 50 491 3274</span></span>
+    </footer>
   </div>
 }
 
-function PolicyCard({ id, title, children }: { id: string; title: string; children: React.ReactNode }) { return <section id={id} className="scroll-mt-6 rounded-2xl border border-[#ECE6D8] bg-white p-6 lg:p-8"><h2 className="mb-6 text-xl font-extrabold text-[#14201A]">{title}</h2><div className="space-y-5 text-sm leading-8 text-[#4A554D]">{children}</div></section> }
-function Intro({ children }: { children: React.ReactNode }) { return <p className="font-bold text-[#1B3A2D]">{children}</p> }
-function Item({ num, title, children }: { num: string; title: string; children: React.ReactNode }) { return <div className="border-r-2 border-[#C49A3C]/40 pr-4"><h3 className="font-extrabold text-[#14201A]">{num}. {title}</h3><p>{children}</p></div> }
+function PolicyCard({ id, title, children }: { id: string; title: string; children: React.ReactNode }) { return <section id={id} className="scroll-mt-6 rounded-2xl border border-[#D8D1C7] bg-white p-6 lg:p-8"><h2 className="mb-6 text-xl font-extrabold text-[#1B1B1B]">{title}</h2><div className="space-y-5 text-sm leading-8 text-[#3F4B47]">{children}</div></section> }
+function Intro({ children }: { children: React.ReactNode }) { return <p className="font-bold text-[#0E3B34]">{children}</p> }
+function Item({ num, title, children }: { num: string; title: string; children: React.ReactNode }) { return <div className="border-r-2 border-[#B99A63]/40 pr-4"><h3 className="font-extrabold text-[#1B1B1B]">{num}. {title}</h3><p>{children}</p></div> }
 function PolicyBox({ title, tone, children }: { title: string; tone: 'green' | 'amber' | 'red'; children: React.ReactNode }) {
   const classes = { green: 'border-green-200 bg-green-50', amber: 'border-amber-200 bg-amber-50', red: 'border-red-200 bg-red-50' }
-  return <div className={`rounded-xl border p-5 ${classes[tone]}`}><h3 className="font-extrabold text-[#14201A]">{title}</h3><p className="mt-2 text-xs leading-6">{children}</p></div>
+  return <div className={`rounded-xl border p-5 ${classes[tone]}`}><h3 className="font-extrabold text-[#1B1B1B]">{title}</h3><p className="mt-2 text-xs leading-6">{children}</p></div>
 }

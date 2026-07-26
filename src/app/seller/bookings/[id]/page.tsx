@@ -90,7 +90,7 @@ export default function SellerBookingDetailPage() {
         <div className="page-hero mb-6 p-6 animate-in">
           <div className="relative flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold text-[#C49A3C] mb-2">حجز مؤكد</p>
+              <p className="text-xs font-bold text-[#B99A63] mb-2">حجز مؤكد</p>
               <h1 className="text-2xl font-extrabold text-white">تفاصيل الحجز</h1>
               <p className="mt-1 text-sm text-white/65">{booking.space.name}</p>
             </div>
@@ -125,7 +125,7 @@ export default function SellerBookingDetailPage() {
               <div><span className="text-gray-500">الوحدة</span><p className="font-medium mt-0.5">{booking.unit.label}</p></div>
             </div>
             {booking.notes && (
-              <div className="mt-4 pt-4 border-t border-[#E8E3D8]">
+              <div className="mt-4 pt-4 border-t border-[#D8D1C7]">
                 <p className="text-gray-500 text-xs mb-1">ملاحظات طالب المساحة</p>
                 <p className="text-gray-700 text-sm">{booking.notes}</p>
               </div>
@@ -137,16 +137,16 @@ export default function SellerBookingDetailPage() {
               <h3 className="mb-4 font-semibold text-gray-900">خدمات المساحة المطلوبة</h3>
               <div className="space-y-2">
                 {booking.services.map(service => (
-                  <div key={service.id} className="grid grid-cols-[1fr_auto] gap-4 rounded-xl border border-[#E8E3D8] px-4 py-3 text-sm">
+                  <div key={service.id} className="grid grid-cols-[1fr_auto] gap-4 rounded-xl border border-[#D8D1C7] px-4 py-3 text-sm">
                     <div>
-                      <strong className="text-[#1B3A2D]">{service.name}</strong>
+                      <strong className="text-[#0E3B34]">{service.name}</strong>
                       <p className="mt-1 text-xs text-gray-500">الكمية {service.quantity} × {formatNumber(service.unitPrice)} ر.س</p>
                     </div>
-                    <strong className="self-center text-[#1B3A2D]">{formatNumber(service.lineTotal)} ر.س</strong>
+                    <strong className="self-center text-[#0E3B34]">{formatNumber(service.lineTotal)} ر.س</strong>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex justify-between border-t border-[#E8E3D8] pt-4 font-extrabold text-[#1B3A2D]">
+              <div className="mt-4 flex justify-between border-t border-[#D8D1C7] pt-4 font-extrabold text-[#0E3B34]">
                 <span>إجمالي الحجز</span><span>{formatNumber(booking.grandTotal)} ر.س</span>
               </div>
             </Card>
@@ -172,12 +172,12 @@ export default function SellerBookingDetailPage() {
                 onChange={e => setNote(e.target.value)}
                 rows={3}
                 placeholder="ملاحظة داخلية اختيارية..."
-                className="mb-4 w-full resize-none rounded-xl border border-[#E8E3D8] px-4 py-2.5 text-sm focus:border-[#1B3A2D] focus:outline-none"
+                className="mb-4 w-full resize-none rounded-xl border border-[#D8D1C7] px-4 py-2.5 text-sm focus:border-[#0E3B34] focus:outline-none"
               />
               <button
                 onClick={() => handleAction('COMPLETED')}
                 disabled={actionLoading}
-                className="w-full rounded-xl bg-[#1B3A2D] py-3 text-sm font-semibold text-white hover:bg-[#0F2219] disabled:opacity-60"
+                className="w-full rounded-xl bg-[#0E3B34] py-3 text-sm font-semibold text-white hover:bg-[#092C27] disabled:opacity-60"
               >
                 {actionLoading ? 'جاري التحديث...' : 'تمييز الحجز كمكتمل'}
               </button>

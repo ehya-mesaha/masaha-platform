@@ -566,6 +566,7 @@ export const supplementalTranslations: Record<string, string> = {
   'أدخل اسمًا واضحًا للمساحة لا يقل عن 3 أحرف.': 'Enter a clear space name of at least 3 characters.',
   'أدخل السعة الاستيعابية للمساحة.': 'Enter the space capacity.',
   'أدخل رقم المبنى.': 'Enter the building number.',
+  'رقم المبنى *': 'Building number *',
   'أدخل رمزًا بريديًا صحيحًا من 5 أرقام.': 'Enter a valid 5-digit postal code.',
   'أدخل سعرًا صحيحًا لكل خدمة مفعلة.': 'Enter a valid price for every enabled service.',
   'أدخل سعرًا صحيحًا للساعة أكبر من صفر.': 'Enter a valid hourly price greater than zero.',

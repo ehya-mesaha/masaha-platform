@@ -22,8 +22,8 @@ type User = {
 
 const roleLabel: Record<string, string> = { ADMIN: 'مدير النظام', SELLER: 'صاحب مساحة', BUYER: 'مستأجر' }
 const roleColor: Record<string, string> = {
-  ADMIN: 'bg-[#C49A3C]/10 text-[#8a6b1f] border-[#C49A3C]/30',
-  SELLER: 'bg-[#1B3A2D]/10 text-[#1B3A2D] border-[#1B3A2D]/20',
+  ADMIN: 'bg-[#B99A63]/10 text-[#8a6b1f] border-[#B99A63]/30',
+  SELLER: 'bg-[#0E3B34]/10 text-[#0E3B34] border-[#0E3B34]/20',
   BUYER: 'bg-blue-50 text-blue-700 border-blue-200',
 }
 const statusLabel: Record<string, string> = {
@@ -82,7 +82,7 @@ export default function AdminUserDetailPage() {
 
   return (
     <div className="p-8">
-      <Link href="/admin/users" className="text-[#6B7566] hover:text-[#1B3A2D] text-sm font-medium mb-6 inline-flex items-center gap-1">
+      <Link href="/admin/users" className="text-[#5F6764] hover:text-[#0E3B34] text-sm font-medium mb-6 inline-flex items-center gap-1">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -111,7 +111,7 @@ export default function AdminUserDetailPage() {
               <button
                 onClick={() => updateUser({ status: 'ACTIVE' })}
                 disabled={actionLoading}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#1B3A2D] text-white hover:bg-[#0F2219] disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#0E3B34] text-white hover:bg-[#092C27] disabled:opacity-50"
               >
                 اعتماد البائع
               </button>
@@ -130,12 +130,12 @@ export default function AdminUserDetailPage() {
       {/* Header */}
       <div className="card-elevated p-6 mb-6 flex items-start justify-between gap-6 flex-wrap">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] text-[#C49A3C] flex items-center justify-center text-2xl font-extrabold">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0E3B34] to-[#092C27] text-[#B99A63] flex items-center justify-center text-2xl font-extrabold">
             {user.name.charAt(0)}
           </div>
           <div>
-            <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{user.name}</h1>
-            <p className="text-[#6B7566] text-sm mt-0.5" dir="ltr">{user.email}</p>
+            <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">{user.name}</h1>
+            <p className="text-[#5F6764] text-sm mt-0.5" dir="ltr">{user.email}</p>
             <div className="mt-2 flex items-center gap-2">
               <span className={`chip border ${roleColor[user.role]}`}>{roleLabel[user.role]}</span>
               <Badge variant={statusVariant[user.status] || 'gray'}>
@@ -163,7 +163,7 @@ export default function AdminUserDetailPage() {
         {/* Info + Documents */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">معلومات الحساب</h3>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">معلومات الحساب</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <InfoRow label="الاسم" value={user.name} />
               <InfoRow label="البريد الإلكتروني" value={user.email} dir="ltr" />
@@ -175,7 +175,7 @@ export default function AdminUserDetailPage() {
           {/* Documents */}
           {user.documents && user.documents.length > 0 && (
             <Card>
-              <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">المستندات المرفقة</h3>
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">المستندات المرفقة</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {user.documents.map(doc => (
                   <DocLink key={doc.id} doc={doc} />
@@ -186,21 +186,21 @@ export default function AdminUserDetailPage() {
 
           {user.spaces.length > 0 && (
             <Card padding={false}>
-              <div className="px-6 py-4 border-b border-[#ECE6D8] flex items-center justify-between">
-                <h3 className="font-display font-extrabold text-[#14201A]">مساحاته ({user.spaces.length})</h3>
+              <div className="px-6 py-4 border-b border-[#D8D1C7] flex items-center justify-between">
+                <h3 className="font-display font-extrabold text-[#1B1B1B]">مساحاته ({user.spaces.length})</h3>
               </div>
-              <div className="divide-y divide-[#ECE6D8]">
+              <div className="divide-y divide-[#D8D1C7]">
                 {user.spaces.map(s => {
                   const { variant, label } = getSpaceStatusBadge(s.status)
                   return (
-                    <div key={s.id} className="px-6 py-4 flex items-center justify-between hover:bg-[#F7F3EB]/50">
+                    <div key={s.id} className="px-6 py-4 flex items-center justify-between hover:bg-[#F5F1E8]/50">
                       <div>
-                        <p className="font-semibold text-[#14201A] text-sm">{s.name}</p>
-                        <p className="text-[#6B7566] text-xs mt-0.5">{s.city}</p>
+                        <p className="font-semibold text-[#1B1B1B] text-sm">{s.name}</p>
+                        <p className="text-[#5F6764] text-xs mt-0.5">{s.city}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge variant={variant}>{label}</Badge>
-                        <Link href={`/admin/spaces/${s.id}`} className="text-xs text-[#1B3A2D] font-semibold hover:underline">
+                        <Link href={`/admin/spaces/${s.id}`} className="text-xs text-[#0E3B34] font-semibold hover:underline">
                           عرض
                         </Link>
                       </div>
@@ -215,8 +215,8 @@ export default function AdminUserDetailPage() {
         {/* Role management */}
         <div>
           <Card>
-            <h3 className="font-display font-extrabold text-[#14201A] text-base mb-1">إدارة الصلاحيات</h3>
-            <p className="text-[#6B7566] text-xs mb-4">تغيير دور المستخدم في المنصة</p>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-1">إدارة الصلاحيات</h3>
+            <p className="text-[#5F6764] text-xs mb-4">تغيير دور المستخدم في المنصة</p>
 
             <div className="space-y-2">
               {(['BUYER', 'SELLER', 'ADMIN'] as const).map(r => (
@@ -226,16 +226,16 @@ export default function AdminUserDetailPage() {
                   disabled={actionLoading || user.role === r}
                   className={`w-full flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-all border ${
                     user.role === r
-                      ? 'border-[#1B3A2D] bg-[#1B3A2D]/5 text-[#1B3A2D]'
-                      : 'border-[#ECE6D8] hover:border-[#1B3A2D]/40 hover:bg-[#F7F3EB]/50 text-[#4A554D]'
+                      ? 'border-[#0E3B34] bg-[#0E3B34]/5 text-[#0E3B34]'
+                      : 'border-[#D8D1C7] hover:border-[#0E3B34]/40 hover:bg-[#F5F1E8]/50 text-[#3F4B47]'
                   } disabled:cursor-not-allowed`}
                 >
                   <span className="flex items-center gap-2">
-                    {r === 'ADMIN' && <span className="text-[#C49A3C]">★</span>}
+                    {r === 'ADMIN' && <span className="text-[#B99A63]">★</span>}
                     {roleLabel[r]}
                   </span>
                   {user.role === r && (
-                    <svg className="w-4 h-4 text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-[#0E3B34]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   )}
@@ -243,8 +243,8 @@ export default function AdminUserDetailPage() {
               ))}
             </div>
 
-            <div className="mt-4 p-3 rounded-xl bg-[#F7F3EB]/60 border border-[#ECE6D8] text-[11px] text-[#6B7566] leading-relaxed">
-              <strong className="text-[#1B3A2D]">ملاحظة:</strong> ترقية مستخدم إلى دور مدير النظام تمنحه صلاحيات كاملة على المنصة.
+            <div className="mt-4 p-3 rounded-xl bg-[#F5F1E8]/60 border border-[#D8D1C7] text-[11px] text-[#5F6764] leading-relaxed">
+              <strong className="text-[#0E3B34]">ملاحظة:</strong> ترقية مستخدم إلى دور مدير النظام تمنحه صلاحيات كاملة على المنصة.
             </div>
           </Card>
         </div>
@@ -277,7 +277,7 @@ function DocLink({ doc }: { doc: UserDoc }) {
     <button
       onClick={openDoc}
       disabled={loading}
-      className="flex items-center gap-3 p-4 rounded-xl border border-[#ECE6D8] hover:border-[#1B3A2D]/40 hover:bg-[#F7F3EB]/50 transition-all group text-start w-full disabled:opacity-60"
+      className="flex items-center gap-3 p-4 rounded-xl border border-[#D8D1C7] hover:border-[#0E3B34]/40 hover:bg-[#F5F1E8]/50 transition-all group text-start w-full disabled:opacity-60"
     >
       <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
         {loading ? (
@@ -292,14 +292,14 @@ function DocLink({ doc }: { doc: UserDoc }) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#14201A] group-hover:text-[#1B3A2D]">
+        <p className="text-sm font-semibold text-[#1B1B1B] group-hover:text-[#0E3B34]">
           {docTypeLabel[doc.type] || doc.type}
         </p>
-        <p className="text-xs text-[#6B7566]">
+        <p className="text-xs text-[#5F6764]">
           {new Date(doc.uploadedAt).toLocaleDateString('en-US')}
         </p>
       </div>
-      <svg className="w-4 h-4 text-[#6B7566] group-hover:text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-[#5F6764] group-hover:text-[#0E3B34]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
       </svg>
     </button>
@@ -309,8 +309,8 @@ function DocLink({ doc }: { doc: UserDoc }) {
 function InfoRow({ label, value, dir }: { label: string; value: string; dir?: 'ltr' | 'rtl' }) {
   return (
     <div>
-      <div className="text-[11px] font-bold text-[#6B7566] tracking-wide mb-1">{label}</div>
-      <div className="text-sm text-[#14201A] font-medium" dir={dir}>{value}</div>
+      <div className="text-[11px] font-bold text-[#5F6764] tracking-wide mb-1">{label}</div>
+      <div className="text-sm text-[#1B1B1B] font-medium" dir={dir}>{value}</div>
     </div>
   )
 }

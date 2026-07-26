@@ -43,24 +43,24 @@ export default function StepSchedule({ form, update }: StepProps) {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">التوفر والجدول</h2>
-      <p className="text-[#6B7566] text-sm mb-6">حدد يومًا متاحًا واحدًا على الأقل، ثم اضبط الساعات وقواعد الحجز المباشر.</p>
+      <h2 className="font-display text-xl font-extrabold text-[#1B1B1B] mb-1">التوفر والجدول</h2>
+      <p className="text-[#5F6764] text-sm mb-6">حدد يومًا متاحًا واحدًا على الأقل، ثم اضبط الساعات وقواعد الحجز المباشر.</p>
 
-      <div className="mb-4 flex flex-col justify-between gap-3 rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col justify-between gap-3 rounded-2xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 sm:flex-row sm:items-center">
         <div>
-          <strong className="text-sm text-[#14201A]">{openDaysCount} أيام متاحة أسبوعيًا</strong>
-          <p className="mt-1 text-xs text-[#6B7566]">استخدم الإعدادات السريعة ثم عدّل أي يوم بشكل مستقل.</p>
+          <strong className="text-sm text-[#1B1B1B]">{openDaysCount} أيام متاحة أسبوعيًا</strong>
+          <p className="mt-1 text-xs text-[#5F6764]">استخدم الإعدادات السريعة ثم عدّل أي يوم بشكل مستقل.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => applyPreset('weekdays')} className="rounded-lg border border-[#D8CFBE] bg-white px-3 py-2 text-[11px] font-bold text-[#1B3A2D] hover:border-[#C49A3C]">أيام العمل</button>
-          <button type="button" onClick={() => applyPreset('everyday')} className="rounded-lg border border-[#D8CFBE] bg-white px-3 py-2 text-[11px] font-bold text-[#1B3A2D] hover:border-[#C49A3C]">كل الأسبوع</button>
-          <button type="button" onClick={copyFirstOpenHours} className="rounded-lg bg-[#1B3A2D] px-3 py-2 text-[11px] font-bold text-white hover:bg-[#10271E]">توحيد الساعات</button>
+          <button type="button" onClick={() => applyPreset('weekdays')} className="rounded-lg border border-[#D8D1C7] bg-white px-3 py-2 text-[11px] font-bold text-[#0E3B34] hover:border-[#B99A63]">أيام العمل</button>
+          <button type="button" onClick={() => applyPreset('everyday')} className="rounded-lg border border-[#D8D1C7] bg-white px-3 py-2 text-[11px] font-bold text-[#0E3B34] hover:border-[#B99A63]">كل الأسبوع</button>
+          <button type="button" onClick={copyFirstOpenHours} className="rounded-lg bg-[#0E3B34] px-3 py-2 text-[11px] font-bold text-white hover:bg-[#092C27]">توحيد الساعات</button>
         </div>
       </div>
 
       {/* Weekly schedule */}
-      <div className="rounded-xl border border-[#ECE6D8] overflow-hidden mb-6">
-        <div className="hidden grid-cols-[1fr_80px_1fr_1fr] bg-[#F7F3EB]/60 px-4 py-2.5 text-[11px] font-bold text-[#6B7566] tracking-wide border-b border-[#ECE6D8] sm:grid">
+      <div className="rounded-xl border border-[#D8D1C7] overflow-hidden mb-6">
+        <div className="hidden grid-cols-[1fr_80px_1fr_1fr] bg-[#F5F1E8]/60 px-4 py-2.5 text-[11px] font-bold text-[#5F6764] tracking-wide border-b border-[#D8D1C7] sm:grid">
           <span>اليوم</span>
           <span className="text-center">متاح</span>
           <span className="text-center">من</span>
@@ -69,11 +69,11 @@ export default function StepSchedule({ form, update }: StepProps) {
         {form.workingHours.map(wh => (
           <div
             key={wh.dayOfWeek}
-            className={`grid grid-cols-[1fr_auto] gap-3 items-center px-4 py-3 border-b border-[#ECE6D8] last:border-b-0 sm:grid-cols-[1fr_80px_1fr_1fr] ${
+            className={`grid grid-cols-[1fr_auto] gap-3 items-center px-4 py-3 border-b border-[#D8D1C7] last:border-b-0 sm:grid-cols-[1fr_80px_1fr_1fr] ${
               !wh.isOpen ? 'bg-gray-50/50' : ''
             }`}
           >
-            <span className={`text-sm font-medium ${wh.isOpen ? 'text-[#14201A]' : 'text-[#6B7566]'}`}>
+            <span className={`text-sm font-medium ${wh.isOpen ? 'text-[#1B1B1B]' : 'text-[#5F6764]'}`}>
               {DAY_NAMES[wh.dayOfWeek]}
             </span>
             <div className="flex justify-center">
@@ -83,7 +83,7 @@ export default function StepSchedule({ form, update }: StepProps) {
                 aria-label={`${wh.isOpen ? 'إغلاق' : 'فتح'} يوم ${DAY_NAMES[wh.dayOfWeek]}`}
                 aria-pressed={wh.isOpen}
                 className={`w-10 h-6 rounded-full transition-colors relative ${
-                  wh.isOpen ? 'bg-[#1B3A2D]' : 'bg-gray-300'
+                  wh.isOpen ? 'bg-[#0E3B34]' : 'bg-gray-300'
                 }`}
               >
                 <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
@@ -98,7 +98,7 @@ export default function StepSchedule({ form, update }: StepProps) {
                     type="time"
                     value={wh.openTime}
                     onChange={e => updateTime(wh.dayOfWeek, 'openTime', e.target.value)}
-                    className="w-full rounded-lg border border-[#E8E3D8] px-2 py-1.5 text-xs focus:border-[#1B3A2D] focus:outline-none sm:w-28"
+                    className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs focus:border-[#0E3B34] focus:outline-none sm:w-28"
                     dir="ltr"
                   />
                 </div>
@@ -107,25 +107,25 @@ export default function StepSchedule({ form, update }: StepProps) {
                     type="time"
                     value={wh.closeTime}
                     onChange={e => updateTime(wh.dayOfWeek, 'closeTime', e.target.value)}
-                    className="w-full rounded-lg border border-[#E8E3D8] px-2 py-1.5 text-xs focus:border-[#1B3A2D] focus:outline-none sm:w-28"
+                    className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs focus:border-[#0E3B34] focus:outline-none sm:w-28"
                     dir="ltr"
                   />
                 </div>
               </>
             ) : (
-              <span className="col-span-2 text-center text-xs text-[#6B7566]">(يوم راحة) مغلق</span>
+              <span className="col-span-2 text-center text-xs text-[#5F6764]">(يوم راحة) مغلق</span>
             )}
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-[#E8E3D8] bg-white p-4 mb-6">
+      <div className="rounded-2xl border border-[#D8D1C7] bg-white p-4 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="text-sm font-extrabold text-[#14201A]">معاينة التقويم</h3>
-            <p className="text-xs text-[#6B7566] mt-1">معاينة واضحة للأيام التي يستطيع طالب المساحة حجزها مباشرة.</p>
+            <h3 className="text-sm font-extrabold text-[#1B1B1B]">معاينة التقويم</h3>
+            <p className="text-xs text-[#5F6764] mt-1">معاينة واضحة للأيام التي يستطيع طالب المساحة حجزها مباشرة.</p>
           </div>
-          <span className="rounded-full bg-[#1B3A2D]/10 px-3 py-1 text-xs font-bold text-[#1B3A2D]">الأسبوع القادم</span>
+          <span className="rounded-full bg-[#0E3B34]/10 px-3 py-1 text-xs font-bold text-[#0E3B34]">الأسبوع القادم</span>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           {nextDays.map(({ date, hours }) => {
@@ -135,17 +135,17 @@ export default function StepSchedule({ form, update }: StepProps) {
                 key={date.toISOString()}
                 className={`rounded-xl border p-3 text-center ${
                   isOpen
-                    ? 'border-[#1B3A2D]/15 bg-[#1B3A2D]/5'
-                    : 'border-[#E8E3D8] bg-[#F7F3EB]/60'
+                    ? 'border-[#0E3B34]/15 bg-[#0E3B34]/5'
+                    : 'border-[#D8D1C7] bg-[#F5F1E8]/60'
                 }`}
               >
-                <p className={`text-xs font-bold ${isOpen ? 'text-[#1B3A2D]' : 'text-[#6B7566]'}`}>
+                <p className={`text-xs font-bold ${isOpen ? 'text-[#0E3B34]' : 'text-[#5F6764]'}`}>
                   {DAY_NAMES[date.getDay()]}
                 </p>
-                <p className="text-lg font-extrabold text-[#14201A] mt-1">
+                <p className="text-lg font-extrabold text-[#1B1B1B] mt-1">
                   {date.getDate().toLocaleString('en-US')}
                 </p>
-                <p className={`time-value text-[11px] mt-1 ${isOpen ? 'text-[#1B3A2D]' : 'text-[#9A9488]'}`}>
+                <p className={`time-value text-[11px] mt-1 ${isOpen ? 'text-[#0E3B34]' : 'text-[#9A9488]'}`}>
                   {isOpen && hours ? `${hours.openTime} - ${hours.closeTime}` : 'مغلق'}
                 </p>
               </div>
@@ -157,11 +157,11 @@ export default function StepSchedule({ form, update }: StepProps) {
       {/* Booking rules */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">الحد الأدنى لمدة الحجز</label>
+          <label className="block text-sm font-medium text-[#3F4B47] mb-1.5">الحد الأدنى لمدة الحجز</label>
           <select
             value={form.minBookingHours}
             onChange={e => update('minBookingHours', e.target.value)}
-            className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
+            className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white"
           >
             <option value="1">ساعة واحدة</option>
             <option value="2">ساعتان</option>
@@ -171,11 +171,11 @@ export default function StepSchedule({ form, update }: StepProps) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">مدة أقصى للحجز المسبق</label>
+          <label className="block text-sm font-medium text-[#3F4B47] mb-1.5">مدة أقصى للحجز المسبق</label>
           <select
             value={form.maxAdvanceBookingDays}
             onChange={e => update('maxAdvanceBookingDays', e.target.value)}
-            className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
+            className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white"
           >
             <option value="30">شهر واحد</option>
             <option value="60">شهران</option>

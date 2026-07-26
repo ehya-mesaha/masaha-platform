@@ -36,13 +36,13 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
       <div className="page-hero mb-6 p-6">
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="mb-2 text-xs font-bold text-[#D8B455]">تقارير تشغيلية</p>
+            <p className="mb-2 text-xs font-bold text-[#B99A63]">تقارير تشغيلية</p>
             <h1 className="text-2xl font-extrabold text-white">أداء الحجوزات والاستخدام</h1>
             <p className="mt-2 text-sm text-white/65">مؤشرات الإشغال والحجوزات فقط؛ التقارير المالية خارج النطاق الحالي.</p>
           </div>
           <div className="flex gap-2">
             {[selectedYear - 1, selectedYear, selectedYear + 1].map((year) => (
-              <Link key={year} href={`/admin/reports?year=${year}`} className={`rounded-xl px-4 py-2 text-sm font-bold ${year === selectedYear ? 'bg-[#D8B455] text-[#14201A]' : 'bg-white/10 text-white'}`}>
+              <Link key={year} href={`/admin/reports?year=${year}`} className={`rounded-xl px-4 py-2 text-sm font-bold ${year === selectedYear ? 'bg-[#B99A63] text-[#1B1B1B]' : 'bg-white/10 text-white'}`}>
                 {formatNumber(year)}
               </Link>
             ))}
@@ -58,30 +58,30 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
       </div>
 
       <section className="premium-card mb-6 p-6">
-        <p className="text-xs font-bold text-[#C49A3C]">التوزيع الشهري</p>
-        <h2 className="mb-6 text-lg font-extrabold text-[#14201A]">حجوزات عام {formatNumber(selectedYear)}</h2>
-        <div className="flex h-64 items-end gap-2 border-b border-[#E8E3D8] pb-4">
+        <p className="text-xs font-bold text-[#B99A63]">التوزيع الشهري</p>
+        <h2 className="mb-6 text-lg font-extrabold text-[#1B1B1B]">حجوزات عام {formatNumber(selectedYear)}</h2>
+        <div className="flex h-64 items-end gap-2 border-b border-[#D8D1C7] pb-4">
           {monthly.map((item) => (
             <div key={item.month} className="flex h-full flex-1 flex-col justify-end gap-2">
               <div className="flex flex-1 items-end">
-                <div className="w-full rounded-t-lg bg-gradient-to-t from-[#1B3A2D] to-[#C49A3C]" style={{ height: `${Math.max((item.count / maxMonthly) * 100, item.count ? 8 : 2)}%` }} title={`${formatNumber(item.count)} حجز`} />
+                <div className="w-full rounded-t-lg bg-gradient-to-t from-[#0E3B34] to-[#B99A63]" style={{ height: `${Math.max((item.count / maxMonthly) * 100, item.count ? 8 : 2)}%` }} title={`${formatNumber(item.count)} حجز`} />
               </div>
-              <span className="text-center text-[10px] font-semibold text-[#6B7566]">{item.month}</span>
+              <span className="text-center text-[10px] font-semibold text-[#5F6764]">{item.month}</span>
             </div>
           ))}
         </div>
       </section>
 
       <section className="premium-card overflow-hidden">
-        <div className="border-b border-[#E8E3D8] px-6 py-4">
-          <h2 className="text-lg font-extrabold text-[#14201A]">أحدث الحجوزات</h2>
+        <div className="border-b border-[#D8D1C7] px-6 py-4">
+          <h2 className="text-lg font-extrabold text-[#1B1B1B]">أحدث الحجوزات</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-[#FBFAF7]"><tr>
-              {['المساحة', 'صاحب المساحة', 'طالب المساحة', 'التاريخ', 'الساعات', 'الحالة'].map((heading) => <th key={heading} className="px-5 py-3 text-right font-bold text-[#6B7566]">{heading}</th>)}
+            <thead className="bg-[#FAF8F3]"><tr>
+              {['المساحة', 'صاحب المساحة', 'طالب المساحة', 'التاريخ', 'الساعات', 'الحالة'].map((heading) => <th key={heading} className="px-5 py-3 text-right font-bold text-[#5F6764]">{heading}</th>)}
             </tr></thead>
-            <tbody className="divide-y divide-[#E8E3D8]">
+            <tbody className="divide-y divide-[#D8D1C7]">
               {bookings.slice(0, 12).map((booking) => {
                 const badge = getBookingStatusBadge(booking.status)
                 return <tr key={booking.id}>
@@ -103,8 +103,8 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
 
 function Metric({ label, value, suffix }: { label: string; value: number; suffix?: string }) {
   return <div className="premium-card p-5">
-    <p className="text-xs font-bold text-[#6B7566]">{label}</p>
-    <p className="mt-2 text-3xl font-extrabold text-[#1B3A2D]">{formatNumber(value)}</p>
-    {suffix && <p className="mt-1 text-xs font-semibold text-[#C49A3C]">{suffix}</p>}
+    <p className="text-xs font-bold text-[#5F6764]">{label}</p>
+    <p className="mt-2 text-3xl font-extrabold text-[#0E3B34]">{formatNumber(value)}</p>
+    {suffix && <p className="mt-1 text-xs font-semibold text-[#B99A63]">{suffix}</p>}
   </div>
 }

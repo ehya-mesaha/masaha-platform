@@ -64,7 +64,7 @@ export default function AdminSpaceNeedActions({ id, initialStatus, initialNote }
         type="button"
         onClick={save}
         disabled={loading}
-        className="w-full rounded-xl bg-[#1B3A2D] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#0F2219] disabled:opacity-60"
+        className="w-full rounded-xl bg-[#0E3B34] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#092C27] disabled:opacity-60"
       >
         {loading ? 'جاري الحفظ...' : 'حفظ التحديث'}
       </button>

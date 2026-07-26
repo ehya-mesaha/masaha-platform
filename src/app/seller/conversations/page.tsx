@@ -10,7 +10,7 @@ export default async function SellerConversationsPage() {
 
   const currentUser = user as TokenPayload
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-[#6B7566]">جاري تحميل المحادثات...</div>}>
+    <Suspense fallback={<div className="p-6 text-sm text-[#5F6764]">جاري تحميل المحادثات...</div>}>
       <ConversationsClient
         currentUser={{
           id: currentUser.id,

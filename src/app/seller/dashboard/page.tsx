@@ -31,12 +31,12 @@ export default async function SellerDashboard() {
       <div className="page-hero mb-8 p-7">
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="mb-2 text-xs font-bold text-[#D8B455]">لوحة صاحب المساحة</p>
+            <p className="mb-2 text-xs font-bold text-[#B99A63]">لوحة صاحب المساحة</p>
             <h1 className="text-3xl font-extrabold text-white">مرحبًا بك، {String(user.name)}</h1>
             <p className="mt-2 text-sm text-white/65">تابع مساحاتك وحجوزاتك المؤكدة وجدول الإشغال من مكان واحد.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/seller/spaces/new" className="rounded-xl bg-[#D8B455] px-5 py-2.5 text-sm font-bold text-[#14201A]">إضافة مساحة</Link>
+            <Link href="/seller/spaces/new" className="rounded-xl bg-[#B99A63] px-5 py-2.5 text-sm font-bold text-[#1B1B1B]">إضافة مساحة</Link>
             <Link href="/seller/bookings" className="rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-bold text-white">عرض الحجوزات</Link>
           </div>
         </div>
@@ -45,24 +45,24 @@ export default async function SellerDashboard() {
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => <Card key={stat.label}>
           <div className="flex items-center justify-between">
-            <div><p className="text-sm text-[#6B7566]">{stat.label}</p><p className="mt-1 text-3xl font-extrabold text-[#1B3A2D]">{formatNumber(stat.value)}</p></div>
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#EEF3EE] text-[#1B3A2D]"><stat.icon /></span>
+            <div><p className="text-sm text-[#5F6764]">{stat.label}</p><p className="mt-1 text-3xl font-extrabold text-[#0E3B34]">{formatNumber(stat.value)}</p></div>
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#EEF3EE] text-[#0E3B34]"><stat.icon /></span>
           </div>
         </Card>)}
       </div>
 
       <Card padding={false}>
-        <div className="flex items-center justify-between border-b border-[#E8E3D8] px-6 py-4">
-          <h2 className="font-extrabold text-[#14201A]">أحدث الحجوزات</h2>
-          <Link href="/seller/bookings" className="text-xs font-bold text-[#1B3A2D]">عرض الكل</Link>
+        <div className="flex items-center justify-between border-b border-[#D8D1C7] px-6 py-4">
+          <h2 className="font-extrabold text-[#1B1B1B]">أحدث الحجوزات</h2>
+          <Link href="/seller/bookings" className="text-xs font-bold text-[#0E3B34]">عرض الكل</Link>
         </div>
-        {bookings.length === 0 ? <div className="p-10 text-center text-[#6B7566]">لا توجد حجوزات حتى الآن</div> : (
-          <div className="divide-y divide-[#E8E3D8]">
+        {bookings.length === 0 ? <div className="p-10 text-center text-[#5F6764]">لا توجد حجوزات حتى الآن</div> : (
+          <div className="divide-y divide-[#D8D1C7]">
             {bookings.map((booking) => {
               const badge = getBookingStatusBadge(booking.status)
               return <div key={booking.id} className="flex flex-col justify-between gap-3 px-6 py-4 sm:flex-row sm:items-center">
-                <div><p className="text-sm font-bold text-[#14201A]">{booking.buyer.name}</p><p className="mt-1 text-xs text-[#6B7566]">{booking.space.name} · {formatDate(booking.date)}</p></div>
-                <div className="flex items-center gap-3"><Badge variant={badge.variant}>{badge.label}</Badge><Link href={`/seller/bookings/${booking.id}`} className="text-xs font-bold text-[#1B3A2D]">التفاصيل</Link></div>
+                <div><p className="text-sm font-bold text-[#1B1B1B]">{booking.buyer.name}</p><p className="mt-1 text-xs text-[#5F6764]">{booking.space.name} · {formatDate(booking.date)}</p></div>
+                <div className="flex items-center gap-3"><Badge variant={badge.variant}>{badge.label}</Badge><Link href={`/seller/bookings/${booking.id}`} className="text-xs font-bold text-[#0E3B34]">التفاصيل</Link></div>
               </div>
             })}
           </div>

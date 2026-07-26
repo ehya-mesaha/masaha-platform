@@ -35,8 +35,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
     BUYER: 'مستأجر',
   }
   const roleClass: Record<string, string> = {
-    ADMIN: 'bg-[#C49A3C]/10 text-[#8a6b1f] border-[#C49A3C]/30',
-    SELLER: 'bg-[#1B3A2D]/10 text-[#1B3A2D] border-[#1B3A2D]/20',
+    ADMIN: 'bg-[#B99A63]/10 text-[#8a6b1f] border-[#B99A63]/30',
+    SELLER: 'bg-[#0E3B34]/10 text-[#0E3B34] border-[#0E3B34]/20',
     BUYER: 'bg-blue-50 text-blue-700 border-blue-200',
   }
   const statusLabel: Record<string, string> = {
@@ -61,21 +61,21 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="font-display text-2xl font-extrabold text-[#14201A]">المستخدمون</h1>
-        <p className="text-[#6B7566] text-sm mt-1">إدارة المستخدمين والصلاحيات في المنصة</p>
+        <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">المستخدمون</h1>
+        <p className="text-[#5F6764] text-sm mt-1">إدارة المستخدمين والصلاحيات في المنصة</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {[
-          { label: 'إجمالي المستخدمين', value: stats.total, tone: 'text-[#14201A]' },
-          { label: 'المديرون', value: stats.admins, tone: 'text-[#C49A3C]' },
-          { label: 'أصحاب المساحات', value: stats.sellers, tone: 'text-[#1B3A2D]' },
+          { label: 'إجمالي المستخدمين', value: stats.total, tone: 'text-[#1B1B1B]' },
+          { label: 'المديرون', value: stats.admins, tone: 'text-[#B99A63]' },
+          { label: 'أصحاب المساحات', value: stats.sellers, tone: 'text-[#0E3B34]' },
           { label: 'المستأجرون', value: stats.buyers, tone: 'text-blue-700' },
           { label: 'بانتظار الاعتماد', value: pendingCount, tone: 'text-amber-600' },
         ].map(s => (
           <div key={s.label} className="card-elevated p-5">
-            <div className="text-[11px] font-bold text-[#6B7566] tracking-wide mb-1">{s.label}</div>
+            <div className="text-[11px] font-bold text-[#5F6764] tracking-wide mb-1">{s.label}</div>
             <div className={`font-display text-3xl font-extrabold ${s.tone}`}>{s.value}</div>
           </div>
         ))}
@@ -86,7 +86,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         <Link
           href="/admin/users"
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            !filter ? 'bg-[#1B3A2D] text-white' : 'bg-white text-[#4A554D] border border-[#ECE6D8] hover:bg-[#F7F3EB]'
+            !filter ? 'bg-[#0E3B34] text-white' : 'bg-white text-[#3F4B47] border border-[#D8D1C7] hover:bg-[#F5F1E8]'
           }`}
         >
           الكل
@@ -94,7 +94,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         <Link
           href="/admin/users?filter=pending"
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-            filter === 'pending' ? 'bg-[#1B3A2D] text-white' : 'bg-white text-[#4A554D] border border-[#ECE6D8] hover:bg-[#F7F3EB]'
+            filter === 'pending' ? 'bg-[#0E3B34] text-white' : 'bg-white text-[#3F4B47] border border-[#D8D1C7] hover:bg-[#F5F1E8]'
           }`}
         >
           بانتظار الاعتماد
@@ -109,32 +109,32 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
       </div>
 
       <Card padding={false}>
-        <div className="px-6 py-4 border-b border-[#ECE6D8]">
-          <h3 className="font-semibold text-[#14201A]">
+        <div className="px-6 py-4 border-b border-[#D8D1C7]">
+          <h3 className="font-semibold text-[#1B1B1B]">
             {filter === 'pending' ? 'البائعون بانتظار الاعتماد' : 'جميع المستخدمين'}
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-[#F7F3EB]/50 border-b border-[#ECE6D8]">
+            <thead className="bg-[#F5F1E8]/50 border-b border-[#D8D1C7]">
               <tr>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase">المستخدم</th>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase">الدور</th>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase">الحالة</th>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase">المساحات</th>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase">الحجوزات</th>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase">تاريخ التسجيل</th>
-                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#6B7566] tracking-wide uppercase"></th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase">المستخدم</th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase">الدور</th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase">الحالة</th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase">المساحات</th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase">الحجوزات</th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase">تاريخ التسجيل</th>
+                <th className="text-right px-6 py-3 text-[11px] font-bold text-[#5F6764] tracking-wide uppercase"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#ECE6D8]">
+            <tbody className="divide-y divide-[#D8D1C7]">
               {users.length === 0 ? (
-                <tr><td colSpan={7} className="text-center text-[#6B7566] py-12">لا يوجد مستخدمون</td></tr>
+                <tr><td colSpan={7} className="text-center text-[#5F6764] py-12">لا يوجد مستخدمون</td></tr>
               ) : users.map((u) => (
-                <tr key={u.id} className="hover:bg-[#F7F3EB]/40 transition-colors">
+                <tr key={u.id} className="hover:bg-[#F5F1E8]/40 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1B3A2D] to-[#0F2219] text-[#C49A3C] flex items-center justify-center font-bold text-sm overflow-hidden">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0E3B34] to-[#092C27] text-[#B99A63] flex items-center justify-center font-bold text-sm overflow-hidden">
                         {u.avatarUrl ? (
                           <img src={u.avatarUrl} alt={u.name} className="h-full w-full object-cover" />
                         ) : (
@@ -142,8 +142,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-[#14201A]">{u.name}</p>
-                        <p className="text-[#6B7566] text-xs" dir="ltr">{u.email}</p>
+                        <p className="font-semibold text-[#1B1B1B]">{u.name}</p>
+                        <p className="text-[#5F6764] text-xs" dir="ltr">{u.email}</p>
                       </div>
                     </div>
                   </td>
@@ -157,15 +157,15 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                       {statusLabel[u.status] || u.status}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 text-[#4A554D] font-medium">{u._count.spaces}</td>
-                  <td className="px-6 py-4 text-[#4A554D] font-medium">{u._count.bookings}</td>
-                  <td className="px-6 py-4 text-[#6B7566] text-xs">
+                  <td className="px-6 py-4 text-[#3F4B47] font-medium">{u._count.spaces}</td>
+                  <td className="px-6 py-4 text-[#3F4B47] font-medium">{u._count.bookings}</td>
+                  <td className="px-6 py-4 text-[#5F6764] text-xs">
                     {new Date(u.createdAt).toLocaleDateString('en-US')}
                   </td>
                   <td className="px-6 py-4">
                     <Link
                       href={`/admin/users/${u.id}`}
-                      className="text-[#1B3A2D] font-semibold hover:text-[#C49A3C] text-xs transition-colors flex items-center gap-1"
+                      className="text-[#0E3B34] font-semibold hover:text-[#B99A63] text-xs transition-colors flex items-center gap-1"
                     >
                       عرض
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

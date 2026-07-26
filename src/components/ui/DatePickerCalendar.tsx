@@ -69,30 +69,30 @@ export default function DatePickerCalendar({
   }
 
   return (
-    <div className="rounded-2xl border border-[#E8E3D8] bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-[#D8D1C7] bg-white p-3 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
           onClick={() => moveMonth(1)}
-          className="w-9 h-9 rounded-xl border border-[#E8E3D8] text-[#1B3A2D] hover:bg-[#F7F3EB] transition-colors"
+          className="w-9 h-9 rounded-xl border border-[#D8D1C7] text-[#0E3B34] hover:bg-[#F5F1E8] transition-colors"
           aria-label="الشهر التالي"
         >
           ‹
         </button>
-        <div className="text-sm font-extrabold text-[#14201A]">
+        <div className="text-sm font-extrabold text-[#1B1B1B]">
           {MONTH_FORMATTER.format(visibleMonth)}
         </div>
         <button
           type="button"
           onClick={() => moveMonth(-1)}
-          className="w-9 h-9 rounded-xl border border-[#E8E3D8] text-[#1B3A2D] hover:bg-[#F7F3EB] transition-colors"
+          className="w-9 h-9 rounded-xl border border-[#D8D1C7] text-[#0E3B34] hover:bg-[#F5F1E8] transition-colors"
           aria-label="الشهر السابق"
         >
           ›
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-[#6B7566] mb-1">
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-[#5F6764] mb-1">
         {DAY_LABELS.map(day => (
           <span key={day} className="py-1">{day}</span>
         ))}
@@ -113,12 +113,12 @@ export default function DatePickerCalendar({
               disabled={disabled}
               className={`aspect-square rounded-xl text-sm font-bold transition-colors ${
                 selected
-                  ? 'bg-[#1B3A2D] text-white shadow-sm'
+                  ? 'bg-[#0E3B34] text-white shadow-sm'
                   : disabled
-                    ? 'text-[#C9C2B3] bg-[#F7F3EB]/40 cursor-not-allowed'
+                    ? 'text-[#C9C2B3] bg-[#F5F1E8]/40 cursor-not-allowed'
                     : inMonth
-                      ? 'text-[#14201A] hover:bg-[#1B3A2D]/10'
-                      : 'text-[#B5B0A2] hover:bg-[#F7F3EB]'
+                      ? 'text-[#1B1B1B] hover:bg-[#0E3B34]/10'
+                      : 'text-[#B5B0A2] hover:bg-[#F5F1E8]'
               }`}
             >
               {DAY_FORMATTER.format(date.getDate())}

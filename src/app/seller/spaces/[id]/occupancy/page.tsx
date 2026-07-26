@@ -56,16 +56,16 @@ export default function PrivateOccupancyPage() {
 
   return (
     <div className="dashboard-page">
-      <Link href="/seller/spaces" className="text-sm font-bold text-[#6B7566] hover:text-[#1B3A2D]">← مساحاتي</Link>
+      <Link href="/seller/spaces" className="text-sm font-bold text-[#5F6764] hover:text-[#0E3B34]">← مساحاتي</Link>
       <div className="page-hero mb-6 mt-5 p-7">
-        <p className="text-xs font-bold text-[#C49A3C]">جدولة المدرسة</p>
+        <p className="text-xs font-bold text-[#B99A63]">جدولة المدرسة</p>
         <h1 className="mt-2 text-3xl font-extrabold text-white">إشغال خاص للمدرسة</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-white/65">احجز فترات للاستخدام الداخلي دون تعديل جدول التوفر الأسبوعي. لن تكون متاحة لطالبي المساحات وستكون مجانية للمدرسة.</p>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[.85fr_1.15fr]">
-        <form onSubmit={submit} className="rounded-2xl border border-[#E1D9CA] bg-white p-5">
-          <h2 className="font-extrabold text-[#1B3A2D]">إضافة إشغال</h2>
+        <form onSubmit={submit} className="rounded-2xl border border-[#D8D1C7] bg-white p-5">
+          <h2 className="font-extrabold text-[#0E3B34]">إضافة إشغال</h2>
           <div className="mt-5 space-y-4">
             <Field label="العنوان"><input name="title" required placeholder="مثال: حفل تخرج" className="field" /></Field>
             <Field label="الوحدة">
@@ -83,27 +83,27 @@ export default function PrivateOccupancyPage() {
               <select name="status" className="field bg-white"><option value="CONFIRMED">مؤكد</option><option value="PLANNED">مخطط</option></select>
             </Field>
           </div>
-          {message && <p className="mt-4 rounded-xl bg-[#F7F3EB] px-4 py-3 text-sm text-[#1B3A2D]">{message}</p>}
+          {message && <p className="mt-4 rounded-xl bg-[#F5F1E8] px-4 py-3 text-sm text-[#0E3B34]">{message}</p>}
           <button className="btn-primary mt-5 w-full rounded-xl py-3 text-sm font-bold">حفظ الإشغال الخاص</button>
         </form>
 
-        <section className="rounded-2xl border border-[#E1D9CA] bg-white p-5">
-          <h2 className="font-extrabold text-[#1B3A2D]">الإشغالات الخاصة القادمة</h2>
+        <section className="rounded-2xl border border-[#D8D1C7] bg-white p-5">
+          <h2 className="font-extrabold text-[#0E3B34]">الإشغالات الخاصة القادمة</h2>
           <div className="mt-5 space-y-3">
             {items.map(item => (
-              <article key={item.id} className="flex items-start justify-between gap-4 rounded-2xl border border-[#E8E1D3] p-4">
+              <article key={item.id} className="flex items-start justify-between gap-4 rounded-2xl border border-[#D8D1C7] p-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <strong className="text-[#14201A]">{item.title}</strong>
+                    <strong className="text-[#1B1B1B]">{item.title}</strong>
                     <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${item.status === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{item.status === 'CONFIRMED' ? 'مؤكد' : 'مخطط'}</span>
                   </div>
-                  <p className="mt-2 text-xs text-[#6B7566]">{formatDate(item.startTime)} · <span className="time-value">{formatTimeRange(item.startTime, item.endTime)}</span></p>
-                  <p className="mt-1 text-xs text-[#6B7566]">{item.unit?.label || 'جميع الوحدات'}</p>
+                  <p className="mt-2 text-xs text-[#5F6764]">{formatDate(item.startTime)} · <span className="time-value">{formatTimeRange(item.startTime, item.endTime)}</span></p>
+                  <p className="mt-1 text-xs text-[#5F6764]">{item.unit?.label || 'جميع الوحدات'}</p>
                 </div>
                 <button onClick={() => remove(item.id)} className="text-xs font-bold text-red-600">حذف</button>
               </article>
             ))}
-            {items.length === 0 && <p className="rounded-xl bg-[#F7F3EB] p-6 text-center text-sm text-[#6B7566]">لا توجد إشغالات خاصة قادمة.</p>}
+            {items.length === 0 && <p className="rounded-xl bg-[#F5F1E8] p-6 text-center text-sm text-[#5F6764]">لا توجد إشغالات خاصة قادمة.</p>}
           </div>
         </section>
       </div>

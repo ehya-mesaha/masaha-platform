@@ -63,7 +63,7 @@ export default async function SpacesPage({
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
-              <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#C49A3C] text-[#14201A]">
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#B99A63] text-[#1B1B1B]">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2" /></svg>
               </span>
               <span><strong className="block text-xl text-white">{spaces.length.toLocaleString('en-US')}</strong><span className="text-[11px] text-white/55">مساحة مطابقة حالياً</span></span>
@@ -81,7 +81,7 @@ export default async function SpacesPage({
                   <SummaryRow label="مدة الجلسة" value={`${sessionHours.toLocaleString('en-US')} ساعة`} />
                   <SummaryRow label="إجمالي الساعات" value={`${programTotalHours.toLocaleString('en-US')} ساعة`} />
                 </div>
-                <p className="mt-4 rounded-xl bg-[#F7F3EB] p-3 text-xs leading-6 text-[#5D685F]">يُطبق أعلى خصم مؤهل تلقائيًا، دون جمع الخصومات.</p>
+                <p className="mt-4 rounded-xl bg-[#F5F1E8] p-3 text-xs leading-6 text-[#5D685F]">يُطبق أعلى خصم مؤهل تلقائيًا، دون جمع الخصومات.</p>
               </div>
             )}
             <SpacesFilters types={types} params={params} />
@@ -89,14 +89,14 @@ export default async function SpacesPage({
 
           {/* Main content */}
           <main className="flex-1">
-            <div className="flex items-center justify-between border-b border-[#DDD5C5] pb-5 mb-6 animate-in">
+            <div className="flex items-center justify-between border-b border-[#D8D1C7] pb-5 mb-6 animate-in">
               <div>
                 <p className="text-[11px] font-bold text-[#A3802F]">{isProgram ? 'برنامجك المتكرر' : 'نتائج البحث'}</p>
-                <h2 className="mt-1 text-xl font-extrabold text-[#14201A]">{isProgram ? 'المساحات المناسبة للبرنامج' : 'المساحات المتاحة'}</h2>
+                <h2 className="mt-1 text-xl font-extrabold text-[#1B1B1B]">{isProgram ? 'المساحات المناسبة للبرنامج' : 'المساحات المتاحة'}</h2>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <SaveSearchButton criteria={params} />
-                <span className="rounded-full border border-[#DDD5C5] bg-white px-3 py-1.5 text-xs font-bold text-[#4A554D]">{spaces.length.toLocaleString('en-US')} نتيجة</span>
+                <span className="rounded-full border border-[#D8D1C7] bg-white px-3 py-1.5 text-xs font-bold text-[#3F4B47]">{spaces.length.toLocaleString('en-US')} نتيجة</span>
               </div>
             </div>
 
@@ -203,7 +203,7 @@ async function mapWithConcurrency<T, R>(items: T[], limit: number, mapper: (item
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
-  return <div className="flex items-center justify-between gap-3"><span className="text-[#6B7566]">{label}</span><strong className="text-[#1B3A2D]">{value}</strong></div>
+  return <div className="flex items-center justify-between gap-3"><span className="text-[#5F6764]">{label}</span><strong className="text-[#0E3B34]">{value}</strong></div>
 }
 
 function safeProgramSessions(params: SearchParams) {

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import BrandLogo from '@/components/brand/BrandLogo'
 
 type Role = 'SELLER' | 'BUYER' | 'ADMIN'
 type NavLink = { href: string; label: string; icon: keyof typeof ICONS }
@@ -68,14 +69,13 @@ export default function DashboardSidebar({ role, userName }: { role: Role; userN
     router.push('/auth/login')
     router.refresh()
   }
-  return <aside className="relative flex min-h-screen w-64 flex-col overflow-hidden bg-gradient-to-b from-[#1B3A2D] to-[#0F2219]">
+  return <aside className="relative flex min-h-screen w-64 flex-col overflow-hidden bg-gradient-to-b from-[#0E3B34] to-[#092C27]">
     <div className="border-b border-white/10 px-5 py-5">
       <Link href="/" className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-[#D8B455]"><NavIcon path={ICONS.spaces} /></span>
-        <div><p className="font-extrabold text-white">إحياء مساحة</p><p className="text-[9px] tracking-[0.18em] text-white/40">EHYA MASAHA</p></div>
+        <BrandLogo variant="horizontal" tone="white" className="dashboard-sidebar-logo" />
       </Link>
       <div className="mt-5 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#D8B455] text-lg font-extrabold text-[#14201A]">{userName?.charAt(0) || '؟'}</span>
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#B99A63] text-lg font-extrabold text-[#1B1B1B]">{userName?.charAt(0) || '؟'}</span>
         <div className="min-w-0"><p className="truncate text-sm font-bold text-white">{userName}</p><p className="text-[11px] text-white/50">{roleLabel[role]}</p></div>
       </div>
     </div>
@@ -83,7 +83,7 @@ export default function DashboardSidebar({ role, userName }: { role: Role; userN
       <p className="mb-2 px-3 text-[10px] font-bold tracking-wider text-white/35">القائمة</p>
       {links[role].map((link) => {
         const active = pathname === link.href || (link.href !== '/spaces' && link.href !== '/seller/spaces/new' && pathname.startsWith(`${link.href}/`))
-        return <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${active ? 'bg-white text-[#1B3A2D]' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}><span className={active ? 'text-[#1B3A2D]' : 'text-[#D8B455]'}><NavIcon path={ICONS[link.icon]} /></span>{link.label}</Link>
+        return <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${active ? 'bg-white text-[#0E3B34]' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}><span className={active ? 'text-[#0E3B34]' : 'text-[#B99A63]'}><NavIcon path={ICONS[link.icon]} /></span>{link.label}</Link>
       })}
     </nav>
     <div className="border-t border-white/10 p-3"><button onClick={logout} className="w-full rounded-xl px-3 py-2.5 text-right text-sm font-bold text-white/70 hover:bg-red-500/10 hover:text-red-200">تسجيل الخروج</button></div>
