@@ -41,7 +41,7 @@ export default function StepAmenities({ form, update, amenities }: StepProps) {
   return (
     <div>
       <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">المرافق والتجهيزات المتاحة</h2>
-      <p className="text-[#6B7566] text-sm mb-6">حدد جميع المرافق المتوفرة في مساحتك لتعزيز فرص ظهورها في نتائج البحث وتلبية احتياجات العملاء.</p>
+      <p className="text-[#6B7566] text-sm mb-6">حدد جميع المرافق المتوفرة في مساحتك. يجب اختيار مرفق واحد على الأقل قبل المتابعة.</p>
 
       {techAmenities.length > 0 && (
         <div className="mb-6">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { SpaceFormData, SpaceType, Amenity, ServiceCatalogItem, getInitialForm } from '@/components/spaces/create/types'
 import StepIndicator from '@/components/spaces/create/StepIndicator'
@@ -13,10 +13,13 @@ import StepSchedule from '@/components/spaces/create/StepSchedule'
 import StepPricing from '@/components/spaces/create/StepPricing'
 import StepTerms from '@/components/spaces/create/StepTerms'
 import StepReview from '@/components/spaces/create/StepReview'
+import { getStepError, STEP_LABELS } from '@/components/spaces/create/validation'
 
 export default function NewSpacePage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [furthestStep, setFurthestStep] = useState(1)
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(() => new Set())
   const [form, setForm] = useState<SpaceFormData>(getInitialForm)
   const [types, setTypes] = useState<SpaceType[]>([])
   const [amenities, setAmenities] = useState<Amenity[]>([])
@@ -25,6 +28,7 @@ export default function NewSpacePage() {
   const [categoriesError, setCategoriesError] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const errorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/admin/categories')
@@ -58,6 +62,12 @@ export default function NewSpacePage() {
 
   function update(field: string, value: unknown) {
     setForm(p => ({ ...p, [field]: value }))
+    setCompletedSteps(current => {
+      const nextCompleted = new Set(current)
+      nextCompleted.delete(step)
+      return nextCompleted
+    })
+    setFurthestStep(current => Math.min(current, step))
   }
 
   function next() {
@@ -69,28 +79,18 @@ export default function NewSpacePage() {
       setError(categoriesError)
       return
     }
-    if (step === 1 && !form.name.trim()) {
-      setError('يرجى إدخال اسم المساحة')
-      return
-    }
-    if (step === 1 && !form.typeId) {
-      setError('يرجى اختيار تصنيف المساحة')
-      return
-    }
-    if (step === 1 && (!form.name || !form.typeId)) {
-      setError('يرجى إدخال اسم المساحة والتصنيف')
-      return
-    }
-    if (step === 2 && !form.city) {
-      setError('يرجى اختيار المدينة')
-      return
-    }
-    if (step === 7 && !form.price) {
-      setError('يرجى إدخال السعر')
+    const stepError = getStepError(step, form)
+    if (stepError) {
+      setError(stepError)
+      window.requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
       return
     }
     setError('')
-    setStep(s => Math.min(s + 1, 9))
+    setCompletedSteps(current => new Set(current).add(step))
+    const nextStep = Math.min(step + 1, 9)
+    setFurthestStep(current => Math.max(current, nextStep))
+    setStep(nextStep)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function prev() {
@@ -100,6 +100,12 @@ export default function NewSpacePage() {
 
   async function handleSubmit() {
     setError('')
+    const validationError = getStepError(9, form)
+    if (validationError) {
+      setError(validationError)
+      window.requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch('/api/spaces', {
@@ -121,6 +127,7 @@ export default function NewSpacePage() {
   }
 
   const stepProps = { form, update, types, amenities, serviceCatalog, categoriesLoading, categoriesError }
+  const progress = Math.round(((step - 1) / 8) * 100)
 
   const StepComponent = [
     StepBasicInfo,
@@ -135,17 +142,31 @@ export default function NewSpacePage() {
   ][step - 1]
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-extrabold text-[#14201A]">إضافة مساحة جديدة</h1>
-          <p className="text-[#6B7566] text-sm mt-1">أدخل معلومات مساحتك في 9 خطوات</p>
+    <div className="dashboard-page space-wizard-page">
+      <div className="mx-auto max-w-6xl">
+        <div className="page-hero mb-6 overflow-hidden p-6 sm:p-8">
+          <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <p className="mb-2 text-xs font-extrabold text-[#E4C878]">إضافة احترافية · 9 خطوات إلزامية</p>
+              <h1 className="font-display text-2xl font-extrabold text-white sm:text-3xl">إضافة مساحة جديدة</h1>
+              <p className="mt-2 text-sm text-white/65">أكمل كل خطوة لضمان نشر بيانات واضحة وجاهزة للحجز المباشر.</p>
+            </div>
+            <div className="min-w-48">
+              <div className="mb-2 flex justify-between text-[11px] font-bold text-white/70">
+                <span>الخطوة {step} من 9</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+                <span className="block h-full rounded-full bg-[#E4C878] transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           <div className="hidden lg:block">
             <div className="sticky top-8">
-              <StepIndicator current={step} onStepClick={setStep} />
+              <StepIndicator current={step} completed={completedSteps} furthestStep={furthestStep} onStepClick={setStep} />
             </div>
           </div>
 
@@ -156,26 +177,36 @@ export default function NewSpacePage() {
                 <button
                   key={i}
                   type="button"
-                  onClick={() => i + 1 < step && setStep(i + 1)}
+                  onClick={() => i + 1 <= furthestStep && setStep(i + 1)}
+                  disabled={i + 1 > furthestStep}
                   className={`w-8 h-8 rounded-full flex-shrink-0 text-xs font-bold transition-colors ${
                     step === i + 1
                       ? 'bg-[#1B3A2D] text-white'
-                      : step > i + 1
+                    : completedSteps.has(i + 1)
                       ? 'bg-[#1B3A2D]/10 text-[#1B3A2D]'
                       : 'bg-[#F7F3EB] text-[#6B7566]'
                   }`}
                 >
-                  {step > i + 1 ? '✓' : i + 1}
+                  {completedSteps.has(i + 1) ? '✓' : i + 1}
                 </button>
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-[#ECE6D8] p-6">
+            <div className="space-wizard-card bg-white rounded-2xl border border-[#ECE6D8] p-5 sm:p-7">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">
+                <div ref={errorRef} role="alert" aria-live="assertive" className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <span className="mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full bg-red-100 font-bold">!</span>
                   {error}
                 </div>
               )}
+
+              <div className="mb-6 flex items-center justify-between border-b border-[#EEE8DC] pb-4">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#A27B25]">الخطوة {step}</span>
+                  <p className="mt-1 text-sm font-extrabold text-[#14201A]">{STEP_LABELS[step - 1]}</p>
+                </div>
+                <span className="rounded-full bg-[#F7F3EB] px-3 py-1.5 text-[10px] font-bold text-[#6B7566]">جميع الحقول الأساسية مطلوبة</span>
+              </div>
 
               <StepComponent {...stepProps} />
 

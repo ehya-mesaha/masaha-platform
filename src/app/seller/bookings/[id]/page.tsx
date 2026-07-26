@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import { formatDate, formatNumber, formatTimeRange } from '@/lib/format'
+import SpaceCommitmentsCard from '@/components/bookings/SpaceCommitmentsCard'
 
 type Booking = {
   id: string
@@ -20,7 +21,13 @@ type Booking = {
   grandTotal: number
   unit: { label: string }
   services: { id: string; name: string; quantity: number; unitPrice: number; lineTotal: number }[]
-  space: { name: string; city: string; type: { name: string } }
+  space: {
+    name: string
+    city: string
+    type: { name: string }
+    rules: { id: string; rule: string }[]
+    availableServices: { id: string; name: string; description: string | null; price: number; pricingType: string }[]
+  }
   buyer: { name: string; email: string; phone: string | null }
 }
 
@@ -144,6 +151,8 @@ export default function SellerBookingDetailPage() {
               </div>
             </Card>
           )}
+
+          <SpaceCommitmentsCard rules={booking.space.rules || []} services={booking.space.availableServices || []} />
 
           {booking.sellerNote && (
             <Card>

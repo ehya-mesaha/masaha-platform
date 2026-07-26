@@ -12,9 +12,9 @@ import StartConversationButton from '@/components/chat/StartConversationButton'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
-  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل للمبلغ عند الإلغاء قبل 24 ساعة من موعد الحجز', color: 'bg-green-50 text-green-700 border-green-200' },
-  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% للمبلغ عند الإلغاء قبل 5 أيام من موعد الحجز', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  STRICT: { name: 'صارمة', desc: 'غير قابلة للاسترداد', color: 'bg-red-50 text-red-700 border-red-200' },
+  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل للمبلغ عند إلغاء الحجز', color: 'bg-green-50 text-green-700 border-green-200' },
+  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% من مبلغ الحجز', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  STRICT: { name: 'صارمة', desc: 'لا يُسترد أي مبلغ عند إلغاء الحجز', color: 'bg-red-50 text-red-700 border-red-200' },
 }
 
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
@@ -332,16 +332,16 @@ export default function SpaceDetailPage() {
             )}
 
             {/* Extra Services */}
-            {space.services && space.services.length > 0 && (
-              <div className="space-detail-section">
+            <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
                   خدمات المساحة
                 </h3>
-                <div className="space-y-3">
-                  {space.services.map(s => (
+                {space.services && space.services.length > 0 ? (
+                  <div className="space-y-3">
+                    {space.services.map(s => (
                     <label key={s.id} className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-[#E8E3D8] bg-[#F7F3EB] p-3">
                       <div>
                         <span className="flex items-center gap-2">
@@ -373,32 +373,40 @@ export default function SpaceDetailPage() {
                         <p className="text-[10px] text-[#6B7566]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
                       </div>
                     </label>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-4 text-sm text-[#6B7566]">
+                    لا توجد خدمات إضافية مفعلة لهذه المساحة حاليًا.
+                  </div>
+                )}
               </div>
-            )}
 
             {/* Rules */}
-            {space.rules && space.rules.length > 0 && (
-              <div className="space-detail-section">
+            <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   قواعد الاستخدام
                 </h3>
-                <ul className="space-y-2">
-                  {space.rules.map(r => (
+                {space.rules && space.rules.length > 0 ? (
+                  <ul className="space-y-2">
+                    {space.rules.map(r => (
                     <li key={r.id} className="flex items-center gap-2 text-sm text-[#4A554D]">
                       <svg className="w-3.5 h-3.5 text-[#C49A3C] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       {r.rule}
                     </li>
-                  ))}
-                </ul>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-4 text-sm text-[#6B7566]">
+                    لم يضف صاحب المساحة قواعد استخدام إضافية بعد.
+                  </div>
+                )}
               </div>
-            )}
 
             {/* Reviews */}
             <div className="space-detail-section overflow-hidden">

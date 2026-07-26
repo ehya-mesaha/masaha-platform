@@ -16,6 +16,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
           include: {
             type: true,
             images: { take: 1, orderBy: { order: 'asc' } },
+            rules: { orderBy: { id: 'asc' } },
+            services: true,
+            serviceConfigs: {
+              where: { isEnabled: true },
+              include: { catalog: true },
+              orderBy: { catalog: { sortOrder: 'asc' } },
+            },
           },
         },
         unit: true,
@@ -38,7 +45,30 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         })
       : null
 
-    return NextResponse.json({ booking, cancellation })
+    const { serviceConfigs, services: legacyServices, ...space } = booking.space
+    const availableServices = serviceConfigs.length > 0
+      ? serviceConfigs.map(config => ({
+          id: config.id,
+          name: config.catalog.name,
+          description: config.details || config.catalog.description,
+          price: config.price ?? config.catalog.defaultPrice ?? 0,
+          pricingType: config.catalog.pricingType,
+        }))
+      : legacyServices.map(service => ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          pricingType: service.pricingType,
+        }))
+
+    return NextResponse.json({
+      booking: {
+        ...booking,
+        space: { ...space, availableServices },
+      },
+      cancellation,
+    })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'حدث خطأ أثناء تحميل الحجز' }, { status: 500 })

@@ -11,32 +11,53 @@ const TABS = [
   ['تنظيف', 'تنظيف'],
 ] as const
 
+const APPROVED_SERVICE_NAMES = new Set([
+  'المطبوعات',
+  'منظم',
+  'تنظيف بعد الاستخدام',
+  'مياه',
+  'قهوة عربية',
+  'شاي',
+  'ضيافة خفيفة',
+])
+
+function normalizeName(value: string) {
+  return value.normalize('NFD').replace(/[\u064B-\u065F\u0670]/g, '')
+}
+
 export default function StepServices({ form, update, serviceCatalog = [] }: StepProps) {
   const [activeTab, setActiveTab] = useState('all')
-  const services = form.services
+  const services = useMemo(
+    () => form.services.filter(service => APPROVED_SERVICE_NAMES.has(normalizeName(service.name))),
+    [form.services],
+  )
   const visibleServices = useMemo(
     () => activeTab === 'all' ? services : services.filter(service => service.category === activeTab),
     [activeTab, services],
   )
-  const allEnabled = services.length > 0 && services.every(service => service.isEnabled)
+  const enabledCount = services.filter(service => service.isEnabled).length
+  const allEnabled = services.length > 0 && enabledCount === services.length
 
   function change(catalogId: string, values: Partial<ServiceItem>) {
     update('services', services.map(service => service.catalogId === catalogId ? { ...service, ...values } : service))
   }
 
   function toggleAll() {
-    update('services', services.map(service => ({ ...service, isEnabled: !allEnabled })))
+    const visibleIds = new Set(services.map(service => service.catalogId))
+    update('services', form.services.map(service => (
+      visibleIds.has(service.catalogId) ? { ...service, isEnabled: !allEnabled } : service
+    )))
   }
 
   return (
     <div>
       <h2 className="font-display mb-1 text-xl font-extrabold text-[#14201A]">إضافة خدمات المساحة</h2>
-      <p className="mb-6 text-sm text-[#6B7566]">اختر الخدمات التي تقدمها وحدد الأسعار والتفاصيل. القائمة محددة وتُدار من إدارة إحياء مساحة.</p>
+      <p className="mb-6 text-sm text-[#6B7566]">اختر خدمة واحدة على الأقل من القائمة المعتمدة وحدد سعرها. لا يمكن إضافة خدمات خارج هذه القائمة.</p>
 
       <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <strong className="text-sm text-[#1B3A2D]">تفعيل جميع الخدمات</strong>
-          <p className="mt-1 text-xs text-[#6B7566]">يمكنك إيقاف أي خدمة على حدة وتعديل سعرها.</p>
+          <strong className="text-sm text-[#1B3A2D]">الخدمات المعتمدة من الإدارة</strong>
+          <p className="mt-1 text-xs text-[#6B7566]">{enabledCount} من {services.length} خدمات مفعلة لمساحتك.</p>
         </div>
         <Toggle checked={allEnabled} onChange={toggleAll} label="تفعيل جميع الخدمات" />
       </div>
@@ -52,14 +73,14 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
         ))}
       </div>
 
-      {serviceCatalog.length === 0 && services.length === 0 ? (
+      {serviceCatalog.length === 0 || services.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[#D8CFBE] p-8 text-center text-sm text-[#6B7566]">
           لم تُضف الإدارة خدمات إلى الدليل بعد.
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {visibleServices.map(service => (
-            <article key={service.catalogId} className={`rounded-2xl border p-4 transition ${service.isEnabled ? 'border-[#1B3A2D]/30 bg-[#FBFDFB]' : 'border-[#E8E1D3] bg-white'}`}>
+            <article key={service.catalogId} className={`service-option-card rounded-2xl border p-4 transition ${service.isEnabled ? 'is-enabled border-[#1B3A2D]/30 bg-[#FBFDFB]' : 'border-[#E8E1D3] bg-white'}`}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-extrabold text-[#1B3A2D]">{service.name}</p>
@@ -71,7 +92,7 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
               {service.isEnabled && (
                 <div className="mt-4 space-y-3 border-t border-[#E8E1D3] pt-4">
                   <label className="block">
-                    <span className="mb-1 block text-[11px] font-bold text-[#6B7566]">السعر (ريال)</span>
+                    <span className="mb-1 block text-[11px] font-bold text-[#6B7566]">السعر (ريال) · {pricingLabel(service.pricingType)}</span>
                     <input
                       type="number"
                       min="0"
@@ -101,6 +122,17 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
       )}
     </div>
   )
+}
+
+function pricingLabel(type: string) {
+  const labels: Record<string, string> = {
+    PER_BOOKING: 'لكل حجز',
+    PER_PERSON: 'لكل فرد',
+    PER_HOUR: 'بالساعة',
+    PER_ITEM: 'للقطعة',
+    PER_TEN_PAGES: 'لكل 10 صفحات',
+  }
+  return labels[type] || 'حسب الخدمة'
 }
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {

@@ -15,17 +15,17 @@ export default function StepPricing({ form, update }: StepProps) {
       <div className="space-y-6">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-[#4A554D]">سعر الساعة (ريال سعودي)</span>
-          <span className="relative block">
+          <span className="flex overflow-hidden rounded-xl border border-[#E8E3D8] bg-white transition focus-within:border-[#1B3A2D] focus-within:ring-4 focus-within:ring-[#1B3A2D]/5" dir="ltr">
             <input
               type="number"
               value={form.price}
               onChange={event => update('price', event.target.value)}
               placeholder="100"
-              min="0"
-              className="w-full rounded-xl border border-[#E8E3D8] px-4 py-3 text-lg font-bold outline-none focus:border-[#1B3A2D]"
+              min="1"
+              className="min-w-0 flex-1 px-4 py-3 text-lg font-bold outline-none"
               dir="ltr"
             />
-            <span className="pointer-events-none absolute inset-y-0 end-4 flex items-center text-sm text-[#6B7566]">ر.س / ساعة</span>
+            <span className="flex items-center border-l border-[#E8E3D8] bg-[#F7F3EB] px-4 text-sm font-bold text-[#1B3A2D]" dir="rtl">ر.س / ساعة</span>
           </span>
         </label>
 

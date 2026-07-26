@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import FavoriteButton from './FavoriteButton'
 
 interface SpaceCardProps {
   id: string
@@ -74,8 +73,6 @@ export default function SpaceCard({
             ? (fullyAvailable ? 'متاحة لجميع المواعيد' : `متاحة ${availableSessions} من ${totalSessions} مواعيد`)
             : 'مساحة معتمدة'}
         </div>
-        <span className="absolute bottom-3 end-3"><FavoriteButton spaceId={id} /></span>
-
         {/* Capacity badge */}
         {capacity && (
           <div className="absolute bottom-3 start-3">

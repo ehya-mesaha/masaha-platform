@@ -33,6 +33,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           amenities: { include: { amenity: true } },
           workingHours: true,
           services: true,
+          serviceConfigs: {
+            where: { isEnabled: true },
+            include: { catalog: true },
+            orderBy: { catalog: { sortOrder: 'asc' } },
+          },
           rules: true,
         },
       })
@@ -48,7 +53,20 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       })
       return updated
     })
-    return NextResponse.json({ space })
+    return NextResponse.json({
+      space: {
+        ...space,
+        services: space.serviceConfigs.length > 0
+          ? space.serviceConfigs.map(config => ({
+              id: config.id,
+              name: config.catalog.name,
+              description: config.details || config.catalog.description,
+              price: config.price ?? config.catalog.defaultPrice ?? 0,
+              pricingType: config.catalog.pricingType,
+            }))
+          : space.services,
+      },
+    })
   } catch (error) {
     console.error('Admin space update failed', error)
     return NextResponse.json({ error: 'تعذر تحديث المساحة' }, { status: 500 })

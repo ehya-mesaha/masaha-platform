@@ -24,10 +24,39 @@ export default function StepSchedule({ form, update }: StepProps) {
     update('workingHours', updated)
   }
 
+  function applyPreset(preset: 'weekdays' | 'everyday') {
+    update('workingHours', form.workingHours.map(day => ({
+      ...day,
+      isOpen: preset === 'everyday' || day.dayOfWeek < 5,
+    })))
+  }
+
+  function copyFirstOpenHours() {
+    const source = form.workingHours.find(day => day.isOpen)
+    if (!source) return
+    update('workingHours', form.workingHours.map(day => (
+      day.isOpen ? { ...day, openTime: source.openTime, closeTime: source.closeTime } : day
+    )))
+  }
+
+  const openDaysCount = form.workingHours.filter(day => day.isOpen).length
+
   return (
     <div>
       <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">التوفر والجدول</h2>
-      <p className="text-[#6B7566] text-sm mb-6">حدد الأيام والأوقات التي تكون مساحتك فيها متاحة للحجز، بالإضافة إلى قواعد الحجز الأساسية.</p>
+      <p className="text-[#6B7566] text-sm mb-6">حدد يومًا متاحًا واحدًا على الأقل، ثم اضبط الساعات وقواعد الحجز المباشر.</p>
+
+      <div className="mb-4 flex flex-col justify-between gap-3 rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4 sm:flex-row sm:items-center">
+        <div>
+          <strong className="text-sm text-[#14201A]">{openDaysCount} أيام متاحة أسبوعيًا</strong>
+          <p className="mt-1 text-xs text-[#6B7566]">استخدم الإعدادات السريعة ثم عدّل أي يوم بشكل مستقل.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => applyPreset('weekdays')} className="rounded-lg border border-[#D8CFBE] bg-white px-3 py-2 text-[11px] font-bold text-[#1B3A2D] hover:border-[#C49A3C]">أيام العمل</button>
+          <button type="button" onClick={() => applyPreset('everyday')} className="rounded-lg border border-[#D8CFBE] bg-white px-3 py-2 text-[11px] font-bold text-[#1B3A2D] hover:border-[#C49A3C]">كل الأسبوع</button>
+          <button type="button" onClick={copyFirstOpenHours} className="rounded-lg bg-[#1B3A2D] px-3 py-2 text-[11px] font-bold text-white hover:bg-[#10271E]">توحيد الساعات</button>
+        </div>
+      </div>
 
       {/* Weekly schedule */}
       <div className="rounded-xl border border-[#ECE6D8] overflow-hidden mb-6">
@@ -51,6 +80,8 @@ export default function StepSchedule({ form, update }: StepProps) {
               <button
                 type="button"
                 onClick={() => toggleDay(wh.dayOfWeek)}
+                aria-label={`${wh.isOpen ? 'إغلاق' : 'فتح'} يوم ${DAY_NAMES[wh.dayOfWeek]}`}
+                aria-pressed={wh.isOpen}
                 className={`w-10 h-6 rounded-full transition-colors relative ${
                   wh.isOpen ? 'bg-[#1B3A2D]' : 'bg-gray-300'
                 }`}

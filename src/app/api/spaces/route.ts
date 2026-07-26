@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { getStepError } from '@/components/spaces/create/validation'
+import type { SpaceFormData } from '@/components/spaces/create/types'
+
+const APPROVED_OWNER_SERVICES = new Set([
+  'المطبوعات',
+  'منظم',
+  'تنظيف بعد الاستخدام',
+  'مياه',
+  'قهوة عربية',
+  'شاي',
+  'ضيافة خفيفة',
+])
+
+function normalizeServiceName(value: string) {
+  return value.normalize('NFD').replace(/[\u064B-\u065F\u0670]/g, '')
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -64,8 +80,29 @@ export async function POST(req: NextRequest) {
       identicalUnitsCount, pricingTiers,
     } = body
 
-    if (!name || !typeId || !city || !price) {
-      return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
+    let validationError = ''
+    try {
+      validationError = getStepError(9, body as SpaceFormData)
+    } catch {
+      validationError = 'بيانات المساحة غير مكتملة.'
+    }
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
+    }
+
+    const enabledServices = (Array.isArray(services) ? services : [])
+      .filter((service: { isEnabled?: boolean; catalogId?: string }) => service.isEnabled && service.catalogId)
+    const catalogRows = await prisma.serviceCatalog.findMany({
+      where: { id: { in: enabledServices.map((service: { catalogId: string }) => service.catalogId) }, isActive: true },
+      select: { id: true, name: true },
+    })
+    const approvedCatalogIds = new Set(
+      catalogRows
+        .filter(service => APPROVED_OWNER_SERVICES.has(normalizeServiceName(service.name)))
+        .map(service => service.id),
+    )
+    if (enabledServices.some((service: { catalogId: string }) => !approvedCatalogIds.has(service.catalogId))) {
+      return NextResponse.json({ error: 'تتضمن الخدمات اختيارًا غير معتمد من الإدارة.' }, { status: 400 })
     }
 
     const unitsCount = Math.max(1, Math.min(100, Number(identicalUnitsCount) || 1))
@@ -125,10 +162,9 @@ export async function POST(req: NextRequest) {
                 })),
             }
           : undefined,
-        serviceConfigs: services?.length
+        serviceConfigs: enabledServices.length
           ? {
-              create: services
-                .filter((service: { isEnabled: boolean; catalogId: string }) => service.isEnabled && service.catalogId)
+              create: enabledServices
                 .map((service: { catalogId: string; price: string; details: string }) => ({
                   catalogId: service.catalogId,
                   isEnabled: true,

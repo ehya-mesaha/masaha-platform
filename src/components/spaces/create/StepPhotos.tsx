@@ -7,7 +7,7 @@ export default function StepPhotos({ form, update }: StepProps) {
   return (
     <div>
       <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">الصور والوسائط</h2>
-      <p className="text-[#6B7566] text-sm mb-6">أضف صوراً احترافية لمساحتك لجذب العملاء. الصورة الأولى ستكون الصورة الرئيسية.</p>
+      <p className="text-[#6B7566] text-sm mb-6">أضف صورة واحدة على الأقل. الصورة الأولى ستكون الصورة الرئيسية، ويمكنك ترتيب الصور قبل المتابعة.</p>
 
       <ImageUploader
         images={form.images}

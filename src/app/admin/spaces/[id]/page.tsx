@@ -9,9 +9,9 @@ import Link from 'next/link'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
-  FLEXIBLE: { name: 'مرنة', desc: 'استحقاق كامل عند الإلغاء قبل 24 ساعة', color: 'bg-green-50 text-green-700 border-green-200' },
-  MODERATE: { name: 'متوسطة', desc: 'استحقاق 50% عند الإلغاء قبل 5 أيام', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  STRICT: { name: 'صارمة', desc: 'غير قابلة للاسترداد', color: 'bg-red-50 text-red-700 border-red-200' },
+  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل للمبلغ عند إلغاء الحجز', color: 'bg-green-50 text-green-700 border-green-200' },
+  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% من مبلغ الحجز', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  STRICT: { name: 'صارمة', desc: 'لا يُسترد أي مبلغ عند إلغاء الحجز', color: 'bg-red-50 text-red-700 border-red-200' },
 }
 
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
@@ -102,22 +102,36 @@ export default function AdminSpaceDetailPage() {
     if (res.ok) {
       const data = await res.json()
       setSpace(data.space)
+      setImageUrls((data.space?.images || []).map((image: { url: string }) => image.url).join('\n'))
       setMessage('تم حفظ بيانات الإعلان والصور.')
     }
     setActionLoading(false)
+  }
+
+  function removeManagedImage(index: number) {
+    const currentUrls = imageUrls.split('\n').map(url => url.trim()).filter(Boolean)
+    const nextUrls = currentUrls.filter((_, currentIndex) => currentIndex !== index)
+    setImageUrls(nextUrls.join('\n'))
+    setActiveImage(current => Math.min(current, Math.max(0, nextUrls.length - 1)))
+    setMessage('تم حذف الصورة من المعاينة. اضغط «حفظ البيانات» لتأكيد التغيير.')
   }
 
   if (loading) return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>
   if (!space) return <div className="p-8 text-center text-gray-500">المساحة غير موجودة</div>
 
   const { variant, label } = getSpaceStatusBadge(space.status)
-  const sortedImages = [...space.images].sort((a, b) => a.order - b.order)
+  const sortedImages = imageUrls
+    .split('\n')
+    .map(url => url.trim())
+    .filter(Boolean)
+    .map((url, order) => ({ url, order }))
+  const safeActiveImage = Math.min(activeImage, Math.max(0, sortedImages.length - 1))
   const openDays = (space.workingHours || []).filter(wh => wh.isOpen).sort((a, b) => a.dayOfWeek - b.dayOfWeek)
   const policy = POLICY_LABEL[space.cancellationPolicy] || POLICY_LABEL.FLEXIBLE
   const priceLabel = space.pricePeriod === 'day' ? 'يوم' : 'ساعة'
 
   return (
-    <div className="p-8">
+    <div className="dashboard-page">
       <Link href="/admin/spaces" className="text-[#6B7566] hover:text-[#1B3A2D] text-sm font-medium mb-6 inline-flex items-center gap-1">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -145,23 +159,47 @@ export default function AdminSpaceDetailPage() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-4">
           {/* Images */}
-          {sortedImages.length > 0 && (
-            <div>
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
-                <img src={sortedImages[activeImage]?.url} alt={space.name} className="w-full h-full object-cover" />
+          <div className="rounded-2xl border border-[#E8E1D3] bg-white p-3">
+            <div className="mb-3 flex items-center justify-between gap-3 px-1">
+              <div>
+                <h2 className="text-sm font-extrabold text-[#14201A]">صور المساحة</h2>
+                <p className="mt-0.5 text-[11px] text-[#6B7566]">يمكنك معاينة أي صورة أو حذفها، ثم حفظ التغيير من لوحة الإدارة.</p>
               </div>
-              {sortedImages.length > 1 && (
-                <div className="flex gap-2 mt-3">
-                  {sortedImages.map((img, i) => (
-                    <button key={i} onClick={() => setActiveImage(i)}
-                      className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${i === activeImage ? 'border-[#1B3A2D]' : 'border-transparent'}`}>
-                      <img src={img.url} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
+              <span className="rounded-full bg-[#F7F3EB] px-3 py-1 text-[10px] font-bold text-[#1B3A2D]">{sortedImages.length} صور</span>
             </div>
-          )}
+            {sortedImages.length > 0 ? (
+              <>
+              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
+                <img src={sortedImages[safeActiveImage]?.url} alt={space.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                  {sortedImages.map((img, i) => (
+                    <div key={`${img.url}-${i}`} className={`group relative aspect-square overflow-hidden rounded-xl border-2 transition-colors ${i === safeActiveImage ? 'border-[#1B3A2D]' : 'border-transparent'}`}>
+                      <button type="button" onClick={() => setActiveImage(i)} className="h-full w-full">
+                        <img src={img.url} alt="" className="h-full w-full object-cover" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeManagedImage(i)}
+                        className="absolute end-1 top-1 grid h-7 w-7 place-items-center rounded-lg bg-red-600 text-white shadow-lg transition hover:bg-red-700"
+                        aria-label={`حذف الصورة ${i + 1}`}
+                        title="حذف الصورة"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  ))}
+              </div>
+              </>
+            ) : (
+              <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] text-center">
+                <div>
+                  <p className="text-sm font-bold text-[#14201A]">لا توجد صور حالياً</p>
+                  <p className="mt-1 text-xs text-[#6B7566]">يمكن إضافة رابط جديد من لوحة البيانات.</p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Space Details */}
           <Card>
@@ -242,11 +280,11 @@ export default function AdminSpaceDetailPage() {
           )}
 
           {/* Services */}
-          {space.services && space.services.length > 0 && (
-            <Card>
+          <Card>
               <h3 className="font-display font-extrabold text-[#14201A] text-base mb-4">خدمات إضافية</h3>
-              <div className="space-y-2">
-                {space.services.map(s => (
+              {space.services && space.services.length > 0 ? (
+                <div className="space-y-2">
+                  {space.services.map(s => (
                   <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F3EB]">
                     <div>
                       <p className="text-sm font-medium text-[#14201A]">{s.name}</p>
@@ -257,27 +295,31 @@ export default function AdminSpaceDetailPage() {
                       <p className="text-[10px] text-[#6B7566]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-4 text-sm text-[#6B7566]">لا توجد خدمات مفعلة لهذه المساحة.</p>
+              )}
             </Card>
-          )}
 
           {/* Rules */}
-          {space.rules && space.rules.length > 0 && (
-            <Card>
+          <Card>
               <h3 className="font-display font-extrabold text-[#14201A] text-base mb-3">قواعد الاستخدام</h3>
-              <ul className="space-y-2">
-                {space.rules.map(r => (
+              {space.rules && space.rules.length > 0 ? (
+                <ul className="space-y-2">
+                  {space.rules.map(r => (
                   <li key={r.id} className="flex items-center gap-2 text-sm text-[#4A554D]">
                     <svg className="w-3.5 h-3.5 text-[#C49A3C] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {r.rule}
                   </li>
-                ))}
-              </ul>
+                  ))}
+                </ul>
+              ) : (
+                <p className="rounded-xl border border-dashed border-[#D8CFBE] bg-[#FBFAF7] p-4 text-sm text-[#6B7566]">لم تُسجل قواعد استخدام لهذه المساحة.</p>
+              )}
             </Card>
-          )}
 
           {/* Map */}
           {space.latitude && space.longitude && (
@@ -339,6 +381,7 @@ export default function AdminSpaceDetailPage() {
               روابط الصور (رابط في كل سطر)
               <textarea dir="ltr" value={imageUrls} onChange={(event) => setImageUrls(event.target.value)} rows={5} className="mt-1.5 w-full resize-y rounded-xl border border-[#E8E3D8] px-3 py-2.5 text-left text-xs font-normal" />
             </label>
+            <p className="mt-2 text-[10px] leading-5 text-[#6B7566]">يمكنك حذف الصور مباشرة من المعرض أو تعديل الروابط هنا. لن يُطبق التغيير حتى تضغط حفظ.</p>
             <button onClick={saveManagedData} disabled={actionLoading} className="mt-3 w-full rounded-xl bg-[#C49A3C] py-2.5 text-sm font-bold text-[#14201A] disabled:opacity-50">حفظ البيانات</button>
           </Card>
 

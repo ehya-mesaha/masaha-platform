@@ -33,11 +33,11 @@ export default function PoliciesPage() {
       <PolicyCard id="cancellation" title="سياسة الإلغاء">
         <Intro>يمكن لطالب المساحة إلغاء الحجز من صفحة «حجوزاتي». يعرض النظام النتيجة المحسوبة قبل التأكيد، وفق السياسة المحددة للمساحة.</Intro>
         <div className="grid gap-4 sm:grid-cols-3">
-          <PolicyBox title="مرنة" tone="green">استحقاق كامل عند الإلغاء قبل 24 ساعة من بداية الحجز.</PolicyBox>
-          <PolicyBox title="متوسطة" tone="amber">استحقاق 50% عند الإلغاء قبل 5 أيام من بداية الحجز.</PolicyBox>
-          <PolicyBox title="صارمة" tone="red">غير قابلة للاسترداد.</PolicyBox>
+          <PolicyBox title="مرنة" tone="green">استرداد كامل للمبلغ عند إلغاء الحجز.</PolicyBox>
+          <PolicyBox title="متوسطة" tone="amber">استرداد 50% من مبلغ الحجز.</PolicyBox>
+          <PolicyBox title="صارمة" tone="red">لا يُسترد أي مبلغ عند إلغاء الحجز.</PolicyBox>
         </div>
-        <Item num="1" title="طريقة الاحتساب">تُحسب المهلة من وقت الإلغاء الفعلي إلى وقت بداية الحجز، وتُحفظ نتيجة الاحتساب ضمن سجل الحجز.</Item>
+        <Item num="1" title="طريقة الاحتساب">تُطبق نسبة الاسترداد المحددة للمساحة مباشرة، وتُحفظ نتيجة الاحتساب ضمن سجل الحجز.</Item>
         <Item num="2" title="إلغاء صاحب المساحة">يُسجل الإلغاء ويُشعر طالب المساحة، وقد تتخذ الإدارة إجراءً عند تكراره.</Item>
         <Item num="3" title="الظروف الاستثنائية">تراجع الإدارة الحالات القاهرة أو النزاعات بناءً على المستندات والأنظمة السارية.</Item>
         <p className="rounded-xl border border-[#E8E3D8] bg-[#FBFAF7] p-4 text-xs leading-6 text-[#6B7566]">ملاحظة: المنصة لا تنفذ تحصيلًا أو استردادًا ماليًا في الإصدار الحالي؛ تظهر القيم للاحتساب والتوثيق فقط.</p>

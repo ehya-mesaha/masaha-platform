@@ -12,7 +12,7 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">اسم المساحة</label>
+          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">اسم المساحة <Required /></label>
           <input
             value={form.name}
             onChange={e => update('name', e.target.value)}
@@ -24,7 +24,7 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
         <div className="rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <label className="block text-sm font-extrabold text-[#1B3A2D]">عدد القاعات المماثلة</label>
+              <label className="block text-sm font-extrabold text-[#1B3A2D]">عدد القاعات المماثلة <Required /></label>
               <p className="mt-1 text-xs leading-6 text-[#6B7566]">سننشئ وحدة مستقلة لكل قاعة لإدارة التوفر ومنع تعارض الحجوزات.</p>
             </div>
             <div className="flex w-full items-center overflow-hidden rounded-xl border border-[#D9D1C2] bg-white sm:w-44" dir="ltr">
@@ -58,9 +58,9 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-[#4A554D] mb-1.5">تصنيف المساحة</label>
+            <label className="block text-sm font-medium text-[#4A554D] mb-1.5">تصنيف المساحة <Required /></label>
             <select
               value={form.typeId}
               onChange={e => update('typeId', e.target.value)}
@@ -81,7 +81,7 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#4A554D] mb-1.5">السعة الاستيعابية (أشخاص)</label>
+            <label className="block text-sm font-medium text-[#4A554D] mb-1.5">السعة الاستيعابية (أشخاص) <Required /></label>
             <div className="flex items-center border border-[#E8E3D8] rounded-lg overflow-hidden">
               <button
                 type="button"
@@ -110,7 +110,7 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">وصف المساحة</label>
+          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">وصف المساحة <Required /></label>
           <textarea
             value={form.description}
             onChange={e => update('description', e.target.value)}
@@ -122,4 +122,8 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
       </div>
     </div>
   )
+}
+
+function Required() {
+  return <span className="text-[#B44A3C]" aria-label="مطلوب">*</span>
 }

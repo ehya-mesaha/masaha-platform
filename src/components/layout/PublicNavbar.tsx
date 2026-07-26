@@ -53,7 +53,6 @@ export default function PublicNavbar() {
   const navLinks = [
     { href: '/' },
     { href: '/spaces' },
-    { href: '/#how-it-works' },
     { href: '/about' },
     { href: '/contact' },
   ]
@@ -63,7 +62,7 @@ export default function PublicNavbar() {
     if (href === '/spaces') return t('navSpaces')
     if (href === '/about') return t('navAbout')
     if (href === '/contact') return t('navContact')
-    return t('navHow')
+    return t('navHome')
   }
 
   return (

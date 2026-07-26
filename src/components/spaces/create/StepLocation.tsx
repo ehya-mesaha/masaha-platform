@@ -29,9 +29,11 @@ function extractCoordinates(value: string) {
 export default function StepLocation({ form, update }: StepProps) {
   const [locationUrl, setLocationUrl] = useState('')
   const [urlError, setUrlError] = useState('')
+  const [zoom, setZoom] = useState(13)
   const cityCenter = CITY_CENTERS[form.city] || CITY_CENTERS['الخبر']
   const lat = parseFloat(form.latitude) || cityCenter.lat
   const lng = parseFloat(form.longitude) || cityCenter.lng
+  const mapSpan = 0.12 / Math.pow(2, zoom - 10)
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
 
   function setCoordinates(nextLat: number, nextLng: number) {
@@ -71,8 +73,7 @@ export default function StepLocation({ form, update }: StepProps) {
     const rect = event.currentTarget.getBoundingClientRect()
     const x = (event.clientX - rect.left) / rect.width
     const y = (event.clientY - rect.top) / rect.height
-    const span = 0.04
-    setCoordinates(lat + (0.5 - y) * span, lng + (x - 0.5) * span)
+    setCoordinates(lat + (0.5 - y) * mapSpan * 2, lng + (x - 0.5) * mapSpan * 2)
     setUrlError('')
   }
 
@@ -84,9 +85,9 @@ export default function StepLocation({ form, update }: StepProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form fields */}
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">المدينة</label>
+              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">المدينة <Required /></label>
               <select
                 value={form.city}
                 onChange={e => chooseCity(e.target.value)}
@@ -97,7 +98,7 @@ export default function StepLocation({ form, update }: StepProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">الحي</label>
+              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">الحي <Required /></label>
               <input
                 value={form.district}
                 onChange={e => update('district', e.target.value)}
@@ -108,7 +109,7 @@ export default function StepLocation({ form, update }: StepProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#4A554D] mb-1.5">اسم الشارع</label>
+            <label className="block text-sm font-medium text-[#4A554D] mb-1.5">اسم الشارع <Required /></label>
             <input
               value={form.streetName}
               onChange={e => update('streetName', e.target.value)}
@@ -117,9 +118,9 @@ export default function StepLocation({ form, update }: StepProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">رقم المبنى</label>
+              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">رقم المبنى <Required /></label>
               <input
                 value={form.buildingNumber}
                 onChange={e => update('buildingNumber', e.target.value)}
@@ -128,7 +129,7 @@ export default function StepLocation({ form, update }: StepProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">الرمز البريدي</label>
+              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">الرمز البريدي <Required /></label>
               <input
                 value={form.postalCode}
                 onChange={e => update('postalCode', e.target.value)}
@@ -181,7 +182,8 @@ export default function StepLocation({ form, update }: StepProps) {
             aria-label="اختر الموقع على الخريطة"
           >
             <iframe
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.02},${lat - 0.02},${lng + 0.02},${lat + 0.02}&layer=mapnik&marker=${lat},${lng}`}
+              key={`${lat.toFixed(6)}-${lng.toFixed(6)}-${zoom}`}
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - mapSpan},${lat - mapSpan},${lng + mapSpan},${lat + mapSpan}&layer=mapnik&marker=${lat},${lng}`}
               className="w-full h-full border-0 pointer-events-none"
               loading="lazy"
             />
@@ -195,6 +197,35 @@ export default function StepLocation({ form, update }: StepProps) {
                 </svg>
               </div>
             </div>
+            <div className="absolute bottom-4 end-4 z-10 overflow-hidden rounded-xl border border-[#D8CFBE] bg-white shadow-lg" dir="ltr">
+              <button
+                type="button"
+                onClick={event => {
+                  event.stopPropagation()
+                  setZoom(current => Math.min(18, current + 1))
+                }}
+                disabled={zoom >= 18}
+                className="grid h-10 w-11 place-items-center border-b border-[#E8E1D3] text-xl font-bold text-[#1B3A2D] hover:bg-[#F7F3EB] disabled:opacity-35"
+                aria-label="تكبير الخريطة"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={event => {
+                  event.stopPropagation()
+                  setZoom(current => Math.max(8, current - 1))
+                }}
+                disabled={zoom <= 8}
+                className="grid h-10 w-11 place-items-center text-xl font-bold text-[#1B3A2D] hover:bg-[#F7F3EB] disabled:opacity-35"
+                aria-label="تصغير الخريطة"
+              >
+                −
+              </button>
+            </div>
+            <span className="absolute bottom-4 start-4 rounded-lg bg-[#10271E]/85 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
+              مستوى التكبير {zoom}
+            </span>
           </div>
 
           <div className="rounded-2xl border border-[#E8E3D8] bg-[#F7F3EB] p-4">
@@ -241,40 +272,13 @@ export default function StepLocation({ form, update }: StepProps) {
           </details>
         </div>
 
-        <div className="hidden">
-          <div className="rounded-xl overflow-hidden border border-[#E8E3D8] bg-gray-100" style={{ height: 320 }}>
-            <iframe
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`}
-              className="w-full h-full border-0"
-              loading="lazy"
-            />
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-bold text-[#6B7566] mb-1">خط العرض</label>
-              <input
-                value={form.latitude}
-                onChange={e => update('latitude', e.target.value)}
-                placeholder="24.7954"
-                dir="ltr"
-                className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-xs focus:outline-none focus:border-[#1B3A2D]"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#6B7566] mb-1">خط الطول</label>
-              <input
-                value={form.longitude}
-                onChange={e => update('longitude', e.target.value)}
-                placeholder="46.6012"
-                dir="ltr"
-                className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-xs focus:outline-none focus:border-[#1B3A2D]"
-              />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )
+}
+
+function Required() {
+  return <span className="text-[#B44A3C]" aria-label="مطلوب">*</span>
 }
 
 const CITY_CENTERS: Record<string, { lat: number; lng: number }> = {
