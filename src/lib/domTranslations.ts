@@ -920,6 +920,8 @@ const exactTranslations: Record<string, string> = {
 
 const phraseTranslations: Array<[RegExp, string]> = [
   [/^(\d+|[٠-٩]+)\s*ر\.س$/u, '$1 SAR'],
+  [/^([\d,]+|[٠-٩,]+)\s*(?:حجز|حجوزات)$/u, '$1 bookings'],
+  [/^الوحدة\s*([\d,]+|[٠-٩,]+)$/u, 'Unit $1'],
   [/^يبدأ من\s*([\d,]+|[٠-٩,]+)\s*ر\.س$/u, 'Starting from $1 SAR'],
   [/^([\d,]+|[٠-٩,]+)\s*-\s*([\d,]+|[٠-٩,]+)\s*ر\.س\s*\/\s*ساعة$/u, '$1 - $2 SAR / hour'],
   [/^ر\.س\s*\/\s*ساعة$/u, 'SAR / hour'],
