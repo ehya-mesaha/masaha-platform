@@ -95,17 +95,16 @@ export default async function HomePage() {
               <div className="eyebrow mb-3"><span>ابدأ من احتياجك</span></div>
               <h2 className="font-display text-3xl font-extrabold text-[#14201A] lg:text-4xl">لكل فكرة، مساحة مناسبة</h2>
             </div>
-            <Link href="/spaces" className="inline-flex items-center gap-2 text-sm font-bold text-[#1B3A2D] transition-colors hover:text-[#C49A3C]">
-              عرض جميع المساحات <ArrowIcon />
+            <Link href="/spaces" className="inline-flex items-center text-sm font-bold text-[#1B3A2D] transition-colors hover:text-[#C49A3C]">
+              عرض جميع المساحات
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 stagger-grid">
             {types.slice(0, 5).map((type, index) => (
               <Link key={type.id} href={`/spaces?typeId=${type.id}`} className="category-link group">
                 <span className="text-[11px] font-bold text-[#A3802F]">0{index + 1}</span>
-                <span className="relative z-10 flex items-end justify-between gap-2">
+                <span className="relative z-10 flex items-end">
                   <strong className="font-display text-base text-[#14201A] sm:text-lg">{type.name}</strong>
-                  <span className="grid h-8 w-8 flex-none place-items-center rounded-lg border border-[#E8E1D3] text-[#1B3A2D] transition-all group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white"><ArrowIcon /></span>
                 </span>
               </Link>
             ))}
@@ -157,13 +156,12 @@ export default async function HomePage() {
               ['04', 'اطلب خدمات', 'أضف الخدمات التي تحتاجها لتجهيز المساحة وتجربة الحضور.'],
               ['05', 'تابع برنامجك', 'راجع جميع الجلسات والحجوزات والخدمات من مكان واحد.'],
             ].map(([step, title, desc]) => (
-              <div key={step} className="group grid gap-4 py-8 sm:grid-cols-[4rem_1fr_auto] sm:items-center">
+              <div key={step} className="grid gap-4 py-8 sm:grid-cols-[4rem_1fr] sm:items-center">
                 <span className="font-display text-2xl font-extrabold text-[#C49A3C]">{step}</span>
                 <span>
                   <strong className="font-display block text-xl text-[#14201A]">{title}</strong>
                   <span className="mt-1 block text-sm leading-6 text-[#6B7566]">{desc}</span>
                 </span>
-                <span className="hidden h-10 w-10 place-items-center rounded-lg border border-[#DCD4C4] text-[#1B3A2D] transition-all group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white sm:grid"><ArrowIcon /></span>
               </div>
             ))}
           </div>

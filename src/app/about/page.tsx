@@ -1,10 +1,17 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 
-export const metadata: Metadata = {
-  title: 'من نحن | إحياء مساحة',
-  description: 'تعرف على رؤية ورسالة وقيم إحياء مساحة.',
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies()
+  const isEnglish = cookieStore.get('masaha_locale')?.value === 'en'
+  return {
+    title: isEnglish ? 'About Us | Ehya Masaha' : 'من نحن | إحياء مساحة',
+    description: isEnglish
+      ? 'Learn about the vision, mission, and values of Ehya Masaha.'
+      : 'تعرف على رؤية ورسالة وقيم إحياء مساحة.',
+  }
 }
 
 const values = ['الثقة', 'الكفاءة', 'الشراكة', 'الاستدامة', 'الابتكار', 'الاحترافية']

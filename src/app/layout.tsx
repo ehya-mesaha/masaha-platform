@@ -5,9 +5,17 @@ import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 
-export const metadata: Metadata = {
-  title: 'إحياء مساحة | مساحات موثوقة لبرامجك وفعالياتك',
-  description: 'ابحث عن القاعات والمساحات المناسبة واحجزها مباشرة لبرامجك التعليمية وفعالياتك.',
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies()
+  const isEnglish = cookieStore.get('masaha_locale')?.value === 'en'
+  return {
+    title: isEnglish
+      ? 'Ehya Masaha | Trusted Spaces for Programs and Events'
+      : 'إحياء مساحة | مساحات موثوقة لبرامجك وفعالياتك',
+    description: isEnglish
+      ? 'Find the right rooms and spaces and book them instantly for your educational programs and events.'
+      : 'ابحث عن القاعات والمساحات المناسبة واحجزها مباشرة لبرامجك التعليمية وفعالياتك.',
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

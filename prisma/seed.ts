@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient, ServicePricingType } from '../src/generated/prisma'
 import bcrypt from 'bcryptjs'
@@ -52,4 +53,9 @@ async function main() {
   console.log('Ehya Masaha seed completed.')
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(error => {
+    console.error(error)
+    process.exitCode = 1
+  })
+  .finally(() => prisma.$disconnect())

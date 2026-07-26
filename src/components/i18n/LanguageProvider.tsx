@@ -78,7 +78,9 @@ export default function LanguageProvider({ children, initialLocale = 'ar' }: { c
 
       if (node.nodeType !== Node.ELEMENT_NODE) return
       const element = node as Element
-      if (ignoredTags.has(element.tagName)) return
+      // A textarea's value must remain untouched, but its placeholder and
+      // accessibility attributes still need to follow the selected language.
+      if (ignoredTags.has(element.tagName) && element.tagName !== 'TEXTAREA') return
 
       translatedAttributes.forEach(attr => {
         if (!element.hasAttribute(attr)) return

@@ -1,4 +1,7 @@
+import { supplementalTranslations } from './supplementalTranslations'
+
 const exactTranslations: Record<string, string> = {
+  ...supplementalTranslations,
   'مساحة': 'Masaha',
   'إحياء مساحة': 'Ehya Masaha',
   'EHYA MASAHA': 'EHYA MASAHA',
@@ -917,6 +920,8 @@ const exactTranslations: Record<string, string> = {
 
 const phraseTranslations: Array<[RegExp, string]> = [
   [/^(\d+|[٠-٩]+)\s*ر\.س$/u, '$1 SAR'],
+  [/^يبدأ من\s*([\d,]+|[٠-٩,]+)\s*ر\.س$/u, 'Starting from $1 SAR'],
+  [/^([\d,]+|[٠-٩,]+)\s*-\s*([\d,]+|[٠-٩,]+)\s*ر\.س\s*\/\s*ساعة$/u, '$1 - $2 SAR / hour'],
   [/^ر\.س\s*\/\s*ساعة$/u, 'SAR / hour'],
   [/^ر\.س\s*\/\s*يوم$/u, 'SAR / day'],
   [/^لكل\s+ساعة$/u, 'per hour'],
@@ -946,11 +951,37 @@ const phraseTranslations: Array<[RegExp, string]> = [
   [/^([\d,]+|[٠-٩,]+)\s*يوم$/u, '$1 days'],
 ]
 
+const arabicMonthTranslations: Record<string, string> = {
+  يناير: 'January',
+  فبراير: 'February',
+  مارس: 'March',
+  أبريل: 'April',
+  مايو: 'May',
+  يونيو: 'June',
+  يوليو: 'July',
+  أغسطس: 'August',
+  سبتمبر: 'September',
+  أكتوبر: 'October',
+  نوفمبر: 'November',
+  ديسمبر: 'December',
+}
+
+function translateArabicDates(value: string) {
+  return value.replace(
+    /(\d{1,2})\s+(يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)\s+(\d{4})/gu,
+    (_, day: string, month: string, year: string) => `${arabicMonthTranslations[month]} ${day}, ${year}`,
+  )
+}
+
 export function translateDomText(value: string) {
   const trimmed = value.trim()
   if (!trimmed) return value
 
   let translated = exactTranslations[trimmed]
+  if (!translated) {
+    const dateTranslated = translateArabicDates(trimmed)
+    if (dateTranslated !== trimmed) translated = dateTranslated
+  }
   if (!translated) {
     for (const [pattern, replacement] of phraseTranslations) {
       if (pattern.test(trimmed)) {
