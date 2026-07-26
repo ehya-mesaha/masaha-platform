@@ -1,125 +1,118 @@
 'use client'
 
-import { StepProps, ServiceItem } from './types'
+import { useMemo, useState } from 'react'
+import { ServiceItem, StepProps } from './types'
 
-const TEMPLATES: ServiceItem[] = [
-  { name: 'ضيافة مميزة (قهوة مختصة وحلى)', description: 'تقديم ضيافة فاخرة للحضور طوال فترة الحجز', price: '50', pricingType: 'PER_PERSON' },
-  { name: 'دعم تقني مخصص', description: 'فني متواجد لضمان عمل الأجهزة والعروض بسلاسة', price: '150', pricingType: 'PER_BOOKING' },
-]
+const TABS = [
+  ['الكل', 'all'],
+  ['الضيافة', 'ضيافة'],
+  ['مطبوعات', 'مطبوعات'],
+  ['تنظيم', 'تنظيم'],
+  ['تنظيف', 'تنظيف'],
+] as const
 
-export default function StepServices({ form, update }: StepProps) {
+export default function StepServices({ form, update, serviceCatalog = [] }: StepProps) {
+  const [activeTab, setActiveTab] = useState('all')
   const services = form.services
+  const visibleServices = useMemo(
+    () => activeTab === 'all' ? services : services.filter(service => service.category === activeTab),
+    [activeTab, services],
+  )
+  const allEnabled = services.length > 0 && services.every(service => service.isEnabled)
 
-  function addService(template?: ServiceItem) {
-    const newService = template || { name: '', description: '', price: '', pricingType: 'PER_BOOKING' }
-    update('services', [...services, newService])
+  function change(catalogId: string, values: Partial<ServiceItem>) {
+    update('services', services.map(service => service.catalogId === catalogId ? { ...service, ...values } : service))
   }
 
-  function removeService(index: number) {
-    update('services', services.filter((_, i) => i !== index))
+  function toggleAll() {
+    update('services', services.map(service => ({ ...service, isEnabled: !allEnabled })))
   }
-
-  function updateService(index: number, field: string, value: string) {
-    const updated = services.map((s, i) => i === index ? { ...s, [field]: value } : s)
-    update('services', updated)
-  }
-
-  const usedTemplates = services.map(s => s.name)
 
   return (
     <div>
-      <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">الخدمات الإضافية</h2>
-      <p className="text-[#6B7566] text-sm mb-6">قدم خدمات إضافية بمقابل مادي لزيادة إيراداتك وتوفير تجربة متكاملة للعملاء.</p>
+      <h2 className="font-display mb-1 text-xl font-extrabold text-[#14201A]">إضافة خدمات المساحة</h2>
+      <p className="mb-6 text-sm text-[#6B7566]">اختر الخدمات التي تقدمها وحدد الأسعار والتفاصيل. القائمة محددة وتُدار من إدارة إحياء مساحة.</p>
 
-      {/* Templates */}
-      {TEMPLATES.filter(t => !usedTemplates.includes(t.name)).length > 0 && (
-        <div className="mb-6">
-          <p className="text-xs font-bold text-[#6B7566] mb-2">خدمات مقترحة</p>
-          <div className="flex flex-wrap gap-2">
-            {TEMPLATES.filter(t => !usedTemplates.includes(t.name)).map(t => (
-              <button
-                key={t.name}
-                type="button"
-                onClick={() => addService(t)}
-                className="px-4 py-2 rounded-lg text-xs font-medium border border-dashed border-[#C49A3C]/50 text-[#C49A3C] hover:bg-[#C49A3C]/5 transition-colors"
-              >
-                + {t.name}
-              </button>
-            ))}
-          </div>
+      <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <strong className="text-sm text-[#1B3A2D]">تفعيل جميع الخدمات</strong>
+          <p className="mt-1 text-xs text-[#6B7566]">يمكنك إيقاف أي خدمة على حدة وتعديل سعرها.</p>
         </div>
-      )}
+        <Toggle checked={allEnabled} onChange={toggleAll} label="تفعيل جميع الخدمات" />
+      </div>
 
-      {/* Services list */}
-      <div className="space-y-4">
-        {services.map((service, i) => (
-          <div key={i} className="p-4 rounded-xl border border-[#ECE6D8] bg-white">
-            <div className="flex items-start justify-between mb-3">
-              <span className="text-xs font-bold text-[#6B7566]">خدمة {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => removeService(i)}
-                className="text-red-400 hover:text-red-600 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold text-[#6B7566] mb-1">اسم الخدمة</label>
-                <input
-                  value={service.name}
-                  onChange={e => updateService(i, 'name', e.target.value)}
-                  placeholder="مثال: تصوير فوتوغرافي"
-                  className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-bold text-[#6B7566] mb-1">السعر (ريال)</label>
-                  <input
-                    type="number"
-                    value={service.price}
-                    onChange={e => updateService(i, 'price', e.target.value)}
-                    placeholder="50"
-                    min={0}
-                    className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-[#6B7566] mb-1">نوع التسعير</label>
-                  <select
-                    value={service.pricingType}
-                    onChange={e => updateService(i, 'pricingType', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
-                  >
-                    <option value="PER_PERSON">للشخص</option>
-                    <option value="PER_BOOKING">للحجز</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {service.description && (
-              <p className="mt-2 text-xs text-[#6B7566]">{service.description}</p>
-            )}
-          </div>
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+        {TABS.map(([label, value]) => (
+          <button
+            type="button"
+            key={value}
+            onClick={() => setActiveTab(value)}
+            className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-bold transition ${activeTab === value ? 'border-[#1B3A2D] bg-[#1B3A2D] text-white' : 'border-[#DDD5C5] bg-white text-[#58635B]'}`}
+          >{label}</button>
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() => addService()}
-        className="mt-4 flex items-center gap-2 text-sm font-medium text-[#1B3A2D] hover:text-[#C49A3C] transition-colors"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        إضافة خدمة جديدة
-      </button>
+      {serviceCatalog.length === 0 && services.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-[#D8CFBE] p-8 text-center text-sm text-[#6B7566]">
+          لم تُضف الإدارة خدمات إلى الدليل بعد.
+        </div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {visibleServices.map(service => (
+            <article key={service.catalogId} className={`rounded-2xl border p-4 transition ${service.isEnabled ? 'border-[#1B3A2D]/30 bg-[#FBFDFB]' : 'border-[#E8E1D3] bg-white'}`}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-extrabold text-[#1B3A2D]">{service.name}</p>
+                  <p className="mt-1 text-xs leading-6 text-[#6B7566]">{service.description}</p>
+                </div>
+                <Toggle checked={service.isEnabled} onChange={() => change(service.catalogId, { isEnabled: !service.isEnabled })} label={`تفعيل ${service.name}`} />
+              </div>
+
+              {service.isEnabled && (
+                <div className="mt-4 space-y-3 border-t border-[#E8E1D3] pt-4">
+                  <label className="block">
+                    <span className="mb-1 block text-[11px] font-bold text-[#6B7566]">السعر (ريال)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={service.price}
+                      onChange={event => change(service.catalogId, { price: event.target.value })}
+                      className="field py-2 text-sm"
+                      dir="ltr"
+                    />
+                  </label>
+                  {(service.name === 'المطبوعات' || service.name === 'ضيافة خفيفة') && (
+                    <label className="block">
+                      <span className="mb-1 block text-[11px] font-bold text-[#6B7566]">تفاصيل الخدمة</span>
+                      <textarea
+                        rows={2}
+                        value={service.details}
+                        onChange={event => change(service.catalogId, { details: event.target.value })}
+                        placeholder={service.name === 'المطبوعات' ? 'رقم واتساب وتفاصيل أسعار الطباعة' : 'مثال: ميني ساندويتش، معجنات، عصائر، فواكه…'}
+                        className="field resize-none text-sm"
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
     </div>
+  )
+}
+
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      aria-label={label}
+      aria-pressed={checked}
+      className={`relative h-6 w-11 flex-none rounded-full transition ${checked ? 'bg-[#1B3A2D]' : 'bg-[#CDD2CE]'}`}
+    >
+      <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-all ${checked ? 'start-6' : 'start-1'}`} />
+    </button>
   )
 }

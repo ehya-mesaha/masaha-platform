@@ -20,6 +20,8 @@ export default function Footer() {
             <h4 className="font-semibold text-white mb-4">{t('quickLinks')}</h4>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><Link href="/spaces" className="hover:text-[#C49A3C] transition-colors">{t('navSpaces')}</Link></li>
+              <li><Link href="/about" className="hover:text-[#C49A3C] transition-colors">{t('navAbout')}</Link></li>
+              <li><Link href="/contact" className="hover:text-[#C49A3C] transition-colors">{t('navContact')}</Link></li>
               <li><Link href="/auth/register?seller=1" className="hover:text-[#C49A3C] transition-colors">{t('navAddSpace')}</Link></li>
               <li><Link href="/auth/login" className="hover:text-[#C49A3C] transition-colors">{t('login')}</Link></li>
             </ul>
@@ -27,8 +29,8 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">{t('contactUs')}</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li>info@masaha.sa</li>
-              <li>+966 50 000 0000</li>
+              <li dir="ltr">info@ehyamesaha.sa</li>
+              <li dir="ltr">+966 50 491 3274</li>
               <li>{t('riyadhSaudi')}</li>
             </ul>
           </div>

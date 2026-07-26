@@ -16,10 +16,14 @@ type FilterParams = {
   maxPrice?: string
   capacity?: string
   date?: string
+  startDate?: string
+  endDate?: string
+  weekdays?: string
+  mode?: string
+  fullyAvailable?: string
   startTime?: string
   endTime?: string
   days?: string
-  pricePeriod?: string
   sort?: string
 }
 
@@ -43,7 +47,7 @@ const MAX_PRICE = 5000
 export default function SpacesFiltersPro({ types, params }: Props) {
   const router = useRouter()
   const { locale, t } = useLanguage()
-  const initialDays = useMemo(() => new Set((params.days || '').split(',').filter(Boolean)), [params.days])
+  const initialDays = useMemo(() => new Set((params.weekdays || params.days || '').split(',').filter(Boolean)), [params.days, params.weekdays])
   const [city, setCity] = useState(params.city || '')
   const [typeId, setTypeId] = useState(params.typeId || '')
   const [minPrice, setMinPrice] = useState(Number(params.minPrice || 0))
@@ -52,8 +56,8 @@ export default function SpacesFiltersPro({ types, params }: Props) {
   const [date, setDate] = useState(params.date || '')
   const [startTime, setStartTime] = useState(params.startTime || '')
   const [endTime, setEndTime] = useState(params.endTime || '')
-  const [pricePeriod, setPricePeriod] = useState(params.pricePeriod || '')
   const [sort, setSort] = useState(params.sort || 'newest')
+  const [fullyAvailable, setFullyAvailable] = useState(params.fullyAvailable !== '0')
   const [selectedDays, setSelectedDays] = useState(initialDays)
 
   const minPercent = Math.max(0, Math.min(100, (minPrice / MAX_PRICE) * 100))
@@ -78,9 +82,16 @@ export default function SpacesFiltersPro({ types, params }: Props) {
     if (date) query.set('date', date)
     if (startTime) query.set('startTime', startTime)
     if (endTime) query.set('endTime', endTime)
-    if (pricePeriod) query.set('pricePeriod', pricePeriod)
     if (sort && sort !== 'newest') query.set('sort', sort)
-    if (selectedDays.size > 0) query.set('days', Array.from(selectedDays).sort().join(','))
+    if (params.mode === 'program') {
+      query.set('mode', 'program')
+      if (params.startDate) query.set('startDate', params.startDate)
+      if (params.endDate) query.set('endDate', params.endDate)
+      query.set('fullyAvailable', fullyAvailable ? '1' : '0')
+      if (selectedDays.size > 0) query.set('weekdays', Array.from(selectedDays).sort().join(','))
+    } else if (selectedDays.size > 0) {
+      query.set('days', Array.from(selectedDays).sort().join(','))
+    }
     router.push(`/spaces${query.toString() ? `?${query.toString()}` : ''}`)
   }
 
@@ -129,7 +140,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
           <div className="mb-2 flex items-center justify-between">
             <label className="text-xs font-bold text-[#4A554D]">{t('hourlyPriceRange')}</label>
             <span className="text-[11px] font-semibold text-[#1B3A2D]">
-              {minPrice.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} - {maxPrice.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} {locale === 'ar' ? 'ر.س' : 'SAR'}
+              {minPrice.toLocaleString('en-US')} - {maxPrice.toLocaleString('en-US')} {locale === 'ar' ? 'ر.س' : 'SAR'}
             </span>
           </div>
           <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] px-3 py-5">
@@ -181,26 +192,16 @@ export default function SpacesFiltersPro({ types, params }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('pricePeriod')}</label>
-            <select value={pricePeriod} onChange={e => setPricePeriod(e.target.value)} className="field bg-white">
-              <option value="">{t('all')}</option>
-              <option value="hour">{t('perHour')}</option>
-              <option value="day">{t('perDay')}</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('capacity')}</label>
-            <input
-              type="number"
-              min={1}
-              value={capacity}
-              onChange={e => setCapacity(e.target.value)}
-              placeholder={t('capacityPlaceholder')}
-              className="field"
-            />
-          </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('capacity')}</label>
+          <input
+            type="number"
+            min={1}
+            value={capacity}
+            onChange={e => setCapacity(e.target.value)}
+            placeholder={t('capacityPlaceholder')}
+            className="field"
+          />
         </div>
 
         <div>
@@ -228,17 +229,17 @@ export default function SpacesFiltersPro({ types, params }: Props) {
 
         <div>
           <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('specificDate')}</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="field" />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="field" dir="ltr" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('from')}</label>
-            <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="field" />
+            <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="field" dir="ltr" />
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-bold text-[#4A554D]">{t('to')}</label>
-            <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="field" />
+            <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="field" dir="ltr" />
           </div>
         </div>
 
@@ -251,6 +252,16 @@ export default function SpacesFiltersPro({ types, params }: Props) {
             <option value="capacityDesc">{t('capacityDesc')}</option>
           </select>
         </div>
+
+        {params.mode === 'program' && (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#E8E3D8] bg-[#FBFAF7] p-3">
+            <input type="checkbox" checked={fullyAvailable} onChange={(event) => setFullyAvailable(event.target.checked)} className="mt-1" />
+            <span>
+              <strong className="block text-xs text-[#14201A]">{locale === 'en' ? 'Fully available only' : 'متاحة لكل مواعيد البرنامج فقط'}</strong>
+              <small className="mt-1 block leading-5 text-[#6B7566]">{locale === 'en' ? 'Hide spaces missing any session.' : 'إخفاء أي مساحة لا تتوفر في أحد المواعيد.'}</small>
+            </span>
+          </label>
+        )}
 
         <button type="button" onClick={applyFilters} className="btn-primary w-full rounded-xl py-3 text-sm font-semibold">
           {t('applyFilters')}

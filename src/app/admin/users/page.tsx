@@ -160,7 +160,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                   <td className="px-6 py-4 text-[#4A554D] font-medium">{u._count.spaces}</td>
                   <td className="px-6 py-4 text-[#4A554D] font-medium">{u._count.bookings}</td>
                   <td className="px-6 py-4 text-[#6B7566] text-xs">
-                    {new Date(u.createdAt).toLocaleDateString('ar-SA')}
+                    {new Date(u.createdAt).toLocaleDateString('en-US')}
                   </td>
                   <td className="px-6 py-4">
                     <Link

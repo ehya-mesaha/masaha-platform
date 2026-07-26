@@ -1,159 +1,92 @@
+import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Card from '@/components/ui/Card'
-import Link from 'next/link'
 import Badge, { getBookingStatusBadge } from '@/components/ui/Badge'
+import { formatDate, formatNumber } from '@/lib/format'
 
 export default async function AdminDashboard() {
-  let stats = {
-    users: 0, sellers: 0, buyers: 0,
-    spaces: 0, pending: 0, bookings: 0,
-  }
-  let pendingSpaces: PendingSpace[] = []
-  let recentBookings: RecentBooking[] = []
-
-  try {
-    const [users, spaces, bookings] = await Promise.all([
-      prisma.user.findMany({ select: { role: true } }),
-      prisma.space.findMany({ select: { status: true } }),
-      prisma.booking.findMany({
-        include: {
-          space: { select: { name: true } },
-          buyer: { select: { name: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      }),
-    ])
-
-    stats = {
-      users: users.length,
-      sellers: users.filter(u => u.role === 'SELLER').length,
-      buyers: users.filter(u => u.role === 'BUYER').length,
-      spaces: spaces.length,
-      pending: spaces.filter(s => s.status === 'PENDING_REVIEW').length,
-      bookings: bookings.length,
-    }
-
-    pendingSpaces = await prisma.space.findMany({
+  const [users, spaces, recentBookings, pendingSpaces] = await Promise.all([
+    prisma.user.findMany({ select: { role: true } }).catch(() => []),
+    prisma.space.findMany({ select: { status: true } }).catch(() => []),
+    prisma.booking.findMany({
+      include: { space: { select: { name: true } }, buyer: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }).catch(() => []),
+    prisma.space.findMany({
       where: { status: 'PENDING_REVIEW' },
-      include: {
-        type: true,
-        seller: { select: { name: true } },
-        images: { take: 1, orderBy: { order: 'asc' } },
-      },
+      include: { type: true, seller: { select: { name: true } } },
       orderBy: { createdAt: 'asc' },
       take: 5,
-    }) as PendingSpace[]
-
-    recentBookings = bookings as RecentBooking[]
-  } catch {
-    // DB not connected
-  }
+    }).catch(() => []),
+  ])
+  const stats = [
+    ['إجمالي المستخدمين', users.length, UsersIcon],
+    ['أصحاب المساحات', users.filter((user) => user.role === 'SELLER').length, KeyIcon],
+    ['طلاب المساحات', users.filter((user) => user.role === 'BUYER').length, UserIcon],
+    ['إجمالي المساحات', spaces.length, BuildingIcon],
+    ['بانتظار المراجعة', spaces.filter((space) => space.status === 'PENDING_REVIEW').length, ClockIcon],
+    ['الحجوزات', await prisma.booking.count().catch(() => 0), CalendarIcon],
+  ] as const
 
   return (
     <div className="dashboard-page">
-      <div className="page-hero mb-8 p-7 animate-in">
+      <div className="page-hero mb-8 p-7">
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 text-xs font-bold text-[#D9B65C]">مركز إدارة مساحة</p>
-            <h1 className="font-display text-3xl font-extrabold text-white">كل ما يحدث في المنصة، بوضوح.</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">تابع نمو المستخدمين والمساحات والحجوزات، وراجع الطلبات التي تحتاج إلى قرار من مكان واحد.</p>
+            <p className="mb-2 text-xs font-bold text-[#D8B455]">مركز إدارة إحياء مساحة</p>
+            <h1 className="text-3xl font-extrabold text-white">كل ما يحدث في المنصة، بوضوح.</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">تابع نمو المستخدمين والمساحات والحجوزات، وراجع العناصر التي تحتاج إلى قرار.</p>
           </div>
-          <Link href="/admin/reports" className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/[0.07] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white/[0.12]">فتح التقارير المالية</Link>
+          <Link href="/admin/reports" className="rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-bold text-white">فتح التقارير التشغيلية</Link>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 stagger-grid">
-        {[
-          { label: 'إجمالي المستخدمين', value: stats.users, icon: '👥', color: 'text-blue-600' },
-          { label: 'أصحاب المساحات', value: stats.sellers, icon: '🔑', color: 'text-purple-600' },
-          { label: 'المستأجرون', value: stats.buyers, icon: '👤', color: 'text-indigo-600' },
-          { label: 'إجمالي المساحات', value: stats.spaces, icon: '🏢', color: 'text-[#1B3A2D]' },
-          { label: 'بانتظار المراجعة', value: stats.pending, icon: '⏳', color: 'text-amber-600' },
-          { label: 'إجمالي الحجوزات', value: stats.bookings, icon: '📋', color: 'text-green-600' },
-        ].map((stat) => (
-          <Card key={stat.label}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs">{stat.label}</p>
-                <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
-              </div>
-              <div className="text-3xl">{stat.icon}</div>
-            </div>
-          </Card>
-        ))}
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
+        {stats.map(([label, value, StatIcon]) => <Card key={label}>
+          <div className="flex items-center justify-between">
+            <div><p className="text-xs text-[#6B7566]">{label}</p><p className="mt-1 text-3xl font-extrabold text-[#1B3A2D]">{formatNumber(value)}</p></div>
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#EEF3EE] text-[#1B3A2D]"><StatIcon /></span>
+          </div>
+        </Card>)}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 motion-list">
-        {/* Pending spaces */}
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card padding={false}>
-          <div className="px-5 py-4 border-b border-[#E8E3D8] flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">مساحات تنتظر المراجعة</h2>
-            <Link href="/admin/spaces" className="text-xs text-[#1B3A2D] hover:underline">عرض الكل</Link>
-          </div>
-          {pendingSpaces.length === 0 ? (
-            <div className="p-6 text-center text-gray-500 text-sm">لا توجد مساحات بانتظار المراجعة</div>
-          ) : (
-            <div className="divide-y divide-[#E8E3D8]">
-              {pendingSpaces.map((s) => (
-                <div key={s.id} className="px-5 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">{s.name}</p>
-                    <p className="text-gray-500 text-xs">{s.type.name} · {s.city} · {s.seller.name}</p>
-                  </div>
-                  <Link href={`/admin/spaces/${s.id}`} className="text-xs text-[#1B3A2D] hover:underline font-medium">
-                    مراجعة
-                  </Link>
-                </div>
-              ))}
-            </div>
-          )}
+          <PanelTitle title="مساحات تنتظر المراجعة" href="/admin/spaces" />
+          {pendingSpaces.length === 0 ? <Empty text="لا توجد مساحات بانتظار المراجعة" /> : <div className="divide-y divide-[#E8E3D8]">
+            {pendingSpaces.map((space) => <div key={space.id} className="flex items-center justify-between px-5 py-4">
+              <div><p className="text-sm font-bold text-[#14201A]">{space.name}</p><p className="mt-1 text-xs text-[#6B7566]">{space.type.name} · {space.city} · {space.seller.name}</p></div>
+              <Link href={`/admin/spaces/${space.id}`} className="text-xs font-bold text-[#1B3A2D]">مراجعة</Link>
+            </div>)}
+          </div>}
         </Card>
 
-        {/* Recent bookings */}
         <Card padding={false}>
-          <div className="px-5 py-4 border-b border-[#E8E3D8] flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">آخر الحجوزات</h2>
-            <Link href="/admin/bookings" className="text-xs text-[#1B3A2D] hover:underline">عرض الكل</Link>
-          </div>
-          {recentBookings.length === 0 ? (
-            <div className="p-6 text-center text-gray-500 text-sm">لا توجد حجوزات</div>
-          ) : (
-            <div className="divide-y divide-[#E8E3D8]">
-              {recentBookings.map((b) => {
-                const { variant, label } = getBookingStatusBadge(b.status)
-                return (
-                  <div key={b.id} className="px-5 py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">{b.buyer.name}</p>
-                      <p className="text-gray-500 text-xs">{b.space.name} · {b.date}</p>
-                    </div>
-                    <Badge variant={variant}>{label}</Badge>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+          <PanelTitle title="أحدث الحجوزات" href="/admin/bookings" />
+          {recentBookings.length === 0 ? <Empty text="لا توجد حجوزات حتى الآن" /> : <div className="divide-y divide-[#E8E3D8]">
+            {recentBookings.map((booking) => {
+              const badge = getBookingStatusBadge(booking.status)
+              return <div key={booking.id} className="flex items-center justify-between px-5 py-4">
+                <div><p className="text-sm font-bold text-[#14201A]">{booking.buyer.name}</p><p className="mt-1 text-xs text-[#6B7566]">{booking.space.name} · {formatDate(booking.date)}</p></div>
+                <Badge variant={badge.variant}>{badge.label}</Badge>
+              </div>
+            })}
+          </div>}
         </Card>
       </div>
     </div>
   )
 }
 
-type PendingSpace = {
-  id: string
-  name: string
-  city: string
-  type: { name: string }
-  seller: { name: string }
-  images: { url: string }[]
+function PanelTitle({ title, href }: { title: string; href: string }) {
+  return <div className="flex items-center justify-between border-b border-[#E8E3D8] px-5 py-4"><h2 className="font-extrabold text-[#14201A]">{title}</h2><Link href={href} className="text-xs font-bold text-[#1B3A2D]">عرض الكل</Link></div>
 }
-
-type RecentBooking = {
-  id: string
-  status: string
-  date: string
-  space: { name: string }
-  buyer: { name: string }
-}
+function Empty({ text }: { text: string }) { return <div className="p-10 text-center text-sm text-[#6B7566]">{text}</div> }
+const SvgIcon = ({ children }: { children: React.ReactNode }) => <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+const UsersIcon = () => <SvgIcon><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></SvgIcon>
+const KeyIcon = () => <SvgIcon><circle cx="8" cy="15" r="4" /><path d="m11 12 9-9m-4 4 2 2m-5 1 2 2" /></SvgIcon>
+const UserIcon = () => <SvgIcon><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></SvgIcon>
+const BuildingIcon = () => <SvgIcon><path d="M4 21V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16M8 7h5M8 11h5M8 15h5M2 21h20" /></SvgIcon>
+const ClockIcon = () => <SvgIcon><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></SvgIcon>
+const CalendarIcon = () => <SvgIcon><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" /></SvgIcon>

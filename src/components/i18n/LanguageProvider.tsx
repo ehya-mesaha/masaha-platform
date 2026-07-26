@@ -18,6 +18,11 @@ const originalAttributes = new WeakMap<Element, Partial<Record<'placeholder' | '
 const ignoredTags = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'TEXTAREA', 'CODE', 'PRE'])
 const translatedAttributes = ['placeholder', 'aria-label', 'title'] as const
 const arabicTextPattern = /[\u0600-\u06FF]/
+const arabicDigitsPattern = /[٠-٩]/g
+
+function latinDigits(value: string) {
+  return value.replace(arabicDigitsPattern, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+}
 
 function getInitialLocale(fallback: Locale): Locale {
   if (typeof document === 'undefined') return fallback
@@ -66,7 +71,7 @@ export default function LanguageProvider({ children, initialLocale = 'ar' }: { c
         if (!storedSource && !arabicTextPattern.test(current)) return
         const source = storedSource ?? current
         if (!storedSource) originalText.set(textNode, source)
-        const nextValue = locale === 'en' ? translateDomText(source) : source
+        const nextValue = latinDigits(locale === 'en' ? translateDomText(source) : source)
         if (textNode.nodeValue !== nextValue) textNode.nodeValue = nextValue
         return
       }
@@ -94,7 +99,7 @@ export default function LanguageProvider({ children, initialLocale = 'ar' }: { c
           original[attr] = source
           originalAttributes.set(element, original)
         }
-        const nextValue = locale === 'en' ? translateDomText(source) : source
+        const nextValue = latinDigits(locale === 'en' ? translateDomText(source) : source)
         if (current !== nextValue) element.setAttribute(attr, nextValue)
       })
 

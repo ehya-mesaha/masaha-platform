@@ -2,7 +2,7 @@
 
 import { StepProps, DAY_NAMES } from './types'
 
-export default function StepReview({ form, update: _, types, amenities }: StepProps) {
+export default function StepReview({ form, types, amenities }: StepProps) {
   const typeName = types?.find(t => t.id === form.typeId)?.name || '—'
   const selectedAmenities = amenities?.filter(a => form.amenityIds.includes(a.id)) || []
   const activeRules = form.rules.filter(r => r.isDefault)
@@ -25,6 +25,7 @@ export default function StepReview({ form, update: _, types, amenities }: StepPr
           <Row label="اسم المساحة" value={form.name || '—'} />
           <Row label="التصنيف" value={typeName} />
           <Row label="السعة" value={form.capacity ? `${form.capacity} شخص` : '—'} />
+          <Row label="عدد القاعات المماثلة" value={form.identicalUnitsCount} />
           {form.description && <Row label="الوصف" value={form.description} />}
         </Section>
 
@@ -64,13 +65,13 @@ export default function StepReview({ form, update: _, types, amenities }: StepPr
         )}
 
         {/* Services */}
-        {form.services.length > 0 && (
-          <Section title="الخدمات الإضافية">
-            {form.services.map((s, i) => (
+        {form.services.some(service => service.isEnabled) && (
+          <Section title="خدمات المساحة">
+            {form.services.filter(service => service.isEnabled).map((s, i) => (
               <Row
                 key={i}
                 label={s.name}
-                value={`${Number(s.price).toLocaleString('ar-SA')} ر.س / ${s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}`}
+                value={`${Number(s.price).toLocaleString('en-US')} ر.س / ${s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}`}
               />
             ))}
           </Section>
@@ -93,7 +94,7 @@ export default function StepReview({ form, update: _, types, amenities }: StepPr
         <Section title="التسعير">
           <Row
             label="السعر"
-            value={form.price ? `${Number(form.price).toLocaleString('ar-SA')} ر.س / ${form.pricePeriod === 'day' ? 'يوم' : 'ساعة'}` : '—'}
+            value={form.price ? `${Number(form.price).toLocaleString('en-US')} ر.س / ساعة` : '—'}
           />
         </Section>
 
@@ -140,7 +141,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between py-1.5 text-sm">
       <span className="text-[#6B7566] text-xs">{label}</span>
-      <span className="text-[#14201A] font-medium text-xs text-end max-w-[60%]">{value}</span>
+      <span className="text-[#14201A] font-medium text-xs text-end max-w-[60%]" dir={value.includes(':') ? 'ltr' : undefined}>{value}</span>
     </div>
   )
 }

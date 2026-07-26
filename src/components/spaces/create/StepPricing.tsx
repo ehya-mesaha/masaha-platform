@@ -3,60 +3,63 @@
 import { StepProps } from './types'
 
 export default function StepPricing({ form, update }: StepProps) {
+  function updateTier(index: number, value: string) {
+    update('pricingTiers', form.pricingTiers.map((tier, currentIndex) => currentIndex === index ? { ...tier, discountPercent: value } : tier))
+  }
+
   return (
     <div>
-      <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">التسعير</h2>
-      <p className="text-[#6B7566] text-sm mb-6">حدد سعر مساحتك بناءً على الفترة الزمنية المناسبة.</p>
+      <h2 className="font-display mb-1 text-xl font-extrabold text-[#14201A]">التسعير بالساعة</h2>
+      <p className="mb-6 text-sm text-[#6B7566]">جميع الحجوزات تُحسب بالساعات. حدّد السعر الأساسي، ثم راجع خصومات المدة التلقائية.</p>
 
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-[#4A554D] mb-1.5">السعر (ريال سعودي)</label>
-          <div className="relative">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-[#4A554D]">سعر الساعة (ريال سعودي)</span>
+          <span className="relative block">
             <input
               type="number"
               value={form.price}
-              onChange={e => update('price', e.target.value)}
+              onChange={event => update('price', event.target.value)}
               placeholder="100"
-              min={0}
-              className="w-full px-4 py-3 rounded-lg border border-[#E8E3D8] text-lg font-bold focus:outline-none focus:border-[#1B3A2D] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              min="0"
+              className="w-full rounded-xl border border-[#E8E3D8] px-4 py-3 text-lg font-bold outline-none focus:border-[#1B3A2D]"
+              dir="ltr"
             />
-            <span className="absolute start-4 top-1/2 -translate-y-1/2 text-[#6B7566] text-sm">ر.س</span>
-          </div>
-        </div>
+            <span className="pointer-events-none absolute inset-y-0 end-4 flex items-center text-sm text-[#6B7566]">ر.س / ساعة</span>
+          </span>
+        </label>
 
         <div>
-          <label className="block text-sm font-medium text-[#4A554D] mb-3">الفترة</label>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { val: 'hour', label: 'بالساعة', desc: 'مناسب للاجتماعات والجلسات القصيرة' },
-              { val: 'day', label: 'باليوم', desc: 'مناسب لورش العمل والفعاليات' },
-            ].map(opt => (
-              <button
-                key={opt.val}
-                type="button"
-                onClick={() => update('pricePeriod', opt.val)}
-                className={`p-4 rounded-xl border-2 text-start transition-all ${
-                  form.pricePeriod === opt.val
-                    ? 'border-[#1B3A2D] bg-[#1B3A2D]/5'
-                    : 'border-[#ECE6D8] hover:border-[#1B3A2D]/40'
-                }`}
-              >
-                <div className={`text-sm font-bold ${form.pricePeriod === opt.val ? 'text-[#1B3A2D]' : 'text-[#14201A]'}`}>
-                  {opt.label}
-                </div>
-                <div className="text-xs text-[#6B7566] mt-1">{opt.desc}</div>
-              </button>
+          <div className="mb-3">
+            <h3 className="text-sm font-extrabold text-[#1B3A2D]">خصومات المدة</h3>
+            <p className="mt-1 text-xs text-[#6B7566]">يُطبق أعلى خصم مؤهل فقط، ولا تُجمع الخصومات.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {form.pricingTiers.map((tier, index) => (
+              <label key={tier.minHours} className="rounded-2xl border border-[#E8E1D3] bg-[#FBF8F1] p-4">
+                <span className="text-xs font-bold text-[#6B7566]">من {tier.minHours} ساعات</span>
+                <span className="mt-3 flex items-center gap-2" dir="ltr">
+                  <input
+                    type="number"
+                    min="0"
+                    max="90"
+                    value={tier.discountPercent}
+                    onChange={event => updateTier(index, event.target.value)}
+                    className="min-w-0 flex-1 rounded-lg border border-[#DDD5C5] bg-white px-3 py-2 text-center font-extrabold outline-none focus:border-[#1B3A2D]"
+                  />
+                  <span className="font-extrabold text-[#C49A3C]">%</span>
+                </span>
+              </label>
             ))}
           </div>
         </div>
 
         {form.price && (
-          <div className="p-4 rounded-xl bg-[#1B3A2D]/5 border border-[#1B3A2D]/10">
+          <div className="rounded-2xl border border-[#1B3A2D]/10 bg-[#1B3A2D]/5 p-4">
             <p className="text-sm text-[#1B3A2D]">
-              <span className="font-bold">{Number(form.price).toLocaleString('ar-SA')} ر.س</span>
-              {' / '}
-              {form.pricePeriod === 'day' ? 'يوم' : 'ساعة'}
+              السعر الأساسي: <strong>{Number(form.price).toLocaleString('en-US')} ر.س / ساعة</strong>
             </p>
+            <p className="mt-1 text-xs text-[#5C675F]">يظهر لطالب المساحة تفصيل الساعات والخصم والإجمالي قبل تأكيد الحجز.</p>
           </div>
         )}
       </div>

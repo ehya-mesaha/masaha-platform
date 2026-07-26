@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { StepProps, SAUDI_CITIES } from './types'
 
 function extractCoordinates(value: string) {
-  const decoded = decodeURIComponent(value.trim())
+  let decoded = value.trim()
+  try { decoded = decodeURIComponent(decoded) } catch {}
   const patterns = [
     /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
     /[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
@@ -28,8 +29,9 @@ function extractCoordinates(value: string) {
 export default function StepLocation({ form, update }: StepProps) {
   const [locationUrl, setLocationUrl] = useState('')
   const [urlError, setUrlError] = useState('')
-  const lat = parseFloat(form.latitude) || 24.7136
-  const lng = parseFloat(form.longitude) || 46.6753
+  const cityCenter = CITY_CENTERS[form.city] || CITY_CENTERS['الخبر']
+  const lat = parseFloat(form.latitude) || cityCenter.lat
+  const lng = parseFloat(form.longitude) || cityCenter.lng
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
 
   function setCoordinates(nextLat: number, nextLng: number) {
@@ -37,14 +39,32 @@ export default function StepLocation({ form, update }: StepProps) {
     update('longitude', nextLng.toFixed(6))
   }
 
-  function applyLocationUrl() {
-    const coordinates = extractCoordinates(locationUrl)
+  async function applyLocationUrl() {
+    let resolvedUrl = locationUrl
+    if (/^https?:\/\/(maps\.app\.goo\.gl|goo\.gl)\//i.test(locationUrl.trim())) {
+      try {
+        const response = await fetch('/api/maps/resolve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: locationUrl.trim() }),
+        })
+        const data = await response.json()
+        if (response.ok && data.url) resolvedUrl = data.url
+      } catch {}
+    }
+    const coordinates = extractCoordinates(resolvedUrl)
     if (!coordinates) {
       setUrlError('لم نتمكن من قراءة الرابط. افتح خرائط Google واختر مشاركة ثم انسخ الرابط الكامل.')
       return
     }
     setCoordinates(coordinates.lat, coordinates.lng)
     setUrlError('')
+  }
+
+  function chooseCity(city: string) {
+    update('city', city)
+    const center = CITY_CENTERS[city]
+    if (center) setCoordinates(center.lat, center.lng)
   }
 
   function handleMapClick(event: React.MouseEvent<HTMLDivElement>) {
@@ -69,7 +89,7 @@ export default function StepLocation({ form, update }: StepProps) {
               <label className="block text-sm font-medium text-[#4A554D] mb-1.5">المدينة</label>
               <select
                 value={form.city}
-                onChange={e => update('city', e.target.value)}
+                onChange={e => chooseCity(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D] bg-white"
               >
                 <option value="">اختر المدينة</option>
@@ -255,4 +275,14 @@ export default function StepLocation({ form, update }: StepProps) {
       </div>
     </div>
   )
+}
+
+const CITY_CENTERS: Record<string, { lat: number; lng: number }> = {
+  'الخبر': { lat: 26.2172, lng: 50.1971 },
+  'الدمام': { lat: 26.4207, lng: 50.0888 },
+  'الظهران': { lat: 26.2361, lng: 50.0393 },
+  'الرياض': { lat: 24.7136, lng: 46.6753 },
+  'جدة': { lat: 21.5433, lng: 39.1728 },
+  'مكة المكرمة': { lat: 21.3891, lng: 39.8579 },
+  'المدينة المنورة': { lat: 24.5247, lng: 39.5692 },
 }

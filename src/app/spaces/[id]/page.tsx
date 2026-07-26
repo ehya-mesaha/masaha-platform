@@ -12,9 +12,9 @@ import StartConversationButton from '@/components/chat/StartConversationButton'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
-  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل قبل ٢٤ ساعة', color: 'bg-green-50 text-green-700 border-green-200' },
-  MODERATE: { name: 'متوسطة', desc: 'استرداد كامل قبل ٥ أيام', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  STRICT: { name: 'صارمة', desc: 'استرداد ٥٠٪ قبل ٧ أيام', color: 'bg-red-50 text-red-700 border-red-200' },
+  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل للمبلغ عند الإلغاء قبل 24 ساعة من موعد الحجز', color: 'bg-green-50 text-green-700 border-green-200' },
+  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% للمبلغ عند الإلغاء قبل 5 أيام من موعد الحجز', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  STRICT: { name: 'صارمة', desc: 'غير قابلة للاسترداد', color: 'bg-red-50 text-red-700 border-red-200' },
 }
 
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
@@ -48,6 +48,7 @@ type Space = {
   minBookingHours: number | null
   maxAdvanceBookingDays: number | null
   cancellationPolicy: string
+  advertisingLicenseNumber: string | null
   type: { name: string }
   seller: { id: string; name: string; email: string; phone: string | null; avatarUrl: string | null }
   images: { id: string; url: string; order: number }[]
@@ -81,7 +82,7 @@ export default function SpaceDetailPage() {
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState(false)
-  const [hasSentBooking, setHasSentBooking] = useState(false)
+  const [selectedServices, setSelectedServices] = useState<Record<string, number>>({})
   const [activeImage, setActiveImage] = useState(0)
   const [todayValue] = useState(() => new Date().toISOString().split('T')[0])
 
@@ -90,18 +91,6 @@ export default function SpaceDetailPage() {
       .then(r => r.json())
       .then(data => { setSpace(data.space); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [id])
-
-  useEffect(() => {
-    fetch('/api/bookings?role=buyer')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        const sent = data?.bookings?.some((booking: { status: string; space?: { id?: string } }) =>
-          booking.space?.id === id && ['PENDING', 'ACCEPTED'].includes(booking.status)
-        )
-        setHasSentBooking(Boolean(sent))
-      })
-      .catch(() => undefined)
   }, [id])
 
   async function handleBooking(e: React.FormEvent) {
@@ -116,7 +105,13 @@ export default function SpaceDetailPage() {
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spaceId: id, ...bookingForm }),
+        body: JSON.stringify({
+          spaceId: id,
+          ...bookingForm,
+          services: Object.entries(selectedServices)
+            .filter(([, quantity]) => quantity > 0)
+            .map(([configId, quantity]) => ({ configId, quantity })),
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -125,7 +120,6 @@ export default function SpaceDetailPage() {
         return
       }
       setBookingSuccess(true)
-      setHasSentBooking(true)
     } catch {
       setBookingError('حدث خطأ في الاتصال')
     } finally {
@@ -141,7 +135,7 @@ export default function SpaceDetailPage() {
         <PublicNavbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-6xl mb-4">🏢</div>
+            <svg className="mx-auto mb-4 h-12 w-12 text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M4 20h16M6 20V5h12v15M9 9h2m2 0h2m-6 4h2m2 0h2" /></svg>
             <h2 className="text-xl font-semibold text-gray-700">المساحة غير موجودة</h2>
           </div>
         </div>
@@ -150,7 +144,7 @@ export default function SpaceDetailPage() {
     )
   }
 
-  const priceLabel = space.pricePeriod === 'day' ? 'يوم' : 'ساعة'
+  const priceLabel = 'ساعة'
   const sortedImages = [...space.images].sort((a, b) => a.order - b.order)
   const openDays = (space.workingHours || []).filter(wh => wh.isOpen).sort((a, b) => a.dayOfWeek - b.dayOfWeek)
   const policy = POLICY_LABEL[space.cancellationPolicy] || POLICY_LABEL.FLEXIBLE
@@ -230,12 +224,12 @@ export default function SpaceDetailPage() {
                     <RatingStars rating={space.reviewSummary.average} />
                     <span className="text-xs font-semibold text-[#1B3A2D]">
                       {space.reviewSummary.count > 0
-                        ? `${space.reviewSummary.average.toLocaleString('ar-SA')} من 5`
+                        ? `${space.reviewSummary.average.toLocaleString('en-US')} من 5`
                         : 'لا توجد تقييمات بعد'}
                     </span>
                     {space.reviewSummary.count > 0 && (
                       <span className="text-xs text-[#6B7566]">
-                        ({space.reviewSummary.count.toLocaleString('ar-SA')} تقييم)
+                        ({space.reviewSummary.count.toLocaleString('en-US')} تقييم)
                       </span>
                     )}
                   </div>
@@ -255,7 +249,7 @@ export default function SpaceDetailPage() {
                 <div className="px-3 first:ps-0">
                   <p className="text-[11px] font-bold text-[#6B7566]">السعر</p>
                   <p className="mt-1 text-lg font-extrabold text-[#1B3A2D]">
-                    {space.price.toLocaleString('ar-SA')} ر.س
+                    {space.price.toLocaleString('en-US')} ر.س
                     <span className="text-xs font-semibold text-[#6B7566]"> / {priceLabel}</span>
                   </p>
                 </div>
@@ -266,7 +260,7 @@ export default function SpaceDetailPage() {
                 <div className="px-3 last:pe-0">
                   <p className="text-[11px] font-bold text-[#6B7566]">السعة</p>
                   <p className="mt-1 text-sm font-extrabold text-[#14201A]">
-                    {space.capacity ? `${space.capacity.toLocaleString('ar-SA')} شخص` : 'غير محددة'}
+                    {space.capacity ? `${space.capacity.toLocaleString('en-US')} شخص` : 'غير محددة'}
                   </p>
                 </div>
               </div>
@@ -344,20 +338,41 @@ export default function SpaceDetailPage() {
                   <svg className="w-4 h-4 text-[#C49A3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  خدمات إضافية
+                  خدمات المساحة
                 </h3>
                 <div className="space-y-3">
                   {space.services.map(s => (
-                    <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F3EB]">
+                    <label key={s.id} className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-[#E8E3D8] bg-[#F7F3EB] p-3">
                       <div>
-                        <p className="text-sm font-medium text-[#14201A]">{s.name}</p>
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={(selectedServices[s.id] ?? 0) > 0}
+                            onChange={event => setSelectedServices(current => ({ ...current, [s.id]: event.target.checked ? 1 : 0 }))}
+                            className="h-4 w-4 accent-[#1B3A2D]"
+                          />
+                          <span className="text-sm font-medium text-[#14201A]">{s.name}</span>
+                        </span>
                         {s.description && <p className="text-xs text-[#6B7566] mt-0.5">{s.description}</p>}
                       </div>
-                      <div className="text-end">
-                        <span className="text-sm font-bold text-[#1B3A2D]">{s.price.toLocaleString('ar-SA')} ر.س</span>
+                      <div className="flex items-center gap-2 text-end">
+                        {(selectedServices[s.id] ?? 0) > 0 && (
+                          <input
+                            type="number"
+                            min="1"
+                            max="999"
+                            value={selectedServices[s.id]}
+                            onChange={event => setSelectedServices(current => ({ ...current, [s.id]: Math.max(1, Number(event.target.value) || 1) }))}
+                            onClick={event => event.stopPropagation()}
+                            className="w-16 rounded-lg border border-[#D8CFBE] bg-white px-2 py-1.5 text-center text-xs"
+                            aria-label={`كمية ${s.name}`}
+                            dir="ltr"
+                          />
+                        )}
+                        <span className="text-sm font-bold text-[#1B3A2D]">{s.price.toLocaleString('en-US')} ر.س</span>
                         <p className="text-[10px] text-[#6B7566]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
                       </div>
-                    </div>
+                    </label>
                   ))}
                 </div>
               </div>
@@ -402,13 +417,13 @@ export default function SpaceDetailPage() {
                 <div className="rounded-2xl border border-[#E8E3D8] bg-[#F7F3EB] px-5 py-4 text-center shadow-inner">
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-2xl font-extrabold text-[#1B3A2D]">
-                      {space.reviewSummary.count > 0 ? space.reviewSummary.average.toLocaleString('ar-SA') : '-'}
+                      {space.reviewSummary.count > 0 ? space.reviewSummary.average.toLocaleString('en-US') : '-'}
                     </span>
                     <RatingStars rating={space.reviewSummary.average} size="md" />
                   </div>
                   <p className="text-[11px] text-[#6B7566]">
                     {space.reviewSummary.count > 0
-                      ? `${space.reviewSummary.count.toLocaleString('ar-SA')} تقييم موثق`
+                      ? `${space.reviewSummary.count.toLocaleString('en-US')} تقييم موثق`
                       : 'غير متاح حالياً'}
                   </p>
                 </div>
@@ -494,27 +509,20 @@ export default function SpaceDetailPage() {
             <div className="booking-panel sticky top-24">
               <div className="booking-panel-head p-6">
                 <p className="mb-1 text-[11px] font-bold text-white/55">السعر يبدأ من</p>
-                <span className="text-3xl font-extrabold text-white">{space.price.toLocaleString('ar-SA')}</span>
+                <span className="text-3xl font-extrabold text-white">{space.price.toLocaleString('en-US')}</span>
                 <span className="me-1 text-sm text-white/65"> ر.س / {priceLabel}</span>
                 <div className="mt-4 flex items-center gap-2 text-[11px] text-white/65">
                   <svg className="h-4 w-4 text-[#E4C878]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M12 3l7.5 3v5.25c0 4.14-3.2 7.85-7.5 9.75-4.3-1.9-7.5-5.61-7.5-9.75V6L12 3Z" /></svg>
-                  لن يتم تأكيد أي موعد قبل موافقة صاحب المساحة
+                  حجز مباشر ومؤكد فور توفر الموعد
                 </div>
               </div>
 
               <div className="p-6">
 
-              <button onClick={() => !hasSentBooking && setBookingOpen(true)}
-                disabled={hasSentBooking}
-                className="btn-gold mb-3 flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-sm font-extrabold disabled:cursor-default disabled:opacity-75">
-                {hasSentBooking ? 'تم إرسال طلب الحجز' : 'اختر موعدك واطلب الحجز'}
+              <button onClick={() => setBookingOpen(true)}
+                className="btn-gold mb-3 flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-sm font-extrabold">
+                احجز
               </button>
-
-              {hasSentBooking && (
-                <div className="mb-3 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-center text-xs font-semibold text-green-700">
-                  طلبك ظاهر الآن في حجوزاتك وينتظر رد صاحب المساحة.
-                </div>
-              )}
 
               <div className="mb-4 space-y-2">
                 <StartConversationButton
@@ -576,7 +584,7 @@ export default function SpaceDetailPage() {
               )}
               <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#E8E3D8] pt-4 text-[11px] font-semibold text-[#6B7566]">
                 <svg className="h-4 w-4 text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2Zm3-11V7a3 3 0 0 1 6 0v3H9Z" /></svg>
-                طلبك وبياناتك محفوظة داخل منصة مساحة
+                حجزك وبياناتك محفوظة داخل منصة إحياء مساحة
               </div>
               </div>
             </div>
@@ -587,16 +595,16 @@ export default function SpaceDetailPage() {
       <div className="mobile-booking-bar">
         <div>
           <p className="text-[10px] font-bold text-[#6B7566]">{space.name}</p>
-          <p className="font-display text-lg font-extrabold text-[#14201A]">{space.price.toLocaleString('ar-SA')} <span className="text-xs font-semibold text-[#6B7566]">ر.س / {priceLabel}</span></p>
+          <p className="font-display text-lg font-extrabold text-[#14201A]">{space.price.toLocaleString('en-US')} <span className="text-xs font-semibold text-[#6B7566]">ر.س / {priceLabel}</span></p>
         </div>
-        <button onClick={() => !hasSentBooking && setBookingOpen(true)} disabled={hasSentBooking}
-          className="btn-primary min-w-36 rounded-lg px-5 py-3 text-sm font-bold disabled:opacity-70">
-          {hasSentBooking ? 'تم إرسال الطلب' : 'طلب الحجز'}
+        <button onClick={() => setBookingOpen(true)}
+          className="btn-primary min-w-36 rounded-lg px-5 py-3 text-sm font-bold">
+          احجز
         </button>
       </div>
 
       {/* Booking Modal */}
-      <Modal open={bookingOpen} onClose={() => { setBookingOpen(false); setBookingSuccess(false); setBookingError('') }} title="طلب حجز">
+      <Modal open={bookingOpen} onClose={() => { setBookingOpen(false); setBookingSuccess(false); setBookingError('') }} title="تأكيد الحجز">
         {bookingSuccess ? (
           <div className="text-center py-6">
             <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
@@ -604,8 +612,8 @@ export default function SpaceDetailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-[#14201A] mb-2">تم إرسال طلب الحجز!</h3>
-            <p className="text-[#6B7566] text-sm mb-6">سيتواصل معك صاحب المساحة للتأكيد</p>
+            <h3 className="text-lg font-bold text-[#14201A] mb-2">تم تأكيد حجزك!</h3>
+            <p className="text-[#6B7566] text-sm mb-6">ستجد تفاصيل الموعد والوحدة في صفحة حجوزاتي.</p>
             <button onClick={() => { setBookingOpen(false); setBookingSuccess(false) }}
               className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#0F2219]">
               حسناً
@@ -635,13 +643,13 @@ export default function SpaceDetailPage() {
                 <label className="block text-xs font-bold text-[#4A554D] mb-1.5">وقت البداية</label>
                 <input type="time" value={bookingForm.startTime}
                   onChange={e => setBookingForm(p => ({ ...p, startTime: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" required />
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" required dir="ltr" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-[#4A554D] mb-1.5">وقت النهاية</label>
                 <input type="time" value={bookingForm.endTime}
                   onChange={e => setBookingForm(p => ({ ...p, endTime: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" required />
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]" required dir="ltr" />
               </div>
             </div>
             <div>
@@ -666,7 +674,7 @@ export default function SpaceDetailPage() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               )}
-              {bookingLoading ? 'جاري الإرسال...' : 'إرسال طلب الحجز'}
+              {bookingLoading ? 'جاري التأكيد...' : 'تأكيد الحجز'}
             </button>
           </form>
         )}

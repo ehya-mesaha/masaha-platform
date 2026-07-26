@@ -9,9 +9,9 @@ import Link from 'next/link'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
-  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل قبل ٢٤ ساعة', color: 'bg-green-50 text-green-700 border-green-200' },
-  MODERATE: { name: 'متوسطة', desc: 'استرداد كامل قبل ٥ أيام', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  STRICT: { name: 'صارمة', desc: 'استرداد ٥٠٪ قبل ٧ أيام', color: 'bg-red-50 text-red-700 border-red-200' },
+  FLEXIBLE: { name: 'مرنة', desc: 'استحقاق كامل عند الإلغاء قبل 24 ساعة', color: 'bg-green-50 text-green-700 border-green-200' },
+  MODERATE: { name: 'متوسطة', desc: 'استحقاق 50% عند الإلغاء قبل 5 أيام', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  STRICT: { name: 'صارمة', desc: 'غير قابلة للاسترداد', color: 'bg-red-50 text-red-700 border-red-200' },
 }
 
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
@@ -33,6 +33,7 @@ type Space = {
   capacity: number | null
   price: number
   pricePeriod: string
+  advertisingLicenseNumber: string | null
   status: string
   adminNotes: string | null
   createdAt: string
@@ -53,6 +54,8 @@ export default function AdminSpaceDetailPage() {
   const [space, setSpace] = useState<Space | null>(null)
   const [loading, setLoading] = useState(true)
   const [notes, setNotes] = useState('')
+  const [licenseNumber, setLicenseNumber] = useState('')
+  const [imageUrls, setImageUrls] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [activeImage, setActiveImage] = useState(0)
@@ -63,6 +66,8 @@ export default function AdminSpaceDetailPage() {
       .then(data => {
         setSpace(data.space)
         setNotes(data.space?.adminNotes || '')
+        setLicenseNumber(data.space?.advertisingLicenseNumber || '')
+        setImageUrls((data.space?.images || []).map((image: { url: string }) => image.url).join('\n'))
         setLoading(false)
       })
   }, [id])
@@ -79,6 +84,25 @@ export default function AdminSpaceDetailPage() {
       const data = await res.json()
       setSpace(prev => prev ? { ...prev, status: data.space.status, adminNotes: data.space.adminNotes } : null)
       setMessage(status === 'APPROVED' ? 'تم اعتماد المساحة بنجاح' : status === 'REJECTED' ? 'تم رفض المساحة' : 'تم تعطيل المساحة')
+    }
+    setActionLoading(false)
+  }
+
+  async function saveManagedData() {
+    setActionLoading(true)
+    setMessage('')
+    const res = await fetch(`/api/admin/spaces/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        advertisingLicenseNumber: licenseNumber,
+        imageUrls: imageUrls.split('\n').map((url) => url.trim()).filter(Boolean),
+      }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setSpace(data.space)
+      setMessage('تم حفظ بيانات الإعلان والصور.')
     }
     setActionLoading(false)
   }
@@ -112,7 +136,7 @@ export default function AdminSpaceDetailPage() {
         <div>
           <h1 className="font-display text-2xl font-extrabold text-[#14201A]">{space.name}</h1>
           <p className="text-[#6B7566] text-sm mt-1">{space.type.name} · {space.city}{space.district ? ` · ${space.district}` : ''}</p>
-          <p className="text-xs text-[#6B7566] mt-1">تاريخ الإنشاء: {new Date(space.createdAt).toLocaleDateString('ar-SA')}</p>
+          <p className="text-xs text-[#6B7566] mt-1">تاريخ الإنشاء: {new Date(space.createdAt).toLocaleDateString('en-US')}</p>
         </div>
         <Badge variant={variant}>{label}</Badge>
       </div>
@@ -145,7 +169,7 @@ export default function AdminSpaceDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
               <InfoRow label="المدينة" value={space.city} />
               <InfoRow label="الحي" value={space.district || '—'} />
-              <InfoRow label="السعر" value={`${space.price.toLocaleString('ar-SA')} ر.س / ${priceLabel}`} />
+              <InfoRow label="السعر" value={`${space.price.toLocaleString('en-US')} ر.س / ${priceLabel}`} />
               <InfoRow label="الطاقة الاستيعابية" value={space.capacity ? `${space.capacity} شخص` : '—'} />
               {space.minBookingHours && <InfoRow label="الحد الأدنى للحجز" value={`${space.minBookingHours} ساعات`} />}
               {space.maxAdvanceBookingDays && <InfoRow label="الحجز المسبق" value={`حتى ${space.maxAdvanceBookingDays} يوم`} />}
@@ -229,7 +253,7 @@ export default function AdminSpaceDetailPage() {
                       {s.description && <p className="text-xs text-[#6B7566] mt-0.5">{s.description}</p>}
                     </div>
                     <div className="text-end">
-                      <span className="text-sm font-bold text-[#1B3A2D]">{s.price.toLocaleString('ar-SA')} ر.س</span>
+                      <span className="text-sm font-bold text-[#1B3A2D]">{s.price.toLocaleString('en-US')} ر.س</span>
                       <p className="text-[10px] text-[#6B7566]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
                     </div>
                   </div>
@@ -303,6 +327,19 @@ export default function AdminSpaceDetailPage() {
               <p className="text-sm font-bold">{policy.name}</p>
               <p className="text-xs mt-0.5">{policy.desc}</p>
             </div>
+          </Card>
+
+          <Card>
+            <h3 className="mb-3 font-display text-base font-extrabold text-[#14201A]">بيانات تديرها الإدارة</h3>
+            <label className="mb-3 block text-xs font-bold text-[#4A554D]">
+              رقم الترخيص الإعلاني
+              <input dir="ltr" value={licenseNumber} onChange={(event) => setLicenseNumber(event.target.value)} className="mt-1.5 w-full rounded-xl border border-[#E8E3D8] px-3 py-2.5 text-sm font-normal" />
+            </label>
+            <label className="block text-xs font-bold text-[#4A554D]">
+              روابط الصور (رابط في كل سطر)
+              <textarea dir="ltr" value={imageUrls} onChange={(event) => setImageUrls(event.target.value)} rows={5} className="mt-1.5 w-full resize-y rounded-xl border border-[#E8E3D8] px-3 py-2.5 text-left text-xs font-normal" />
+            </label>
+            <button onClick={saveManagedData} disabled={actionLoading} className="mt-3 w-full rounded-xl bg-[#C49A3C] py-2.5 text-sm font-bold text-[#14201A] disabled:opacity-50">حفظ البيانات</button>
           </Card>
 
           {/* Admin Actions */}

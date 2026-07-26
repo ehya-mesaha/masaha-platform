@@ -3,6 +3,7 @@ export type SpaceFormData = {
   typeId: string
   description: string
   capacity: string
+  identicalUnitsCount: string
   // Location
   city: string
   district: string
@@ -26,16 +27,31 @@ export type SpaceFormData = {
   // Pricing
   price: string
   pricePeriod: string
+  pricingTiers: PricingTierItem[]
   // Terms
   cancellationPolicy: string
   rules: RuleItem[]
 }
 
 export type ServiceItem = {
+  catalogId: string
   name: string
   description: string
   price: string
   pricingType: string
+  category: string
+  isEnabled: boolean
+  details: string
+}
+
+export type PricingTierItem = { minHours: string; discountPercent: string }
+export type ServiceCatalogItem = {
+  id: string
+  name: string
+  description: string
+  category: string
+  pricingType: string
+  defaultPrice: number | null
 }
 
 export type WorkingHoursItem = {
@@ -58,6 +74,7 @@ export type StepProps = {
   update: (field: string, value: unknown) => void
   types?: SpaceType[]
   amenities?: Amenity[]
+  serviceCatalog?: ServiceCatalogItem[]
   categoriesLoading?: boolean
   categoriesError?: string
 }
@@ -84,6 +101,7 @@ export function getInitialForm(): SpaceFormData {
     typeId: '',
     description: '',
     capacity: '',
+    identicalUnitsCount: '1',
     city: '',
     district: '',
     streetName: '',
@@ -106,6 +124,11 @@ export function getInitialForm(): SpaceFormData {
     maxAdvanceBookingDays: '90',
     price: '',
     pricePeriod: 'hour',
+    pricingTiers: [
+      { minHours: '3', discountPercent: '5' },
+      { minHours: '5', discountPercent: '10' },
+      { minHours: '8', discountPercent: '15' },
+    ],
     cancellationPolicy: 'FLEXIBLE',
     rules: DEFAULT_RULES.map(r => ({ rule: r, isDefault: true })),
   }

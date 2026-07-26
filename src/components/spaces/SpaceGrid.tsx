@@ -10,6 +10,12 @@ interface Space {
   capacity?: number | null
   type: { name: string }
   images: { url: string; order: number }[]
+  availableSessions?: number
+  totalSessions?: number
+  totalHours?: number
+  baseTotal?: number
+  discountAmount?: number
+  finalTotal?: number
 }
 
 interface SpaceGridProps {
@@ -21,7 +27,7 @@ export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مسا
   if (spaces.length === 0) {
     return (
       <div className="premium-card animate-in text-center py-16 text-gray-500">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F3EB] text-4xl floating">🏢</div>
+        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-[#F7F3EB] text-[#1B3A2D] floating"><svg className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M4 20h16M6 20V5h12v15M9 9h2m2 0h2m-6 4h2m2 0h2" /></svg></div>
         <p className="text-lg font-bold text-[#14201A]">{emptyMessage}</p>
         <p className="mt-1 text-sm text-[#6B7566]">جرّب تعديل السعر أو الأيام أو وقت الحجز.</p>
       </div>
@@ -42,6 +48,12 @@ export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مسا
           pricePeriod={space.pricePeriod}
           capacity={space.capacity}
           imageUrl={space.images.sort((a, b) => a.order - b.order)[0]?.url}
+          availableSessions={space.availableSessions}
+          totalSessions={space.totalSessions}
+          totalHours={space.totalHours}
+          baseTotal={space.baseTotal}
+          discountAmount={space.discountAmount}
+          finalTotal={space.finalTotal}
         />
       ))}
     </div>

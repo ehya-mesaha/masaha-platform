@@ -57,7 +57,7 @@ export default function FirstVisitOpening() {
       className={`first-visit-opening ${phase === 'leaving' ? 'is-leaving' : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label={isEnglish ? 'Welcome to Masaha' : 'مرحباً بك في مساحة'}
+      aria-label={isEnglish ? 'Welcome to Ehya Masaha' : 'مرحباً بك في إحياء مساحة'}
       data-no-translate="true"
     >
       <div className="opening-photo" aria-hidden="true" />
@@ -94,7 +94,7 @@ export default function FirstVisitOpening() {
               </svg>
             </span>
             <span>
-              <strong>{isEnglish ? 'MASAHA' : 'مساحة'}</strong>
+              <strong>{isEnglish ? 'EHYA MASAHA' : 'إحياء مساحة'}</strong>
               <small>{isEnglish ? 'SPACE FOR WHAT COMES NEXT' : 'مساحة لما هو قادم'}</small>
             </span>
           </div>

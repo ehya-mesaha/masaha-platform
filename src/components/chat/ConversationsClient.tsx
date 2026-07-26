@@ -53,7 +53,7 @@ type Props = {
 
 function formatTime(value?: string | null) {
   if (!value) return ''
-  return new Intl.DateTimeFormat('ar-SA', {
+  return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -345,7 +345,7 @@ export default function ConversationsClient({ currentUser }: Props) {
                       </p>
                     </div>
                     <span className="text-xs font-bold text-[#1B3A2D]">
-                      {activeConversation.space.price.toLocaleString('ar-SA')} ر.س
+                      {activeConversation.space.price.toLocaleString('en-US')} ر.س
                     </span>
                   </div>
                 )}

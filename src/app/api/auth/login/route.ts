@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'يرجى إدخال البريد الإلكتروني وكلمة المرور' }, { status: 400 })
     }
 
-    const user = await prisma.user.findUnique({ where: { email } })
+    const user = await prisma.user.findUnique({ where: { email: String(email).trim().toLowerCase() } })
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return NextResponse.json({ error: 'بيانات الدخول غير صحيحة' }, { status: 401 })
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (user.status === 'PENDING_APPROVAL') {
-      return NextResponse.json({ error: 'حسابك قيد المراجعة. سيتم إشعارك عند التفعيل' }, { status: 403 })
+      return NextResponse.json({ error: 'طلب الانضمام قيد المراجعة. سيتم إشعارك عند التفعيل' }, { status: 403 })
     }
 
     const token = await signToken({
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     res.cookies.set('masaha_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
@@ -47,6 +48,6 @@ export async function POST(req: NextRequest) {
     return res
   } catch (err) {
     console.error(err)
-    return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 })
+    return NextResponse.json({ error: 'حدث خطأ غير متوقع' }, { status: 500 })
   }
 }

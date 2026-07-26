@@ -85,14 +85,14 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
                 <p className="mb-2 text-xs font-bold text-[#C49A3C]">ملف صاحب المساحة</p>
                 <h1 className="text-3xl font-extrabold text-white">{seller.name}</h1>
                 <p className="mt-2 text-sm text-white/65">
-                  عضو منذ {new Date(seller.createdAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long' })}
+                  عضو منذ {new Date(seller.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <HeroMetric label="المساحات" value={seller.spaces.length.toLocaleString('ar-SA')} />
-              <HeroMetric label="التقييم" value={summary.count > 0 ? summary.average.toLocaleString('ar-SA') : '-'} />
-              <HeroMetric label="الآراء" value={summary.count.toLocaleString('ar-SA')} />
+              <HeroMetric label="المساحات" value={seller.spaces.length.toLocaleString('en-US')} />
+              <HeroMetric label="التقييم" value={summary.count > 0 ? summary.average.toLocaleString('en-US') : '-'} />
+              <HeroMetric label="الآراء" value={summary.count.toLocaleString('en-US')} />
             </div>
           </div>
         </section>
@@ -111,12 +111,12 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
               <h2 className="mb-3 text-sm font-extrabold text-[#14201A]">ملخص التقييمات</h2>
               <div className="flex items-center gap-3">
                 <span className="text-4xl font-extrabold text-[#1B3A2D]">
-                  {summary.count > 0 ? summary.average.toLocaleString('ar-SA') : '-'}
+                  {summary.count > 0 ? summary.average.toLocaleString('en-US') : '-'}
                 </span>
                 <div>
                   <Stars rating={summary.average} />
                   <p className="mt-1 text-xs text-[#6B7566]">
-                    {summary.count > 0 ? `${summary.count.toLocaleString('ar-SA')} تقييم موثق` : 'لا توجد تقييمات بعد'}
+                    {summary.count > 0 ? `${summary.count.toLocaleString('en-US')} تقييم موثق` : 'لا توجد تقييمات بعد'}
                   </p>
                 </div>
               </div>
@@ -245,5 +245,5 @@ type SellerReview = {
   comment: string | null
   buyer: { name: string; avatarUrl: string | null }
   space: { name: string }
-  booking: { date: string }
+  booking: { date: Date }
 }

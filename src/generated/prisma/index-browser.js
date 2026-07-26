@@ -129,8 +129,21 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   role: 'role',
   status: 'status',
+  emailVerifiedAt: 'emailVerifiedAt',
+  phoneVerifiedAt: 'phoneVerifiedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  before: 'before',
+  after: 'after',
+  createdAt: 'createdAt',
+  actorId: 'actorId'
 };
 
 exports.Prisma.UserDocumentScalarFieldEnum = {
@@ -163,6 +176,9 @@ exports.Prisma.SpaceScalarFieldEnum = {
   capacity: 'capacity',
   price: 'price',
   pricePeriod: 'pricePeriod',
+  publicRef: 'publicRef',
+  advertisingLicenseNumber: 'advertisingLicenseNumber',
+  identicalUnitsCount: 'identicalUnitsCount',
   status: 'status',
   adminNotes: 'adminNotes',
   createdAt: 'createdAt',
@@ -177,7 +193,24 @@ exports.Prisma.SpaceScalarFieldEnum = {
   maxAdvanceBookingDays: 'maxAdvanceBookingDays',
   cancellationPolicy: 'cancellationPolicy',
   typeId: 'typeId',
-  sellerId: 'sellerId'
+  sellerId: 'sellerId',
+  organizationId: 'organizationId'
+};
+
+exports.Prisma.SchoolOrganizationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  branchName: 'branchName',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrganizationMemberScalarFieldEnum = {
+  id: 'id',
+  role: 'role',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SpaceImageScalarFieldEnum = {
@@ -201,6 +234,45 @@ exports.Prisma.SpaceWorkingHoursScalarFieldEnum = {
   spaceId: 'spaceId'
 };
 
+exports.Prisma.SpaceUnitScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  spaceId: 'spaceId'
+};
+
+exports.Prisma.PricingTierScalarFieldEnum = {
+  id: 'id',
+  minHours: 'minHours',
+  discountPercent: 'discountPercent',
+  spaceId: 'spaceId'
+};
+
+exports.Prisma.PrivateOccupancyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  spaceId: 'spaceId',
+  unitId: 'unitId'
+};
+
+exports.Prisma.TemporaryClosureScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  spaceId: 'spaceId',
+  unitId: 'unitId'
+};
+
 exports.Prisma.SpaceServiceScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -208,6 +280,31 @@ exports.Prisma.SpaceServiceScalarFieldEnum = {
   price: 'price',
   pricingType: 'pricingType',
   spaceId: 'spaceId'
+};
+
+exports.Prisma.ServiceCatalogScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  pricingType: 'pricingType',
+  defaultPrice: 'defaultPrice',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SpaceServiceConfigScalarFieldEnum = {
+  id: 'id',
+  isEnabled: 'isEnabled',
+  price: 'price',
+  details: 'details',
+  config: 'config',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  spaceId: 'spaceId',
+  catalogId: 'catalogId'
 };
 
 exports.Prisma.SpaceRuleScalarFieldEnum = {
@@ -226,10 +323,136 @@ exports.Prisma.BookingScalarFieldEnum = {
   notes: 'notes',
   status: 'status',
   sellerNote: 'sellerNote',
+  totalHours: 'totalHours',
+  basePrice: 'basePrice',
+  discountAmount: 'discountAmount',
+  servicesTotal: 'servicesTotal',
+  grandTotal: 'grandTotal',
+  cancelledAt: 'cancelledAt',
+  cancelledBy: 'cancelledBy',
+  refundAmount: 'refundAmount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   spaceId: 'spaceId',
-  buyerId: 'buyerId'
+  buyerId: 'buyerId',
+  unitId: 'unitId',
+  programId: 'programId'
+};
+
+exports.Prisma.BookingServiceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  lineTotal: 'lineTotal',
+  bookingId: 'bookingId',
+  configId: 'configId'
+};
+
+exports.Prisma.BookingProgramScalarFieldEnum = {
+  id: 'id',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  weekdays: 'weekdays',
+  sessionStart: 'sessionStart',
+  sessionEnd: 'sessionEnd',
+  sessionCount: 'sessionCount',
+  totalHours: 'totalHours',
+  discountPercent: 'discountPercent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FavoriteScalarFieldEnum = {
+  userId: 'userId',
+  spaceId: 'spaceId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  message: 'message',
+  href: 'href',
+  isRead: 'isRead',
+  createdAt: 'createdAt',
+  userId: 'userId'
+};
+
+exports.Prisma.SavedSearchScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  criteria: 'criteria',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.PartnerServiceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  pricingType: 'pricingType',
+  indicativePrice: 'indicativePrice',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PartnerServiceRequestScalarFieldEnum = {
+  id: 'id',
+  publicRef: 'publicRef',
+  status: 'status',
+  notes: 'notes',
+  adminNotes: 'adminNotes',
+  estimatedTotal: 'estimatedTotal',
+  quotedTotal: 'quotedTotal',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  buyerId: 'buyerId',
+  bookingId: 'bookingId'
+};
+
+exports.Prisma.PartnerServiceRequestItemScalarFieldEnum = {
+  id: 'id',
+  quantity: 'quantity',
+  details: 'details',
+  estimatedPrice: 'estimatedPrice',
+  quotedPrice: 'quotedPrice',
+  requestId: 'requestId',
+  serviceId: 'serviceId'
+};
+
+exports.Prisma.SellerApplicationScalarFieldEnum = {
+  id: 'id',
+  schoolName: 'schoolName',
+  branchName: 'branchName',
+  commercialRegisterNo: 'commercialRegisterNo',
+  multipleOwners: 'multipleOwners',
+  powerOfAttorneyNumber: 'powerOfAttorneyNumber',
+  brokerageContractNo: 'brokerageContractNo',
+  contractSentAt: 'contractSentAt',
+  approvalDeadline: 'approvalDeadline',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  consentAcceptedAt: 'consentAcceptedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.ContactMessageScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  subject: 'subject',
+  message: 'message',
+  isRead: 'isRead',
+  createdAt: 'createdAt',
+  userId: 'userId'
 };
 
 exports.Prisma.SpaceNeedRequestScalarFieldEnum = {
@@ -289,6 +512,15 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -297,6 +529,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.Role = exports.$Enums.Role = {
   ADMIN: 'ADMIN',
@@ -312,7 +550,9 @@ exports.UserStatus = exports.$Enums.UserStatus = {
 
 exports.DocumentType = exports.$Enums.DocumentType = {
   NATIONAL_ID: 'NATIONAL_ID',
-  COMMERCIAL_REGISTER: 'COMMERCIAL_REGISTER'
+  COMMERCIAL_REGISTER: 'COMMERCIAL_REGISTER',
+  TITLE_DEED: 'TITLE_DEED',
+  POWER_OF_ATTORNEY: 'POWER_OF_ATTORNEY'
 };
 
 exports.SpaceStatus = exports.$Enums.SpaceStatus = {
@@ -329,12 +569,60 @@ exports.CancellationPolicy = exports.$Enums.CancellationPolicy = {
   STRICT: 'STRICT'
 };
 
+exports.OrganizationRole = exports.$Enums.OrganizationRole = {
+  OWNER: 'OWNER',
+  MANAGER: 'MANAGER',
+  STAFF: 'STAFF'
+};
+
+exports.OccupancyStatus = exports.$Enums.OccupancyStatus = {
+  PLANNED: 'PLANNED',
+  CONFIRMED: 'CONFIRMED'
+};
+
+exports.ClosureStatus = exports.$Enums.ClosureStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.ServicePricingType = exports.$Enums.ServicePricingType = {
+  PER_BOOKING: 'PER_BOOKING',
+  PER_PERSON: 'PER_PERSON',
+  PER_HOUR: 'PER_HOUR',
+  PER_ITEM: 'PER_ITEM',
+  PER_TEN_PAGES: 'PER_TEN_PAGES',
+  CUSTOM: 'CUSTOM'
+};
+
 exports.BookingStatus = exports.$Enums.BookingStatus = {
-  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED_BY_BUYER: 'CANCELLED_BY_BUYER',
+  CANCELLED_BY_SELLER: 'CANCELLED_BY_SELLER',
+  COMPLETED: 'COMPLETED'
+};
+
+exports.PartnerServiceRequestStatus = exports.$Enums.PartnerServiceRequestStatus = {
+  DRAFT: 'DRAFT',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  QUOTED: 'QUOTED',
   ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED',
-  CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED'
+};
+
+exports.SellerApplicationStatus = exports.$Enums.SellerApplicationStatus = {
+  DATA_REVIEW: 'DATA_REVIEW',
+  CONTRACT_SENT: 'CONTRACT_SENT',
+  APPROVED: 'APPROVED',
+  EXPIRED: 'EXPIRED',
+  REJECTED: 'REJECTED',
+  CHANGES_REQUESTED: 'CHANGES_REQUESTED'
+};
+
+exports.ContactMessageType = exports.$Enums.ContactMessageType = {
+  INQUIRY: 'INQUIRY',
+  SUGGESTION: 'SUGGESTION',
+  COMPLAINT: 'COMPLAINT'
 };
 
 exports.SpaceNeedStatus = exports.$Enums.SpaceNeedStatus = {
@@ -351,16 +639,35 @@ exports.ConversationType = exports.$Enums.ConversationType = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  AdminAuditLog: 'AdminAuditLog',
   UserDocument: 'UserDocument',
   SpaceType: 'SpaceType',
   Amenity: 'Amenity',
   Space: 'Space',
+  SchoolOrganization: 'SchoolOrganization',
+  OrganizationMember: 'OrganizationMember',
   SpaceImage: 'SpaceImage',
   SpaceAmenity: 'SpaceAmenity',
   SpaceWorkingHours: 'SpaceWorkingHours',
+  SpaceUnit: 'SpaceUnit',
+  PricingTier: 'PricingTier',
+  PrivateOccupancy: 'PrivateOccupancy',
+  TemporaryClosure: 'TemporaryClosure',
   SpaceService: 'SpaceService',
+  ServiceCatalog: 'ServiceCatalog',
+  SpaceServiceConfig: 'SpaceServiceConfig',
   SpaceRule: 'SpaceRule',
   Booking: 'Booking',
+  BookingService: 'BookingService',
+  BookingProgram: 'BookingProgram',
+  Favorite: 'Favorite',
+  Notification: 'Notification',
+  SavedSearch: 'SavedSearch',
+  PartnerService: 'PartnerService',
+  PartnerServiceRequest: 'PartnerServiceRequest',
+  PartnerServiceRequestItem: 'PartnerServiceRequestItem',
+  SellerApplication: 'SellerApplication',
+  ContactMessage: 'ContactMessage',
   SpaceNeedRequest: 'SpaceNeedRequest',
   Conversation: 'Conversation',
   ConversationMessage: 'ConversationMessage',

@@ -56,17 +56,20 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       name, typeId, description, city, district, address, capacity,
-      price, pricePeriod, images, amenityIds,
+      price, images, amenityIds,
       streetName, buildingNumber, postalCode, landmarks,
       latitude, longitude,
       workingHours, services, rules,
       minBookingHours, maxAdvanceBookingDays, cancellationPolicy,
+      identicalUnitsCount, pricingTiers,
     } = body
 
     if (!name || !typeId || !city || !price) {
       return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
     }
 
+    const unitsCount = Math.max(1, Math.min(100, Number(identicalUnitsCount) || 1))
+    const publicRef = `S${new Date().getFullYear()}${Date.now().toString().slice(-8)}`
     const space = await prisma.space.create({
       data: {
         name,
@@ -83,7 +86,9 @@ export async function POST(req: NextRequest) {
         longitude: longitude ? parseFloat(longitude) : null,
         capacity: capacity ? Number(capacity) : null,
         price: Number(price),
-        pricePeriod: pricePeriod || 'hour',
+        pricePeriod: 'hour',
+        publicRef,
+        identicalUnitsCount: unitsCount,
         minBookingHours: minBookingHours ? Number(minBookingHours) : null,
         maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null,
         cancellationPolicy: cancellationPolicy || 'FLEXIBLE',
@@ -107,14 +112,29 @@ export async function POST(req: NextRequest) {
                 })),
             }
           : undefined,
-        services: services?.length
+        units: {
+          create: Array.from({ length: unitsCount }, (_, index) => ({ label: `قاعة ${101 + index}` })),
+        },
+        pricingTiers: pricingTiers?.length
           ? {
-              create: services.map((s: { name: string; description: string; price: string; pricingType: string }) => ({
-                name: s.name,
-                description: s.description || null,
-                price: Number(s.price),
-                pricingType: s.pricingType || 'PER_BOOKING',
-              })),
+              create: pricingTiers
+                .filter((tier: { minHours: string; discountPercent: string }) => Number(tier.minHours) > 0 && Number(tier.discountPercent) >= 0)
+                .map((tier: { minHours: string; discountPercent: string }) => ({
+                  minHours: Number(tier.minHours),
+                  discountPercent: Number(tier.discountPercent),
+                })),
+            }
+          : undefined,
+        serviceConfigs: services?.length
+          ? {
+              create: services
+                .filter((service: { isEnabled: boolean; catalogId: string }) => service.isEnabled && service.catalogId)
+                .map((service: { catalogId: string; price: string; details: string }) => ({
+                  catalogId: service.catalogId,
+                  isEnabled: true,
+                  price: service.price === '' ? null : Number(service.price),
+                  details: service.details || null,
+                })),
             }
           : undefined,
         rules: rules?.length
@@ -133,7 +153,9 @@ export async function POST(req: NextRequest) {
         images: true,
         amenities: { include: { amenity: true } },
         workingHours: true,
-        services: true,
+        units: true,
+        pricingTiers: true,
+        serviceConfigs: { include: { catalog: true } },
         rules: true,
       },
     })

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { SpaceFormData, SpaceType, Amenity, getInitialForm } from '@/components/spaces/create/types'
+import { SpaceFormData, SpaceType, Amenity, ServiceCatalogItem, getInitialForm } from '@/components/spaces/create/types'
 import StepIndicator from '@/components/spaces/create/StepIndicator'
 import StepBasicInfo from '@/components/spaces/create/StepBasicInfo'
 import StepLocation from '@/components/spaces/create/StepLocation'
@@ -20,6 +20,7 @@ export default function NewSpacePage() {
   const [form, setForm] = useState<SpaceFormData>(getInitialForm)
   const [types, setTypes] = useState<SpaceType[]>([])
   const [amenities, setAmenities] = useState<Amenity[]>([])
+  const [serviceCatalog, setServiceCatalog] = useState<ServiceCatalogItem[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [categoriesError, setCategoriesError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,6 +35,21 @@ export default function NewSpacePage() {
       .then(data => {
         setTypes(data.types || [])
         setAmenities(data.amenities || [])
+        const catalog: ServiceCatalogItem[] = data.ownerServices || []
+        setServiceCatalog(catalog)
+        setForm(current => current.services.length ? current : {
+          ...current,
+          services: catalog.map(service => ({
+            catalogId: service.id,
+            name: service.name,
+            description: service.description,
+            price: service.defaultPrice === null ? '' : String(service.defaultPrice),
+            pricingType: service.pricingType,
+            category: service.category,
+            isEnabled: false,
+            details: '',
+          })),
+        })
         setCategoriesError('')
       })
       .catch(() => setCategoriesError('تعذر تحميل التصنيفات. حدّث الصفحة أو تواصل مع مدير النظام.'))
@@ -104,7 +120,7 @@ export default function NewSpacePage() {
     }
   }
 
-  const stepProps = { form, update, types, amenities, categoriesLoading, categoriesError }
+  const stepProps = { form, update, types, amenities, serviceCatalog, categoriesLoading, categoriesError }
 
   const StepComponent = [
     StepBasicInfo,

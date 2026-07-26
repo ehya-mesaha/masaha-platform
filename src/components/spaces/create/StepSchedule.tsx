@@ -3,7 +3,7 @@
 import { StepProps, DAY_NAMES } from './types'
 
 export default function StepSchedule({ form, update }: StepProps) {
-  const nextDays = Array.from({ length: 14 }, (_, index) => {
+  const nextDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date()
     date.setDate(date.getDate() + index)
     const hours = form.workingHours.find(wh => wh.dayOfWeek === date.getDay())
@@ -31,7 +31,7 @@ export default function StepSchedule({ form, update }: StepProps) {
 
       {/* Weekly schedule */}
       <div className="rounded-xl border border-[#ECE6D8] overflow-hidden mb-6">
-        <div className="grid grid-cols-[1fr_80px_1fr_1fr] bg-[#F7F3EB]/60 px-4 py-2.5 text-[11px] font-bold text-[#6B7566] tracking-wide border-b border-[#ECE6D8]">
+        <div className="hidden grid-cols-[1fr_80px_1fr_1fr] bg-[#F7F3EB]/60 px-4 py-2.5 text-[11px] font-bold text-[#6B7566] tracking-wide border-b border-[#ECE6D8] sm:grid">
           <span>اليوم</span>
           <span className="text-center">متاح</span>
           <span className="text-center">من</span>
@@ -40,7 +40,7 @@ export default function StepSchedule({ form, update }: StepProps) {
         {form.workingHours.map(wh => (
           <div
             key={wh.dayOfWeek}
-            className={`grid grid-cols-[1fr_80px_1fr_1fr] items-center px-4 py-3 border-b border-[#ECE6D8] last:border-b-0 ${
+            className={`grid grid-cols-[1fr_auto] gap-3 items-center px-4 py-3 border-b border-[#ECE6D8] last:border-b-0 sm:grid-cols-[1fr_80px_1fr_1fr] ${
               !wh.isOpen ? 'bg-gray-50/50' : ''
             }`}
           >
@@ -67,7 +67,8 @@ export default function StepSchedule({ form, update }: StepProps) {
                     type="time"
                     value={wh.openTime}
                     onChange={e => updateTime(wh.dayOfWeek, 'openTime', e.target.value)}
-                    className="px-2 py-1.5 rounded-lg border border-[#E8E3D8] text-xs focus:outline-none focus:border-[#1B3A2D] w-28"
+                    className="w-full rounded-lg border border-[#E8E3D8] px-2 py-1.5 text-xs focus:border-[#1B3A2D] focus:outline-none sm:w-28"
+                    dir="ltr"
                   />
                 </div>
                 <div className="flex justify-center">
@@ -75,7 +76,8 @@ export default function StepSchedule({ form, update }: StepProps) {
                     type="time"
                     value={wh.closeTime}
                     onChange={e => updateTime(wh.dayOfWeek, 'closeTime', e.target.value)}
-                    className="px-2 py-1.5 rounded-lg border border-[#E8E3D8] text-xs focus:outline-none focus:border-[#1B3A2D] w-28"
+                    className="w-full rounded-lg border border-[#E8E3D8] px-2 py-1.5 text-xs focus:border-[#1B3A2D] focus:outline-none sm:w-28"
+                    dir="ltr"
                   />
                 </div>
               </>
@@ -90,11 +92,11 @@ export default function StepSchedule({ form, update }: StepProps) {
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-sm font-extrabold text-[#14201A]">معاينة التقويم</h3>
-            <p className="text-xs text-[#6B7566] mt-1">هذه الأيام هي التي سيستطيع المستأجر اختيارها عند طلب الحجز.</p>
+            <p className="text-xs text-[#6B7566] mt-1">معاينة واضحة للأيام التي يستطيع طالب المساحة حجزها مباشرة.</p>
           </div>
-          <span className="rounded-full bg-[#1B3A2D]/10 px-3 py-1 text-xs font-bold text-[#1B3A2D]">الأسبوعان القادمان</span>
+          <span className="rounded-full bg-[#1B3A2D]/10 px-3 py-1 text-xs font-bold text-[#1B3A2D]">الأسبوع القادم</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           {nextDays.map(({ date, hours }) => {
             const isOpen = Boolean(hours?.isOpen)
             return (
@@ -110,9 +112,9 @@ export default function StepSchedule({ form, update }: StepProps) {
                   {DAY_NAMES[date.getDay()]}
                 </p>
                 <p className="text-lg font-extrabold text-[#14201A] mt-1">
-                  {date.getDate().toLocaleString('ar-SA')}
+                  {date.getDate().toLocaleString('en-US')}
                 </p>
-                <p className={`text-[11px] mt-1 ${isOpen ? 'text-[#1B3A2D]' : 'text-[#9A9488]'}`}>
+                <p className={`time-value text-[11px] mt-1 ${isOpen ? 'text-[#1B3A2D]' : 'text-[#9A9488]'}`}>
                   {isOpen && hours ? `${hours.openTime} - ${hours.closeTime}` : 'مغلق'}
                 </p>
               </div>
@@ -134,7 +136,7 @@ export default function StepSchedule({ form, update }: StepProps) {
             <option value="2">ساعتان</option>
             <option value="3">3 ساعات</option>
             <option value="4">4 ساعات</option>
-            <option value="8">يوم كامل</option>
+            <option value="8">8 ساعات</option>
           </select>
         </div>
         <div>

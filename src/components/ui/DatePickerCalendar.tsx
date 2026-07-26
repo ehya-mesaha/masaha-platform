@@ -11,8 +11,8 @@ type DatePickerCalendarProps = {
 }
 
 const DAY_LABELS = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت']
-const MONTH_FORMATTER = new Intl.DateTimeFormat('ar-SA', { month: 'long', year: 'numeric' })
-const DAY_FORMATTER = new Intl.NumberFormat('ar-SA')
+const MONTH_FORMATTER = new Intl.DateTimeFormat('ar-SA-u-nu-latn', { month: 'long', year: 'numeric' })
+const DAY_FORMATTER = new Intl.NumberFormat('en-US')
 
 function toDate(value: string) {
   const [year, month, day] = value.split('-').map(Number)

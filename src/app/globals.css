@@ -33,6 +33,14 @@ body {
   letter-spacing: 0;
 }
 
+input[type="time"],
+.time-value,
+[data-time] {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+}
+
 body::before {
   content: '';
   position: fixed;
@@ -372,6 +380,24 @@ html[dir="rtl"] .home-hero-overlay {
 }
 
 .home-search-button:hover { background: #244a3a; transform: translateY(-1px); }
+
+.program-field {
+  width: 100%;
+  min-height: 2.7rem;
+  border: 1px solid #e1dacd;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.65rem 0.8rem;
+  color: #14201a;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.program-field:focus {
+  border-color: #1b3a2d;
+  box-shadow: 0 0 0 3px rgba(27, 58, 45, .08);
+}
 
 @media (max-width: 767px) {
   .home-hero { min-height: auto; }

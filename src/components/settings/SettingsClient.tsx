@@ -107,7 +107,7 @@ export default function SettingsClient({ user }: { user: UserData }) {
               <div className="p-3 rounded-xl bg-[#F7F3EB]">
                 <p className="text-[10px] font-bold text-[#6B7566] mb-0.5">تاريخ التسجيل</p>
                 <p className="text-sm font-medium text-[#14201A]">
-                  {new Date(user.createdAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  {new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
             </div>

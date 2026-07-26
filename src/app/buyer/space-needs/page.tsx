@@ -52,7 +52,7 @@ export default async function BuyerSpaceNeedsPage() {
               <h2 className="text-lg font-extrabold text-[#14201A]">طلباتك السابقة</h2>
             </div>
             <span className="rounded-full bg-[#F7F3EB] px-3 py-1 text-xs font-bold text-[#1B3A2D]">
-              {requests.length.toLocaleString('ar-SA')}
+              {requests.length.toLocaleString('en-US')}
             </span>
           </div>
 
@@ -71,7 +71,7 @@ export default async function BuyerSpaceNeedsPage() {
                       <div>
                         <h3 className="font-bold text-[#14201A]">{request.spaceType}</h3>
                         <p className="mt-1 text-xs text-[#6B7566]">
-                          {request.city}{request.district ? `، ${request.district}` : ''} · {request.capacity.toLocaleString('ar-SA')} شخص
+                          {request.city}{request.district ? `، ${request.district}` : ''} · {request.capacity.toLocaleString('en-US')} شخص
                         </p>
                       </div>
                       <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${status.className}`}>

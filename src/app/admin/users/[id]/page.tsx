@@ -168,7 +168,7 @@ export default function AdminUserDetailPage() {
               <InfoRow label="الاسم" value={user.name} />
               <InfoRow label="البريد الإلكتروني" value={user.email} dir="ltr" />
               <InfoRow label="الجوال" value={user.phone || '—'} dir="ltr" />
-              <InfoRow label="تاريخ التسجيل" value={new Date(user.createdAt).toLocaleDateString('ar-SA')} />
+              <InfoRow label="تاريخ التسجيل" value={new Date(user.createdAt).toLocaleDateString('en-US')} />
             </div>
           </Card>
 
@@ -296,7 +296,7 @@ function DocLink({ doc }: { doc: UserDoc }) {
           {docTypeLabel[doc.type] || doc.type}
         </p>
         <p className="text-xs text-[#6B7566]">
-          {new Date(doc.uploadedAt).toLocaleDateString('ar-SA')}
+          {new Date(doc.uploadedAt).toLocaleDateString('en-US')}
         </p>
       </div>
       <svg className="w-4 h-4 text-[#6B7566] group-hover:text-[#1B3A2D]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

@@ -6,6 +6,7 @@ import Badge, { getBookingStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
+import { formatDate, formatNumber, formatTimeRange } from '@/lib/format'
 
 type Booking = {
   id: string
@@ -16,6 +17,13 @@ type Booking = {
   persons: number | null
   notes: string | null
   sellerNote: string | null
+  totalHours: number
+  basePrice: number
+  discountAmount: number
+  servicesTotal: number
+  grandTotal: number
+  unit: { label: string }
+  services: { id: string; name: string; quantity: number; unitPrice: number; lineTotal: number }[]
   review: {
     id: string
     rating: number
@@ -41,24 +49,26 @@ export default function BuyerBookingDetailPage() {
   const [reviewComment, setReviewComment] = useState('')
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState('')
+  const [cancellation, setCancellation] = useState<{ refundPercent: number; refundAmount: number } | null>(null)
 
   useEffect(() => {
     fetch(`/api/bookings/${id}`)
       .then(r => r.json())
-      .then(data => { setBooking(data.booking); setLoading(false) })
+      .then(data => { setBooking(data.booking); setCancellation(data.cancellation); setLoading(false) })
   }, [id])
 
   async function handleCancel() {
-    if (!confirm('هل أنت متأكد من إلغاء الحجز؟')) return
+    if (!confirm(`هل أنت متأكد من إلغاء الحجز؟ مبلغ الاسترداد المتوقع: ${formatNumber(cancellation?.refundAmount ?? 0)} ر.س`)) return
     setCancelling(true)
     const res = await fetch(`/api/bookings/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'CANCELLED' }),
+      body: JSON.stringify({ status: 'CANCELLED_BY_BUYER' }),
     })
     if (res.ok) {
       const data = await res.json()
       setBooking(prev => prev ? { ...prev, status: data.booking.status } : null)
+      setCancellation(data.cancellation)
     }
     setCancelling(false)
   }
@@ -128,16 +138,17 @@ export default function BuyerBookingDetailPage() {
               <div className="flex justify-between"><span className="text-gray-500">الاسم</span><span className="font-medium">{booking.space.name}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">النوع</span><span className="font-medium">{booking.space.type.name}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">المدينة</span><span className="font-medium">{booking.space.city}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">السعر</span><span className="font-medium">{booking.space.price} ر.س / {booking.space.pricePeriod === 'day' ? 'يوم' : 'ساعة'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">السعر</span><span className="font-medium">{formatNumber(booking.space.price)} ر.س / ساعة</span></div>
             </div>
           </Card>
 
           <Card>
             <h3 className="font-semibold text-gray-900 mb-4">تفاصيل الحجز</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-gray-500">التاريخ</span><p className="font-medium mt-0.5">{booking.date}</p></div>
-              <div><span className="text-gray-500">الوقت</span><p className="font-medium mt-0.5">{booking.startTime} - {booking.endTime}</p></div>
+              <div><span className="text-gray-500">التاريخ</span><p className="font-medium mt-0.5">{formatDate(booking.date)}</p></div>
+              <div><span className="text-gray-500">الوقت</span><p className="time-value font-medium mt-0.5">{formatTimeRange(booking.startTime, booking.endTime)}</p></div>
               {booking.persons && <div><span className="text-gray-500">عدد الأشخاص</span><p className="font-medium mt-0.5">{booking.persons}</p></div>}
+              <div><span className="text-gray-500">الوحدة</span><p className="font-medium mt-0.5">{booking.unit.label}</p></div>
             </div>
             {booking.notes && (
               <div className="mt-4 pt-4 border-t border-[#E8E3D8]">
@@ -145,6 +156,33 @@ export default function BuyerBookingDetailPage() {
                 <p className="text-gray-700 text-sm">{booking.notes}</p>
               </div>
             )}
+          </Card>
+
+          {booking.services.length > 0 && (
+            <Card>
+              <h3 className="mb-4 font-semibold text-gray-900">خدمات المساحة</h3>
+              <div className="overflow-hidden rounded-xl border border-[#E8E3D8]">
+                {booking.services.map(service => (
+                  <div key={service.id} className="grid grid-cols-[1fr_auto] gap-3 border-b border-[#EEE8DC] px-4 py-3 text-sm last:border-0">
+                    <div>
+                      <strong className="block text-[#1B3A2D]">{service.name}</strong>
+                      <span className="text-xs text-gray-500">{service.quantity} × {formatNumber(service.unitPrice)} ر.س</span>
+                    </div>
+                    <strong className="self-center text-[#1B3A2D]">{formatNumber(service.lineTotal)} ر.س</strong>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          <Card>
+            <h3 className="mb-4 font-semibold text-gray-900">ملخص التكلفة</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">السعر الأساسي</span><span>{formatNumber(booking.basePrice)} ر.س</span></div>
+              {booking.discountAmount > 0 && <div className="flex justify-between text-emerald-700"><span>الخصم</span><span>-{formatNumber(booking.discountAmount)} ر.س</span></div>}
+              {booking.servicesTotal > 0 && <div className="flex justify-between"><span className="text-gray-500">الخدمات</span><span>{formatNumber(booking.servicesTotal)} ر.س</span></div>}
+              <div className="flex justify-between border-t border-[#E8E3D8] pt-3 text-base font-extrabold text-[#1B3A2D]"><span>الإجمالي</span><span>{formatNumber(booking.grandTotal)} ر.س</span></div>
+            </div>
           </Card>
 
           {booking.sellerNote && (
@@ -221,14 +259,22 @@ export default function BuyerBookingDetailPage() {
             </Card>
           )}
 
-          {booking.status === 'PENDING' && (
-            <button
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 rounded-xl text-sm font-medium hover:bg-red-100 disabled:opacity-60"
-            >
-              {cancelling ? 'جاري الإلغاء...' : 'إلغاء الحجز'}
-            </button>
+          {booking.status === 'CONFIRMED' && (
+            <Card>
+              <h3 className="font-semibold text-gray-900">إلغاء الحجز</h3>
+              <p className="mt-2 text-sm leading-7 text-gray-600">
+                تطبق سياسة الإلغاء المتفق عليها. مبلغ الاسترداد المتوقع حاليًا:
+                <strong className="mx-1 text-[#1B3A2D]">{formatNumber(cancellation?.refundAmount ?? 0)} ر.س</strong>
+                ({cancellation?.refundPercent ?? 0}%).
+              </p>
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="mt-4 w-full rounded-xl border border-red-200 bg-red-50 py-2.5 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-60"
+              >
+                {cancelling ? 'جاري الإلغاء...' : 'إلغاء الحجز'}
+              </button>
+            </Card>
           )}
         </div>
       </div>

@@ -1,176 +1,139 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Card from '@/components/ui/Card'
+import { useEffect, useState } from 'react'
 
-type SpaceType = { id: string; name: string }
-type Amenity = { id: string; name: string; icon: string | null }
+type Item = {
+  id: string
+  name: string
+  description?: string
+  category?: string | null
+  pricingType?: string
+  defaultPrice?: number | null
+  indicativePrice?: number | null
+}
+
+type CatalogKey = 'types' | 'amenities' | 'ownerServices' | 'partnerServices'
+type ApiType = 'space-type' | 'amenity' | 'owner-service' | 'partner-service'
+
+const sections: Array<{ key: CatalogKey; apiType: ApiType; title: string; subtitle: string; detailed?: boolean }> = [
+  { key: 'types', apiType: 'space-type', title: 'أنواع المساحات', subtitle: 'التصنيفات التي تظهر في البحث ونموذج إضافة المساحة.' },
+  { key: 'amenities', apiType: 'amenity', title: 'المرافق والتجهيزات', subtitle: 'قائمة موحدة يختار منها أصحاب المساحات فقط.' },
+  { key: 'ownerServices', apiType: 'owner-service', title: 'خدمات صاحب المساحة', subtitle: 'دليل ثابت؛ يفعّل صاحب المساحة الخدمة ويحدد سعرها.', detailed: true },
+  { key: 'partnerServices', apiType: 'partner-service', title: 'خدمات إضافية - شركاء إحياء مساحة', subtitle: 'أسعار تقديرية قابلة للتعديل عند تجهيز عرض السعر.', detailed: true },
+]
 
 export default function AdminCategoriesPage() {
-  const [types, setTypes] = useState<SpaceType[]>([])
-  const [amenities, setAmenities] = useState<Amenity[]>([])
-  const [loading, setLoading] = useState(true)
-  const [newType, setNewType] = useState('')
-  const [newAmenity, setNewAmenity] = useState('')
-  const [newAmenityIcon, setNewAmenityIcon] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [data, setData] = useState<Record<CatalogKey, Item[]>>({ types: [], amenities: [], ownerServices: [], partnerServices: [] })
+  const [drafts, setDrafts] = useState<Record<ApiType, { name: string; description: string; category: string; price: string }>>({
+    'space-type': { name: '', description: '', category: '', price: '' },
+    amenity: { name: '', description: '', category: '', price: '' },
+    'owner-service': { name: '', description: '', category: 'other', price: '' },
+    'partner-service': { name: '', description: '', category: '', price: '' },
+  })
+  const [message, setMessage] = useState('')
 
   useEffect(() => {
-    fetch('/api/admin/categories')
-      .then(r => r.json())
-      .then(data => {
-        setTypes(data.types || [])
-        setAmenities(data.amenities || [])
-        setLoading(false)
+    fetch('/api/admin/categories').then(response => response.json()).then(result => {
+      setData({
+        types: result.types || [],
+        amenities: result.amenities || [],
+        ownerServices: result.ownerServices || [],
+        partnerServices: result.partnerServices || [],
       })
+    })
   }, [])
 
-  async function addType() {
-    if (!newType.trim()) return
-    setSaving(true)
-    const res = await fetch('/api/admin/categories', {
+  async function add(section: typeof sections[number]) {
+    const draft = drafts[section.apiType]
+    if (!draft.name.trim()) return
+    const response = await fetch('/api/admin/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'space-type', name: newType }),
+      body: JSON.stringify({ type: section.apiType, ...draft }),
     })
-    if (res.ok) {
-      const data = await res.json()
-      setTypes(p => [...p, data.item])
-      setNewType('')
-    }
-    setSaving(false)
+    const result = await response.json()
+    if (!response.ok) return setMessage(result.error || 'تعذر الحفظ')
+    setData(current => ({ ...current, [section.key]: [...current[section.key], result.item] }))
+    setDrafts(current => ({ ...current, [section.apiType]: { ...current[section.apiType], name: '', description: '', price: '' } }))
+    setMessage('تمت الإضافة بنجاح')
   }
 
-  async function addAmenity() {
-    if (!newAmenity.trim()) return
-    setSaving(true)
-    const res = await fetch('/api/admin/categories', {
-      method: 'POST',
+  async function rename(section: typeof sections[number], item: Item) {
+    const name = prompt('الاسم الجديد', item.name)?.trim()
+    if (!name || name === item.name) return
+    const response = await fetch('/api/admin/categories', {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'amenity', name: newAmenity, icon: newAmenityIcon }),
+      body: JSON.stringify({
+        type: section.apiType,
+        ...item,
+        name,
+        price: item.defaultPrice ?? item.indicativePrice ?? '',
+      }),
     })
-    if (res.ok) {
-      const data = await res.json()
-      setAmenities(p => [...p, data.item])
-      setNewAmenity('')
-      setNewAmenityIcon('')
-    }
-    setSaving(false)
+    const result = await response.json()
+    if (response.ok) setData(current => ({ ...current, [section.key]: current[section.key].map(row => row.id === item.id ? result.item : row) }))
   }
 
-  async function deleteType(id: string) {
-    if (!confirm('هل أنت متأكد من الحذف؟')) return
-    const res = await fetch('/api/admin/categories', {
+  async function remove(section: typeof sections[number], id: string) {
+    if (!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return
+    const response = await fetch('/api/admin/categories', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'space-type', id }),
+      body: JSON.stringify({ type: section.apiType, id }),
     })
-    if (res.ok) setTypes(p => p.filter(t => t.id !== id))
-  }
-
-  async function deleteAmenity(id: string) {
-    if (!confirm('هل أنت متأكد من الحذف؟')) return
-    const res = await fetch('/api/admin/categories', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'amenity', id }),
-    })
-    if (res.ok) setAmenities(p => p.filter(a => a.id !== id))
+    const result = await response.json()
+    if (!response.ok) return setMessage(result.error || 'تعذر الحذف')
+    setData(current => ({ ...current, [section.key]: current[section.key].filter(item => item.id !== id) }))
   }
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">التصنيفات والمرافق</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Space Types */}
-        <div>
-          <Card>
-            <h3 className="font-semibold text-gray-900 mb-4">أنواع المساحات</h3>
-
-            <div className="flex gap-2 mb-4">
-              <input
-                value={newType}
-                onChange={e => setNewType(e.target.value)}
-                placeholder="اسم النوع..."
-                className="flex-1 px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-              />
-              <button
-                onClick={addType}
-                disabled={saving || !newType.trim()}
-                className="bg-[#1B3A2D] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0F2219] disabled:opacity-60"
-              >
-                إضافة
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {types.map(t => (
-                <div key={t.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-700">{t.name}</span>
-                  <button
-                    onClick={() => deleteType(t.id)}
-                    className="text-red-500 hover:text-red-700 text-xs font-medium"
-                  >
-                    حذف
-                  </button>
-                </div>
-              ))}
-              {!loading && types.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-4">لا توجد أنواع</p>
-              )}
-            </div>
-          </Card>
-        </div>
-
-        {/* Amenities */}
-        <div>
-          <Card>
-            <h3 className="font-semibold text-gray-900 mb-4">المرافق والخدمات</h3>
-
-            <div className="flex gap-2 mb-2">
-              <input
-                value={newAmenity}
-                onChange={e => setNewAmenity(e.target.value)}
-                placeholder="اسم المرفق..."
-                className="flex-1 px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-              />
-              <input
-                value={newAmenityIcon}
-                onChange={e => setNewAmenityIcon(e.target.value)}
-                placeholder="أيقونة"
-                className="w-20 px-3 py-2 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
-              />
-              <button
-                onClick={addAmenity}
-                disabled={saving || !newAmenity.trim()}
-                className="bg-[#1B3A2D] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0F2219] disabled:opacity-60"
-              >
-                إضافة
-              </button>
-            </div>
-
-            <div className="space-y-2 mt-4">
-              {amenities.map(a => (
-                <div key={a.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    {a.icon && <span className="text-sm">{a.icon}</span>}
-                    <span className="text-sm text-gray-700">{a.name}</span>
+    <div className="dashboard-page">
+      <div className="page-hero mb-7 p-7">
+        <p className="text-xs font-bold text-[#C49A3C]">تحكم الإدارة</p>
+        <h1 className="mt-2 text-3xl font-extrabold text-white">التصنيفات والأدلة</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-white/65">إدارة الأنواع والمرافق وخدمات أصحاب المساحات وخدمات شركاء إحياء مساحة من مكان واحد.</p>
+      </div>
+      {message && <p className="mb-4 rounded-xl border border-[#E8E1D3] bg-white px-4 py-3 text-sm text-[#1B3A2D]">{message}</p>}
+      <div className="grid gap-6 xl:grid-cols-2">
+        {sections.map(section => {
+          const draft = drafts[section.apiType]
+          return (
+            <section key={section.key} className="rounded-2xl border border-[#E1D9CA] bg-white p-5 shadow-[0_20px_55px_-45px_rgba(15,34,25,.55)]">
+              <div className="mb-5">
+                <h2 className="font-display text-xl font-extrabold text-[#1B3A2D]">{section.title}</h2>
+                <p className="mt-1 text-xs leading-6 text-[#6B7566]">{section.subtitle}</p>
+              </div>
+              <div className="grid gap-2">
+                <input value={draft.name} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, name: event.target.value } }))} placeholder="اسم العنصر" className="field py-2.5" />
+                {section.detailed && (
+                  <>
+                    <input value={draft.description} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, description: event.target.value } }))} placeholder="وصف مختصر" className="field py-2.5" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input value={draft.category} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, category: event.target.value } }))} placeholder="التصنيف" className="field py-2.5" />
+                      <input type="number" min="0" value={draft.price} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, price: event.target.value } }))} placeholder="السعر الافتراضي" className="field py-2.5" dir="ltr" />
+                    </div>
+                  </>
+                )}
+                <button onClick={() => add(section)} className="btn-primary rounded-xl py-2.5 text-sm font-bold">إضافة</button>
+              </div>
+              <div className="mt-5 space-y-2">
+                {data[section.key].map(item => (
+                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F7F3EB] px-4 py-3">
+                    <div className="min-w-0">
+                      <strong className="block truncate text-sm text-[#1B3A2D]">{item.name}</strong>
+                      {item.description && <span className="mt-1 block truncate text-[11px] text-[#6B7566]">{item.description}</span>}
+                    </div>
+                    <div className="flex gap-3 text-xs font-bold">
+                      <button onClick={() => rename(section, item)} className="text-[#1B3A2D]">تعديل</button>
+                      <button onClick={() => remove(section, item.id)} className="text-red-600">حذف</button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => deleteAmenity(a.id)}
-                    className="text-red-500 hover:text-red-700 text-xs font-medium"
-                  >
-                    حذف
-                  </button>
-                </div>
-              ))}
-              {!loading && amenities.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-4">لا توجد مرافق</p>
-              )}
-            </div>
-          </Card>
-        </div>
+                ))}
+              </div>
+            </section>
+          )
+        })}
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import SpaceCard from '@/components/spaces/SpaceCard'
+import RecurringSearchForm from '@/components/spaces/RecurringSearchForm'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -53,51 +54,25 @@ export default async function HomePage() {
           <div className="max-w-4xl fade-up">
             <p className="home-hero-kicker mb-6">مساحات مختارة بعناية في المملكة</p>
             <h1 className="font-display max-w-4xl text-[42px] font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-[72px]">
-              مساحة تليق بما
+              مساحة تناسب
               <br />
-              <span className="text-[#E0BE69]">تريد إنجازه.</span>
+              <span className="text-[#E0BE69]">احتياجك</span>
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
-              مكاتب وقاعات تدريب واستوديوهات موثوقة، بتفاصيل واضحة وحجز مرن وتجربة مصممة لتصل إلى المكان المناسب بثقة.
+              قاعات دراسية، مكاتب، قاعات اجتماعات… مصممة لتصل للمكان الأنسب لك.
             </p>
-
-            <div className="home-search mt-9 max-w-5xl">
-              <form action="/spaces" method="get" className="grid grid-cols-1 items-stretch md:grid-cols-[1.05fr_1fr_.85fr_auto]">
-                <label className="home-search-field">
-                  <span>أين تبحث؟</span>
-                  <span className="flex items-center gap-2">
-                    <svg className="h-4 w-4 flex-none text-[#B28A32]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 21s7-6.1 7-12A7 7 0 105 9c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>
-                    <input type="text" name="city" placeholder="المدينة أو الحي" />
-                  </span>
-                </label>
-                <label className="home-search-field">
-                  <span>نوع المساحة</span>
-                  <span className="flex items-center gap-2">
-                    <svg className="h-4 w-4 flex-none text-[#B28A32]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2"/></svg>
-                    <input type="text" name="type" placeholder="مكتب، قاعة، استوديو" />
-                  </span>
-                </label>
-                <label className="home-search-field">
-                  <span>موعدك</span>
-                  <input type="date" name="date" />
-                </label>
-                <div className="p-2.5">
-                  <button type="submit" className="home-search-button">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-5.2-5.2m2.2-5.3a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0Z" /></svg>
-                    اكتشف المساحات
-                  </button>
-                </div>
-              </form>
-            </div>
+            <RecurringSearchForm />
           </div>
         </div>
 
         <div className="home-proof-rail">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 sm:px-6 md:grid-cols-3 lg:px-8">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-5 lg:px-8">
             {[
-              ['M9 12.75 11.25 15 15 9.75M12 3l7.5 3v5.25c0 4.14-3.2 7.85-7.5 9.75-4.3-1.9-7.5-5.61-7.5-9.75V6L12 3Z', 'مساحات موثقة', 'معلومات وصور راجعها فريق مساحة'],
-              ['M8 7V3m8 4V3M6 11h12M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z', 'حجز واضح', 'تواريخ وأوقات وسياسات بلا مفاجآت'],
-              ['M8 10h8m-8 4h5m8-2a9 9 0 1 1-4.2-7.63L21 3l-1.37 4.22A8.96 8.96 0 0 1 21 12Z', 'تواصل مباشر', 'اسأل صاحب المساحة قبل إرسال الطلب'],
+              ['M9 12.75 11.25 15 15 9.75M12 3l7.5 3v5.25c0 4.14-3.2 7.85-7.5 9.75-4.3-1.9-7.5-5.61-7.5-9.75V6L12 3Z', 'مساحات موثوقة', 'تم اعتمادها من الفريق المختص.'],
+              ['M8 7V3m8 4V3M6 11h12M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z', 'حجز واضح ومرن', 'اختر الموعد والمساحة المناسبة بسهولة.'],
+              ['M8 10h8m-8 4h5m8-2a9 9 0 1 1-4.2-7.63L21 3l-1.37 4.22A8.96 8.96 0 0 1 21 12Z', 'تواصل مباشر', 'رتّب احتياجك مع صاحب المساحة قبل الحجز.'],
+              ['M4 6h16M4 12h16M4 18h10', 'خدمات تحسّن تجربتك', 'إضافات تساعدك على تجهيز المساحة لاستخدامك.'],
+              ['M7 11h10M7 15h6M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z', 'تنظيم واضح للحجز', 'جميع تفاصيل الحجز والخدمات في مكان واحد.'],
             ].map(([path, title, desc]) => (
               <div key={title} className="home-proof-item">
                 <span className="home-proof-icon">
@@ -142,7 +117,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-10 flex items-end justify-between gap-6">
             <div>
-              <div className="eyebrow mb-3"><span>مختارات مساحة</span></div>
+              <div className="eyebrow mb-3"><span>مختارات إحياء مساحة</span></div>
               <h2 className="font-display text-3xl font-extrabold text-[#14201A] lg:text-4xl">أماكن تستحق الاكتشاف</h2>
               <p className="mt-2 text-[#6B7566]">أحدث المساحات المعتمدة والمتاحة لطلب الحجز الآن.</p>
             </div>
@@ -172,13 +147,15 @@ export default async function HomePage() {
           <div className="lg:sticky lg:top-28">
             <div className="eyebrow mb-3"><span>من البحث إلى الحجز</span></div>
             <h2 className="font-display text-3xl font-extrabold leading-tight text-[#14201A] lg:text-5xl">رحلة بسيطة، وقرار أوضح.</h2>
-            <p className="mt-5 max-w-md text-sm leading-7 text-[#6B7566]">صممنا كل خطوة لتقلل الحيرة: تعرف ما تحصل عليه، ومتى يكون متاحاً، ومن صاحب المساحة قبل أن ترسل طلبك.</p>
+            <p className="mt-5 max-w-md text-sm leading-7 text-[#6B7566]">صممنا كل خطوة لتكون احتياجات برنامجك واضحة، من البحث وحتى تأكيد الحجز والخدمات.</p>
           </div>
           <div className="divide-y divide-[#DCD4C4] border-y border-[#DCD4C4] motion-list">
             {[
               ['01', 'ابحث بدقة', 'حدد المدينة والنوع والميزانية والسعة والأيام والأوقات التي تناسبك.'],
               ['02', 'راجع كل التفاصيل', 'قارن الصور والمرافق والخدمات والقواعد والموقع وتقييمات المشترين السابقين.'],
-              ['03', 'احجز وتواصل', 'اختر موعدك من التقويم، أرسل الطلب، وتابع الرد مباشرة من حسابك.'],
+              ['03', 'احجز مباشرة', 'اختر الموعد والوحدة المتاحة، ثم أكّد حجزك فورًا من حسابك.'],
+              ['04', 'اطلب خدمات', 'أضف الخدمات التي تحتاجها لتجهيز المساحة وتجربة الحضور.'],
+              ['05', 'تابع برنامجك', 'راجع جميع الجلسات والحجوزات والخدمات من مكان واحد.'],
             ].map(([step, title, desc]) => (
               <div key={step} className="group grid gap-4 py-8 sm:grid-cols-[4rem_1fr_auto] sm:items-center">
                 <span className="font-display text-2xl font-extrabold text-[#C49A3C]">{step}</span>
@@ -198,7 +175,7 @@ export default async function HomePage() {
           <div className="max-w-2xl">
             <p className="home-hero-kicker mb-5">لأصحاب المساحات</p>
             <h2 className="font-display text-3xl font-extrabold leading-tight text-white lg:text-5xl">حوّل المساحة غير المستغلة إلى فرصة مستمرة.</h2>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-white/68">أضف تفاصيل مساحتك ومواعيدها وخدماتها، وابدأ استقبال طلبات جادة من عملاء يبحثون عما تقدمه بالضبط.</p>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/68">أضف تفاصيل مساحات مدرستك ووحداتها ومواعيدها وخدماتها، وابدأ استقبال حجوزات مؤكدة من باحثين جادين.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/auth/register?seller=1" className="btn-gold inline-flex items-center justify-center gap-2 rounded-lg px-7 py-3.5 text-sm">ابدأ عرض مساحتك <ArrowIcon /></Link>
               <Link href="/spaces" className="inline-flex items-center justify-center rounded-lg border border-white/22 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/10">استكشف السوق</Link>

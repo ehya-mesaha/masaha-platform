@@ -123,7 +123,7 @@ export default function SpacesFilters({ types, params }: Props) {
           <div className="mb-2 flex items-center justify-between">
             <label className="text-xs font-bold text-[#4A554D]">السعر</label>
             <span className="text-[11px] font-semibold text-[#1B3A2D]">
-              {minPrice.toLocaleString('ar-SA')} - {maxPrice.toLocaleString('ar-SA')} ر.س
+              {minPrice.toLocaleString('en-US')} - {maxPrice.toLocaleString('en-US')} ر.س
             </span>
           </div>
           <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] p-3">

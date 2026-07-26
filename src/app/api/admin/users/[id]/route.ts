@@ -36,11 +36,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id } = await params
     const body = await req.json()
-    const { status, role } = body as { status?: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'; role?: 'ADMIN' | 'SELLER' | 'BUYER' }
+    const { status, role, confirmAdminRole } = body as { status?: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'; role?: 'ADMIN' | 'SELLER' | 'BUYER'; confirmAdminRole?: boolean }
 
     const data: { status?: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'; role?: 'ADMIN' | 'SELLER' | 'BUYER' } = {}
     if (status) data.status = status
     if (role) {
+      if (role === 'ADMIN' && confirmAdminRole !== true) {
+        return NextResponse.json({ error: 'يتطلب منح صلاحية مدير النظام تأكيدًا صريحًا' }, { status: 400 })
+      }
       // Prevent an admin from demoting themselves (avoid lockout)
       if (id === user.id && role !== 'ADMIN') {
         return NextResponse.json({ error: 'لا يمكنك تغيير دورك بنفسك' }, { status: 400 })
@@ -52,7 +55,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'لا توجد بيانات للتحديث' }, { status: 400 })
     }
 
-    const updated = await prisma.user.update({ where: { id }, data })
+    const before = await prisma.user.findUnique({ where: { id } })
+    if (!before) return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.user.update({ where: { id }, data })
+      await tx.adminAuditLog.create({
+        data: {
+          actorId: String(user.id),
+          action: role ? 'UPDATE_USER_ROLE' : 'UPDATE_USER_STATUS',
+          entityType: 'User',
+          entityId: id,
+          before: JSON.parse(JSON.stringify(before)),
+          after: JSON.parse(JSON.stringify(result)),
+        },
+      })
+      return result
+    })
     return NextResponse.json({ user: updated })
   } catch (err) {
     console.error(err)

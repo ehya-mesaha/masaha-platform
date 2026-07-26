@@ -14,6 +14,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         amenities: { include: { amenity: true } },
         workingHours: { orderBy: { dayOfWeek: 'asc' } },
         services: true,
+        serviceConfigs: {
+          where: { isEnabled: true },
+          include: { catalog: true },
+          orderBy: { catalog: { sortOrder: 'asc' } },
+        },
+        units: { where: { isActive: true }, orderBy: { label: 'asc' } },
+        pricingTiers: { orderBy: { minHours: 'asc' } },
         rules: true,
       },
     })
@@ -55,6 +62,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({
       space: {
         ...space,
+        services: space.serviceConfigs.map(config => ({
+          id: config.id,
+          name: config.catalog.name,
+          description: config.details || config.catalog.description,
+          price: config.price ?? config.catalog.defaultPrice ?? 0,
+          pricingType: config.catalog.pricingType,
+        })),
         reviews,
         reviewSummary,
       },
@@ -81,81 +95,82 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const {
       name, typeId, description, city, district, address, capacity,
-      price, pricePeriod, images, amenityIds,
+      price, images, amenityIds,
       streetName, buildingNumber, postalCode, landmarks,
       latitude, longitude,
       workingHours, services, rules,
       minBookingHours, maxAdvanceBookingDays, cancellationPolicy,
+      identicalUnitsCount, advertisingLicenseNumber, pricingTiers,
     } = body
 
-    await prisma.spaceImage.deleteMany({ where: { spaceId: id } })
-    await prisma.spaceAmenity.deleteMany({ where: { spaceId: id } })
-    await prisma.spaceWorkingHours.deleteMany({ where: { spaceId: id } })
-    await prisma.spaceService.deleteMany({ where: { spaceId: id } })
-    await prisma.spaceRule.deleteMany({ where: { spaceId: id } })
+    const unitCount = Math.max(1, Math.min(100, Number(identicalUnitsCount) || space.identicalUnitsCount || 1))
+    const updated = await prisma.$transaction(async (tx) => {
+      await Promise.all([
+        tx.spaceImage.deleteMany({ where: { spaceId: id } }),
+        tx.spaceAmenity.deleteMany({ where: { spaceId: id } }),
+        tx.spaceWorkingHours.deleteMany({ where: { spaceId: id } }),
+        tx.spaceRule.deleteMany({ where: { spaceId: id } }),
+        tx.pricingTier.deleteMany({ where: { spaceId: id } }),
+      ])
 
-    const updated = await prisma.space.update({
-      where: { id },
-      data: {
-        name,
-        typeId,
-        description,
-        city,
-        district,
-        address,
-        streetName: streetName || null,
-        buildingNumber: buildingNumber || null,
-        postalCode: postalCode || null,
-        landmarks: landmarks || null,
-        latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null,
-        capacity: capacity ? Number(capacity) : null,
-        price: Number(price),
-        pricePeriod: pricePeriod || 'hour',
-        minBookingHours: minBookingHours ? Number(minBookingHours) : null,
-        maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null,
-        cancellationPolicy: cancellationPolicy || 'FLEXIBLE',
-        status: user.role === 'ADMIN' ? space.status : 'PENDING_REVIEW',
-        images: images?.length
-          ? { create: images.map((url: string, i: number) => ({ url, order: i })) }
-          : undefined,
-        amenities: amenityIds?.length
-          ? { create: amenityIds.map((amenityId: string) => ({ amenityId })) }
-          : undefined,
-        workingHours: workingHours?.length
-          ? {
-              create: workingHours
-                .filter((wh: { isOpen: boolean }) => wh.isOpen)
-                .map((wh: { dayOfWeek: number; openTime: string; closeTime: string }) => ({
-                  dayOfWeek: wh.dayOfWeek,
-                  isOpen: true,
-                  openTime: wh.openTime,
-                  closeTime: wh.closeTime,
-                })),
-            }
-          : undefined,
-        services: services?.length
-          ? {
-              create: services.map((s: { name: string; description: string; price: string; pricingType: string }) => ({
-                name: s.name,
-                description: s.description || null,
-                price: Number(s.price),
-                pricingType: s.pricingType || 'PER_BOOKING',
-              })),
-            }
-          : undefined,
-        rules: rules?.length
-          ? {
-              create: rules
-                .filter((r: { isDefault: boolean }) => r.isDefault)
-                .map((r: { rule: string; isDefault: boolean }) => ({
-                  rule: r.rule,
-                  isDefault: r.isDefault,
-                })),
-            }
-          : undefined,
-      },
-      include: { type: true, images: true, workingHours: true, services: true, rules: true },
+      const existingUnits = await tx.spaceUnit.findMany({ where: { spaceId: id }, orderBy: { createdAt: 'asc' } })
+      for (let index = 0; index < unitCount; index += 1) {
+        const existingUnit = existingUnits[index]
+        if (existingUnit) await tx.spaceUnit.update({ where: { id: existingUnit.id }, data: { isActive: true, label: `قاعة ${101 + index}` } })
+        else await tx.spaceUnit.create({ data: { spaceId: id, label: `قاعة ${101 + index}` } })
+      }
+      if (existingUnits.length > unitCount) {
+        await tx.spaceUnit.updateMany({ where: { id: { in: existingUnits.slice(unitCount).map((unit) => unit.id) } }, data: { isActive: false } })
+      }
+
+      const catalogServices = Array.isArray(services) && services.some((service: { catalogId?: string }) => service.catalogId)
+      if (catalogServices) {
+        await tx.spaceServiceConfig.deleteMany({ where: { spaceId: id } })
+        await tx.spaceServiceConfig.createMany({
+          data: services.map((service: { catalogId: string; isEnabled?: boolean; price?: string | number; details?: string }) => ({
+            spaceId: id,
+            catalogId: service.catalogId,
+            isEnabled: service.isEnabled !== false,
+            price: service.price === '' || service.price == null ? null : Number(service.price),
+            details: service.details?.trim() || null,
+          })),
+        })
+      }
+
+      return tx.space.update({
+        where: { id },
+        data: {
+          name,
+          typeId,
+          description,
+          city,
+          district,
+          address,
+          streetName: streetName || null,
+          buildingNumber: buildingNumber || null,
+          postalCode: postalCode || null,
+          landmarks: landmarks || null,
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
+          capacity: capacity ? Number(capacity) : null,
+          price: Number(price),
+          pricePeriod: 'hour',
+          identicalUnitsCount: unitCount,
+          advertisingLicenseNumber: user.role === 'ADMIN'
+            ? (typeof advertisingLicenseNumber === 'string' ? advertisingLicenseNumber.trim() || null : space.advertisingLicenseNumber)
+            : space.advertisingLicenseNumber,
+          minBookingHours: minBookingHours ? Number(minBookingHours) : null,
+          maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null,
+          cancellationPolicy: cancellationPolicy || 'FLEXIBLE',
+          status: user.role === 'ADMIN' ? space.status : 'PENDING_REVIEW',
+          images: images?.length ? { create: images.map((url: string, index: number) => ({ url, order: index })) } : undefined,
+          amenities: amenityIds?.length ? { create: amenityIds.map((amenityId: string) => ({ amenityId })) } : undefined,
+          workingHours: workingHours?.length ? { create: workingHours.filter((item: { isOpen: boolean }) => item.isOpen).map((item: { dayOfWeek: number; openTime: string; closeTime: string }) => ({ dayOfWeek: item.dayOfWeek, isOpen: true, openTime: item.openTime, closeTime: item.closeTime })) } : undefined,
+          pricingTiers: Array.isArray(pricingTiers) ? { create: pricingTiers.filter((tier: { minHours?: number; discountPercent?: number }) => Number(tier.minHours) > 0 && Number(tier.discountPercent) >= 0).map((tier: { minHours: number; discountPercent: number }) => ({ minHours: Number(tier.minHours), discountPercent: Number(tier.discountPercent) })) } : undefined,
+          rules: rules?.length ? { create: rules.filter((rule: { isDefault: boolean }) => rule.isDefault).map((rule: { rule: string; isDefault: boolean }) => ({ rule: rule.rule, isDefault: rule.isDefault })) } : undefined,
+        },
+        include: { type: true, images: true, workingHours: true, services: true, serviceConfigs: { include: { catalog: true } }, units: true, pricingTiers: true, rules: true },
+      })
     })
 
     return NextResponse.json({ space: updated })

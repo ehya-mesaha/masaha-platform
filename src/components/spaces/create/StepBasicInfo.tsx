@@ -8,7 +8,7 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
   return (
     <div>
       <h2 className="font-display text-xl font-extrabold text-[#14201A] mb-1">المعلومات الأساسية للمساحة</h2>
-      <p className="text-[#6B7566] text-sm mb-6">أدخل التفاصيل الأولية لمساحتك لتساعد المشغلين في فهم طبيعتها واستخداماتها.</p>
+      <p className="text-[#6B7566] text-sm mb-6">أدخل التفاصيل الأولية لمساحتك لتساعد طالبي المساحات في فهم طبيعتها واستخداماتها.</p>
 
       <div className="space-y-4">
         <div>
@@ -19,6 +19,43 @@ export default function StepBasicInfo({ form, update, types, categoriesLoading, 
             placeholder="قاعة الابتكار للاجتماعات"
             className="w-full px-4 py-2.5 rounded-lg border border-[#E8E3D8] text-sm focus:outline-none focus:border-[#1B3A2D]"
           />
+        </div>
+
+        <div className="rounded-2xl border border-[#E8E1D3] bg-[#F7F3EB] p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <label className="block text-sm font-extrabold text-[#1B3A2D]">عدد القاعات المماثلة</label>
+              <p className="mt-1 text-xs leading-6 text-[#6B7566]">سننشئ وحدة مستقلة لكل قاعة لإدارة التوفر ومنع تعارض الحجوزات.</p>
+            </div>
+            <div className="flex w-full items-center overflow-hidden rounded-xl border border-[#D9D1C2] bg-white sm:w-44" dir="ltr">
+              <button
+                type="button"
+                onClick={() => update('identicalUnitsCount', String(Math.max(1, Number(form.identicalUnitsCount || 1) - 1)))}
+                className="grid h-11 w-12 place-items-center text-xl font-bold text-[#1B3A2D] hover:bg-[#F7F3EB]"
+                aria-label="تقليل عدد القاعات"
+              >−</button>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={form.identicalUnitsCount}
+                onChange={event => update('identicalUnitsCount', String(Math.max(1, Math.min(100, Number(event.target.value) || 1))))}
+                className="h-11 min-w-0 flex-1 border-x border-[#E8E1D3] text-center font-extrabold outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => update('identicalUnitsCount', String(Math.min(100, Number(form.identicalUnitsCount || 1) + 1)))}
+                className="grid h-11 w-12 place-items-center text-xl font-bold text-[#1B3A2D] hover:bg-[#F7F3EB]"
+                aria-label="زيادة عدد القاعات"
+              >+</button>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {Array.from({ length: Math.min(6, Number(form.identicalUnitsCount) || 1) }, (_, index) => (
+              <span key={index} className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-[#1B3A2D]">قاعة {101 + index}</span>
+            ))}
+            {Number(form.identicalUnitsCount) > 6 && <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-[#9A7424]">+{Number(form.identicalUnitsCount) - 6}</span>}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

@@ -73,7 +73,7 @@ export default async function AdminSpaceNeedsPage({
         {statCards.map(card => (
           <div key={card.label} className="premium-card p-5 animate-in">
             <p className="text-xs font-bold text-[#6B7566]">{card.label}</p>
-            <p className={`mt-2 text-3xl font-extrabold ${card.color}`}>{card.value.toLocaleString('ar-SA')}</p>
+            <p className="mt-2 text-3xl font-extrabold text-[#1B3A2D]">{card.value.toLocaleString('en-US')}</p>
           </div>
         ))}
       </div>
@@ -127,12 +127,12 @@ export default async function AdminSpaceNeedsPage({
                           {request.city}{request.district ? `، ${request.district}` : ''}
                         </h2>
                         <p className="mt-1 text-sm text-[#6B7566]">
-                          أرسل في {new Date(request.createdAt).toLocaleDateString('ar-SA')}
+                          أرسل في {new Date(request.createdAt).toLocaleDateString('en-US')}
                         </p>
                       </div>
                       <div className="rounded-2xl border border-[#E8E3D8] bg-[#FBFAF7] px-4 py-3 text-center">
                         <p className="text-[11px] font-bold text-[#6B7566]">السعة المطلوبة</p>
-                        <p className="mt-1 text-2xl font-extrabold text-[#1B3A2D]">{request.capacity.toLocaleString('ar-SA')}</p>
+                        <p className="mt-1 text-2xl font-extrabold text-[#1B3A2D]">{request.capacity.toLocaleString('en-US')}</p>
                       </div>
                     </div>
 

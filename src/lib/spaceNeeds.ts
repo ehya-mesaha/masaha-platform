@@ -16,8 +16,8 @@ export function getSpaceNeedStatusMeta(status: string) {
 }
 
 export function formatBudgetRange(min?: number | null, max?: number | null) {
-  if (min && max) return `${min.toLocaleString('ar-SA')} - ${max.toLocaleString('ar-SA')} ر.س / ساعة`
-  if (min) return `من ${min.toLocaleString('ar-SA')} ر.س / ساعة`
-  if (max) return `حتى ${max.toLocaleString('ar-SA')} ر.س / ساعة`
+  if (min && max) return `${min.toLocaleString('en-US')} - ${max.toLocaleString('en-US')} ر.س / ساعة`
+  if (min) return `من ${min.toLocaleString('en-US')} ر.س / ساعة`
+  if (max) return `حتى ${max.toLocaleString('en-US')} ر.س / ساعة`
   return 'غير محددة'
 }

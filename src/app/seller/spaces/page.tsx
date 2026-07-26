@@ -1,119 +1,72 @@
+import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
 import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
-import Card from '@/components/ui/Card'
+import { formatNumber } from '@/lib/format'
 
 export default async function SellerSpacesPage() {
   const user = await getCurrentUser()
   if (!user) return null
-
-  let spaces: SpaceType[] = []
-
-  try {
-    spaces = await prisma.space.findMany({
-      where: { sellerId: user.id as string },
-      include: {
-        type: true,
-        images: { take: 1, orderBy: { order: 'asc' } },
-        _count: { select: { bookings: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
-  } catch {
-    // DB not connected
-  }
+  const spaces = await prisma.space.findMany({
+    where: { sellerId: String(user.id) },
+    include: {
+      type: true,
+      images: { take: 1, orderBy: { order: 'asc' } },
+      units: { where: { isActive: true }, select: { id: true } },
+      _count: { select: { bookings: true, privateOccupancies: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
 
   return (
     <div className="dashboard-page">
-      <div className="page-hero mb-6 p-6 animate-in">
+      <header className="page-hero mb-6 p-6">
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-bold text-[#C49A3C] mb-2">إدارة العرض</p>
-            <h1 className="text-2xl font-extrabold text-white">مساحاتي</h1>
-            <p className="text-white/65 text-sm mt-1">تابع حالة النشر والحجوزات لكل مساحة من مكان واحد.</p>
-          </div>
-          <Link
-            href="/seller/spaces/new"
-            className="inline-flex items-center justify-center rounded-xl bg-[#C49A3C] px-5 py-2.5 text-sm font-bold text-[#14201A] transition-transform hover:-translate-y-0.5"
-          >
-            + إضافة مساحة
-          </Link>
+          <div><p className="mb-2 text-xs font-bold text-[#D8B455]">إدارة العرض والجدول</p><h1 className="text-2xl font-extrabold text-white">مساحاتي</h1><p className="mt-2 text-sm text-white/65">أدر الوحدات والحجوزات والإشغال الخاص والإغلاقات المؤقتة لكل مساحة.</p></div>
+          <Link href="/seller/spaces/new" className="rounded-xl bg-[#D8B455] px-5 py-2.5 text-sm font-bold text-[#14201A]">إضافة مساحة</Link>
         </div>
-      </div>
+      </header>
 
-      {spaces.length === 0 ? (
-        <Card>
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏢</div>
-            <h3 className="text-lg font-medium text-gray-700 mb-2">لا توجد مساحات بعد</h3>
-            <p className="text-gray-500 text-sm mb-6">ابدأ بإضافة مساحتك الأولى</p>
-            <Link
-              href="/seller/spaces/new"
-              className="bg-[#1B3A2D] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0F2219] transition-colors"
-            >
-              إضافة مساحة
-            </Link>
-          </div>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-grid">
-          {spaces.map((space) => {
-            const { variant, label } = getSpaceStatusBadge(space.status)
-            return (
-              <Card key={space.id} padding={false} className="overflow-hidden">
-                <div className="flex gap-4 p-4 transition-colors hover:bg-[#FBFAF7]">
-                  <div className="w-28 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100">
-                    {space.images[0]?.url ? (
-                      <img src={space.images[0].url} alt={space.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">🏢</div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 text-sm truncate">{space.name}</h3>
-                      <Badge variant={variant}>{label}</Badge>
-                    </div>
-                    <p className="text-gray-500 text-xs mb-1">{space.type.name} · {space.city}</p>
-                    <p className="text-[#1B3A2D] font-medium text-sm">
-                      {space.price.toLocaleString('ar-SA')} ر.س / {space.pricePeriod === 'day' ? 'يوم' : 'ساعة'}
-                    </p>
-                    <p className="text-gray-400 text-xs mt-1">{space._count.bookings} حجز</p>
-                  </div>
+      {spaces.length === 0 ? <section className="premium-card p-12 text-center">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#EEF3EE] text-[#1B3A2D]"><BuildingIcon /></span>
+        <h2 className="mt-4 text-lg font-extrabold text-[#14201A]">لم تضف أي مساحة بعد</h2>
+        <p className="mt-2 text-sm text-[#6B7566]">ابدأ بإضافة أول مساحة ووحداتها وجدولها الأسبوعي.</p>
+        <Link href="/seller/spaces/new" className="mt-5 inline-flex rounded-xl bg-[#1B3A2D] px-6 py-3 text-sm font-bold text-white">إضافة مساحة</Link>
+      </section> : <div className="grid gap-5 xl:grid-cols-2">
+        {spaces.map((space) => {
+          const badge = getSpaceStatusBadge(space.status)
+          return <article key={space.id} className="premium-card overflow-hidden">
+            <div className="flex gap-4 p-5">
+              <div className="h-28 w-32 shrink-0 overflow-hidden rounded-2xl bg-[#EEF1ED]">
+                {space.images[0]?.url ? <img src={space.images[0].url} alt={space.name} className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center text-[#8B958E]"><BuildingIcon /></span>}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold text-[#C49A3C]">{space.publicRef || 'بانتظار الرقم المرجعي'}</p><h2 className="mt-1 truncate text-lg font-extrabold text-[#14201A]">{space.name}</h2></div><Badge variant={badge.variant}>{badge.label}</Badge></div>
+                <p className="mt-2 text-xs text-[#6B7566]">{space.type.name} · {space.city}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-[#344139]">
+                  <span className="rounded-full bg-[#F7F3EB] px-3 py-1">{formatNumber(space.units.length)} وحدة</span>
+                  <span className="rounded-full bg-[#F7F3EB] px-3 py-1">{formatNumber(space._count.bookings)} حجز</span>
+                  <span className="rounded-full bg-[#F7F3EB] px-3 py-1">{formatNumber(space.price)} ر.س / ساعة</span>
                 </div>
-                <div className="border-t border-[#E8E3D8] px-4 py-3 flex gap-3">
-                  <Link
-                    href={`/seller/spaces/${space.id}`}
-                    className="text-xs text-gray-600 hover:text-[#1B3A2D] font-medium"
-                  >
-                    عرض التفاصيل
-                  </Link>
-                  <span className="text-gray-200">|</span>
-                  <Link
-                    href={`/seller/spaces/${space.id}/edit`}
-                    className="text-xs text-gray-600 hover:text-[#1B3A2D] font-medium"
-                  >
-                    تعديل
-                  </Link>
-                </div>
-              </Card>
-            )
-          })}
-        </div>
-      )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-px border-t border-[#E8E3D8] bg-[#E8E3D8] sm:grid-cols-4">
+              <Action href={`/seller/spaces/${space.id}/edit`} label="تعديل البيانات" icon={<EditIcon />} />
+              <Action href={`/seller/bookings?space=${space.id}`} label="الحجوزات" icon={<CalendarIcon />} />
+              <Action href={`/seller/spaces/${space.id}/occupancy`} label="إشغال خاص" icon={<LockIcon />} />
+              <Action href={`/seller/spaces/${space.id}/closures`} label="إغلاق مؤقت" icon={<PauseIcon />} />
+            </div>
+          </article>
+        })}
+      </div>}
     </div>
   )
 }
 
-type SpaceType = {
-  id: string
-  name: string
-  city: string
-  status: string
-  price: number
-  pricePeriod: string
-  type: { name: string }
-  images: { url: string }[]
-  _count: { bookings: number }
-}
+function Action({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) { return <Link href={href} className="flex items-center justify-center gap-2 bg-white px-3 py-3 text-xs font-bold text-[#344139] hover:bg-[#FBFAF7]">{icon}{label}</Link> }
+const Svg = ({ children }: { children: React.ReactNode }) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+const BuildingIcon = () => <Svg><path d="M4 21V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16M8 7h5M8 11h5M8 15h5M2 21h20" /></Svg>
+const EditIcon = () => <Svg><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" /></Svg>
+const CalendarIcon = () => <Svg><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" /></Svg>
+const LockIcon = () => <Svg><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></Svg>
+const PauseIcon = () => <Svg><path d="M8 5v14M16 5v14" /></Svg>
