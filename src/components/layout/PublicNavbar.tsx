@@ -68,17 +68,18 @@ export default function PublicNavbar() {
 
   return (
     <nav
-      className={`sticky top-0 z-40 transition-all duration-300 ${
+      className={`public-navbar sticky top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/85 backdrop-blur-md border-b border-[#ECE6D8] shadow-[0_4px_20px_-16px_rgba(20,32,26,0.25)]'
+          ? 'is-scrolled bg-white/85 backdrop-blur-md border-b border-[#ECE6D8] shadow-[0_4px_20px_-16px_rgba(20,32,26,0.25)]'
           : 'bg-white/60 backdrop-blur-sm border-b border-transparent'
       }`}
     >
+      <span className="public-navbar-thread" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[68px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#244A3A] to-[#0F2219] flex items-center justify-center shadow-sm">
+          <Link href="/" className="public-brand flex items-center gap-2 group">
+            <div className="public-brand-mark w-9 h-9 rounded-xl bg-gradient-to-br from-[#244A3A] to-[#0F2219] flex items-center justify-center shadow-sm">
               <svg className="w-5 h-5 text-[#C49A3C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
@@ -90,14 +91,14 @@ export default function PublicNavbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="public-nav-links hidden md:flex items-center gap-1">
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`public-nav-link px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive(link.href)
-                    ? 'text-[#1B3A2D] bg-[#1B3A2D]/5'
+                    ? 'is-active text-[#1B3A2D] bg-[#1B3A2D]/5'
                     : 'text-[#4A554D] hover:text-[#1B3A2D] hover:bg-[#1B3A2D]/5'
                 }`}
               >
@@ -107,7 +108,7 @@ export default function PublicNavbar() {
             {!user && (
               <Link
                 href="/auth/register?seller=1"
-                className="px-4 py-2 rounded-lg text-sm font-medium text-[#4A554D] hover:text-[#1B3A2D] hover:bg-[#1B3A2D]/5 transition-all"
+                className="public-nav-link px-4 py-2 rounded-lg text-sm font-medium text-[#4A554D] hover:text-[#1B3A2D] hover:bg-[#1B3A2D]/5 transition-all"
               >
                 {t('navAddSpace')}
               </Link>
@@ -160,7 +161,7 @@ export default function PublicNavbar() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 text-[#1B3A2D] rounded-lg hover:bg-[#1B3A2D]/5"
+            className="public-menu-trigger md:hidden p-2 text-[#1B3A2D] rounded-lg hover:bg-[#1B3A2D]/5"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Menu"
           >
@@ -175,7 +176,7 @@ export default function PublicNavbar() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden border-t border-[#ECE6D8] py-3 flex flex-col gap-1 fade-up">
+          <div className="public-mobile-menu md:hidden border-t border-[#ECE6D8] py-3 flex flex-col gap-1">
             <div className="px-3 pb-2">
               <LanguageToggle className="w-full justify-between" />
             </div>

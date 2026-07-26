@@ -1,4 +1,5 @@
 export const supplementalTranslations: Record<string, string> = {
+  'جاري تحميل الصفحة': 'Loading page',
   'مساحة تناسب': 'A space that fits',
   'احتياجك': 'your needs',
   'قاعات دراسية، مكاتب، قاعات اجتماعات… مصممة لتصل للمكان الأنسب لك.': 'Classrooms, offices, and meeting rooms—designed to connect you with the right space.',
@@ -550,4 +551,7 @@ export const supplementalTranslations: Record<string, string> = {
   'تصميم إعلان بصري للفعالية.': 'Design a visual event poster.',
   'تجهيز ونشر إعلان رقمي موجه.': 'Prepare and publish targeted digital advertising.',
   'خدمة مخصصة حسب احتياجك.': 'A tailored service based on your requirements.',
+  'إحياء مساحة | مساحات تحيي أفكارك': 'Ehya Masaha | Spaces that bring your ideas to life',
+  'اكتشف واحجز مساحات مميزة بالساعة للاجتماعات والتدريب وورش العمل والعمل المشترك في مختلف مدن المملكة.':
+    'Discover and book distinctive spaces by the hour for meetings, training, workshops, and shared work across Saudi Arabia.',
 }

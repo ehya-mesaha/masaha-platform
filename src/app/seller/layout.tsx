@@ -19,7 +19,7 @@ export default async function SellerLayout({ children }: { children: React.React
   }
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className="dashboard-layout flex min-h-screen flex-col lg:flex-row">
       <DashboardSidebar role="SELLER" userName={user.name as string} avatarUrl={avatarUrl} />
       <main className="dashboard-surface flex-1 overflow-auto">
         {children}

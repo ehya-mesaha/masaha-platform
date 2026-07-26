@@ -40,15 +40,15 @@ export default function SpaceCard({
   const fullyAvailable = hasProgram && availableSessions === totalSessions
 
   return (
-    <Link href={`/spaces/${id}`} className="group block overflow-hidden rounded-[14px] border border-[#E4DED1] bg-white shadow-[0_22px_60px_-45px_rgba(15,34,25,.68)] transition-all duration-300 hover:-translate-y-1 hover:border-[#C49A3C]/55 hover:shadow-[0_32px_80px_-48px_rgba(15,34,25,.76)]">
+    <Link href={`/spaces/${id}`} className="space-card group block overflow-hidden rounded-[14px] border border-[#E4DED1] bg-white shadow-[0_22px_60px_-45px_rgba(15,34,25,.68)] transition-all duration-300 hover:-translate-y-1 hover:border-[#C49A3C]/55 hover:shadow-[0_32px_80px_-48px_rgba(15,34,25,.76)]">
       {/* Image */}
-      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[#F7F3EB] to-[#ECE6D8]">
+      <div className="space-card-media relative h-56 overflow-hidden bg-gradient-to-br from-[#F7F3EB] to-[#ECE6D8]">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+            className="space-card-image w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -90,7 +90,7 @@ export default function SpaceCard({
       </div>
 
       {/* Content */}
-      <div className="bg-[linear-gradient(180deg,#fff_0%,#fffdf9_100%)] p-5">
+      <div className="space-card-content bg-[linear-gradient(180deg,#fff_0%,#fffdf9_100%)] p-5">
         <h3 className="font-display font-extrabold text-[#14201A] text-lg mb-1.5 line-clamp-1 group-hover:text-[#1B3A2D]">
           {name}
         </h3>
@@ -122,7 +122,7 @@ export default function SpaceCard({
               لكل {priceLabel}
             </div>
           </div>
-          <div className="flex min-h-9 items-center gap-2 rounded-lg border border-[#DED6C7] px-3 text-xs font-bold text-[#1B3A2D] transition-all duration-300 group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white">
+          <div className="space-card-cta flex min-h-9 items-center gap-2 rounded-lg border border-[#DED6C7] px-3 text-xs font-bold text-[#1B3A2D] transition-all duration-300 group-hover:border-[#1B3A2D] group-hover:bg-[#1B3A2D] group-hover:text-white">
             {hasProgram ? 'حجز هذا البرنامج' : 'عرض المساحة'}
             <svg className="h-4 w-4 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />

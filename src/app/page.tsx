@@ -48,6 +48,12 @@ export default async function HomePage() {
       <section className="home-hero-premium relative overflow-hidden text-white">
         <div className="home-hero-photo absolute inset-0 -z-20" aria-hidden="true" />
         <div className="home-hero-overlay absolute inset-0 -z-10" aria-hidden="true" />
+        <div className="home-hero-architecture" aria-hidden="true">
+          <span className="hero-architecture-frame" />
+          <span className="hero-architecture-axis" />
+          <span className="hero-architecture-orbit" />
+        </div>
+        <div className="home-hero-index" aria-hidden="true"><span>01</span><i /><span>05</span></div>
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#E4C878]/70 to-transparent" />
 
         <div className="home-hero-content relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

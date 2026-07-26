@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 
-const OPENING_KEY = 'masaha_opening_v1'
+const OPENING_KEY = 'masaha_opening_v3'
 
 type Phase = 'playing' | 'leaving' | 'done'
 
@@ -39,7 +39,7 @@ export default function FirstVisitOpening() {
     document.documentElement.dataset.masahaOpening = 'new'
     document.body.classList.add('masaha-opening-active')
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    finishTimer.current = window.setTimeout(finish, reducedMotion ? 900 : 4300)
+    finishTimer.current = window.setTimeout(finish, reducedMotion ? 700 : 3600)
 
     return () => {
       if (finishTimer.current) window.clearTimeout(finishTimer.current)
@@ -59,10 +59,17 @@ export default function FirstVisitOpening() {
       aria-modal="true"
       aria-label={isEnglish ? 'Welcome to Ehya Masaha' : 'مرحباً بك في إحياء مساحة'}
       data-no-translate="true"
+      data-testid="masaha-opening"
     >
+      <div className="opening-curtain opening-curtain-start" aria-hidden="true" />
+      <div className="opening-curtain opening-curtain-end" aria-hidden="true" />
       <div className="opening-photo" aria-hidden="true" />
       <div className="opening-shade" aria-hidden="true" />
       <div className="opening-grid" aria-hidden="true" />
+      <div className="opening-coordinates" aria-hidden="true">
+        <span>26.2172° N</span>
+        <span>50.1971° E</span>
+      </div>
 
       <button type="button" onClick={finish} className="opening-skip">
         {isEnglish ? 'Skip intro' : 'تخطي المقدمة'}
@@ -72,10 +79,14 @@ export default function FirstVisitOpening() {
       </button>
 
       <div className="opening-stage">
+        <div className="opening-index" aria-hidden="true">
+          <span>01</span><i /><span>03</span>
+        </div>
         <div className="opening-room" aria-hidden="true">
           <span className="opening-line opening-line-top" />
           <span className="opening-line opening-line-side" />
           <span className="opening-line opening-line-floor" />
+          <span className="opening-line opening-line-end" />
           <span className="opening-door">
             <span className="opening-door-light" />
           </span>

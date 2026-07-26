@@ -131,7 +131,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
   return (
     <>
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#1B3A2D]/10 bg-[#1B3A2D] px-4 py-3 lg:hidden">
+      <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between border-b border-[#1B3A2D]/10 bg-[#1B3A2D] px-4 py-3 lg:hidden">
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
@@ -162,7 +162,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
       )}
 
       <aside
-        className={`fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden border-white/[0.06] bg-[#10271E] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
+        className={`dashboard-sidebar fixed inset-y-0 z-50 flex w-72 flex-col overflow-hidden border-white/[0.06] bg-[#10271E] transition-transform duration-300 ease-out lg:relative lg:z-auto lg:min-h-screen lg:w-64 lg:!translate-x-0 ${
           dir === 'rtl' ? 'right-0' : 'left-0'
         } ${
           open ? 'translate-x-0' : dir === 'rtl' ? 'max-lg:translate-x-full' : 'max-lg:-translate-x-full'
@@ -209,7 +209,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
         </Link>
       </div>
 
-      <nav className="relative flex flex-1 flex-col gap-0.5 px-3 py-5">
+      <nav className="dashboard-nav relative flex flex-1 flex-col gap-0.5 px-3 py-5">
         <div className="mb-3 px-3">
           <LanguageToggle className="w-full justify-between" compact={false} />
         </div>
@@ -226,9 +226,9 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+              className={`dashboard-nav-link relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-white text-[#1B3A2D] shadow-sm'
+                  ? 'is-active bg-white text-[#1B3A2D] shadow-sm'
                   : 'text-white/70 hover:bg-white/[0.06] hover:text-white'
               }`}
             >
@@ -243,11 +243,7 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
                   {unreadConversations > 9 ? '9+' : unreadConversations}
                 </span>
               )}
-              {isActive && (
-                <svg className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} h-3.5 w-3.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              )}
+              {isActive && <span className={`${isConversations && unreadConversations > 0 ? '' : 'ms-auto'} dashboard-nav-marker`} aria-hidden="true" />}
             </Link>
           )
         })}

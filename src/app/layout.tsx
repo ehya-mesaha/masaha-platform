@@ -1,20 +1,54 @@
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import Script from 'next/script'
 import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
+import ExperienceLayer from '@/components/layout/ExperienceLayer'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies()
+  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()])
   const isEnglish = cookieStore.get('masaha_locale')?.value === 'en'
+  const host =
+    headerStore.get('x-forwarded-host') ??
+    headerStore.get('host') ??
+    'masaha-project.vercel.app'
+  const protocol =
+    headerStore.get('x-forwarded-proto') ??
+    (host.includes('localhost') ? 'http' : 'https')
+  const metadataBase = new URL(`${protocol}://${host}`)
+  const title = isEnglish
+    ? 'Ehya Masaha | Spaces that bring your ideas to life'
+    : 'إحياء مساحة | مساحات تحيي أفكارك'
+  const description = isEnglish
+    ? 'Discover and book distinctive spaces by the hour for meetings, training, workshops, and shared work across Saudi Arabia.'
+    : 'اكتشف واحجز مساحات مميزة بالساعة للاجتماعات والتدريب وورش العمل والعمل المشترك في مختلف مدن المملكة.'
+
   return {
-    title: isEnglish
-      ? 'Ehya Masaha | Trusted Spaces for Programs and Events'
-      : 'إحياء مساحة | مساحات موثوقة لبرامجك وفعالياتك',
-    description: isEnglish
-      ? 'Find the right rooms and spaces and book them instantly for your educational programs and events.'
-      : 'ابحث عن القاعات والمساحات المناسبة واحجزها مباشرة لبرامجك التعليمية وفعالياتك.',
+    metadataBase,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      locale: isEnglish ? 'en_US' : 'ar_SA',
+      siteName: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
+      images: [
+        {
+          url: '/og.png',
+          width: 1731,
+          height: 909,
+          alt: 'Ehya Masaha — Space for what comes next',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og.png'],
+    },
   }
 }
 
@@ -26,10 +60,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} dir={dir}>
       <Script id="masaha-opening-state" strategy="beforeInteractive">
-        {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v1')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
+        {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v3')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
       </Script>
       <body>
         <LanguageProvider initialLocale={locale}>
+          <ExperienceLayer />
           <FirstVisitOpening />
           {children}
         </LanguageProvider>
