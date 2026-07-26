@@ -70,6 +70,10 @@ export default function NewSpacePage() {
     setFurthestStep(current => Math.min(current, step))
   }
 
+  useEffect(() => {
+    if (error && !getStepError(step, form)) setError('')
+  }, [form, step, error])
+
   function next() {
     if (step === 1 && categoriesLoading) {
       setError('انتظر حتى يتم تحميل التصنيفات')

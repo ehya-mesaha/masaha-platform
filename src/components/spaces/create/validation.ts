@@ -27,7 +27,6 @@ export function getStepError(step: number, form: SpaceFormData): string {
     if (!form.city) return 'اختر المدينة.'
     if (!form.district.trim()) return 'أدخل اسم الحي.'
     if (!form.streetName.trim()) return 'أدخل اسم الشارع.'
-    if (!form.buildingNumber.trim()) return 'أدخل رقم المبنى.'
     if (!/^\d{5}$/.test(form.postalCode.trim())) return 'أدخل رمزًا بريديًا صحيحًا من 5 أرقام.'
     const latitude = Number(form.latitude)
     const longitude = Number(form.longitude)

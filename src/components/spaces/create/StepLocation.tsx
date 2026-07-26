@@ -120,7 +120,7 @@ export default function StepLocation({ form, update }: StepProps) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">رقم المبنى <Required /></label>
+              <label className="block text-sm font-medium text-[#4A554D] mb-1.5">رقم المبنى (اختياري)</label>
               <input
                 value={form.buildingNumber}
                 onChange={e => update('buildingNumber', e.target.value)}
