@@ -9,8 +9,8 @@ import Link from 'next/link'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
-  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل للمبلغ عند إلغاء الحجز', color: 'bg-green-50 text-green-700 border-green-200' },
-  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% من مبلغ الحجز', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل عند الإلغاء قبل موعد الحجز بـ24 ساعة', color: 'bg-green-50 text-green-700 border-green-200' },
+  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% عند الإلغاء قبل موعد الحجز بـ5 أيام', color: 'bg-amber-50 text-amber-700 border-amber-200' },
   STRICT: { name: 'صارمة', desc: 'لا يُسترد أي مبلغ عند إلغاء الحجز', color: 'bg-red-50 text-red-700 border-red-200' },
 }
 

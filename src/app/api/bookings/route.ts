@@ -4,7 +4,18 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { durationHours, generateProgramSessions, getSpaceAvailability, toSession } from '@/lib/availability'
 
-type SelectedService = { configId: string; quantity?: number }
+type SelectedService = {
+  configId: string
+  quantity?: number
+  matrix?: { bwSingle?: number; bwDouble?: number; colorSingle?: number; colorDouble?: number }
+}
+
+const PRINT_MATRIX_LABELS: Record<string, string> = {
+  bwSingle: 'أبيض وأسود - وجه واحد',
+  bwDouble: 'أبيض وأسود - وجهين',
+  colorSingle: 'ملون - وجه واحد',
+  colorDouble: 'ملون - وجهين',
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,8 +74,9 @@ export async function POST(req: NextRequest) {
     const spaceId = typeof body.spaceId === 'string' ? body.spaceId : ''
     const persons = body.persons ? Number(body.persons) : null
     const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : null
+    const requesterIdNumber = typeof body.requesterIdNumber === 'string' ? body.requesterIdNumber.trim().slice(0, 100) : ''
     const selectedServices: SelectedService[] = Array.isArray(body.services) ? body.services : []
-    if (!spaceId || !body.startTime || !body.endTime) {
+    if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber) {
       return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
     }
 
@@ -133,6 +145,24 @@ export async function POST(req: NextRequest) {
       const serviceLines = selectedServices.flatMap(selection => {
         const config = allowedConfigs.get(selection.configId)
         if (!config) return []
+
+        if (config.catalog.pricingType === 'PRINT_MATRIX') {
+          const matrixConfig = (config.config as Record<string, unknown> | null) ?? (config.catalog.defaultConfig as Record<string, unknown> | null) ?? {}
+          const requested = selection.matrix || {}
+          return (['bwSingle', 'bwDouble', 'colorSingle', 'colorDouble'] as const).flatMap(key => {
+            const quantity = Math.max(0, Math.min(999, Number(requested[key]) || 0))
+            const unitPrice = Number(matrixConfig[key]) || 0
+            if (quantity <= 0 || unitPrice <= 0) return []
+            return [{
+              configId: config.id,
+              name: `${config.catalog.name} - ${PRINT_MATRIX_LABELS[key]}`,
+              quantity,
+              unitPrice,
+              lineTotal: roundMoney(unitPrice * quantity),
+            }]
+          })
+        }
+
         const quantity = Math.max(1, Math.min(999, Number(selection.quantity) || 1))
         const unitPrice = config.price ?? config.catalog.defaultPrice ?? 0
         let effectiveQuantity = quantity
@@ -181,6 +211,7 @@ export async function POST(req: NextRequest) {
             endTime: allocation.session.endAt,
             persons,
             notes,
+            requesterIdNumber,
             status: 'CONFIRMED',
             totalHours: sessionHours,
             basePrice: sessionBasePrice,

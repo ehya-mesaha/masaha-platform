@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 import { Cairo } from 'next/font/google'
-import { cookies, headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import Script from 'next/script'
 import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 import ExperienceLayer from '@/components/layout/ExperienceLayer'
+
+const SITE_URL = 'https://ehyamesaha.sa'
+const AR_TITLE = 'إحياء مساحة | لإحياء المساحات غير المستغلة'
+const EN_TITLE = 'Ehya Masaha | Reviving Underutilized Spaces'
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -14,39 +18,55 @@ const cairo = Cairo({
 })
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()])
+  const cookieStore = await cookies()
   const isEnglish = cookieStore.get('masaha_locale')?.value === 'en'
-  const host =
-    headerStore.get('x-forwarded-host') ??
-    headerStore.get('host') ??
-    'masaha-project.vercel.app'
-  const protocol =
-    headerStore.get('x-forwarded-proto') ??
-    (host.includes('localhost') ? 'http' : 'https')
-  const metadataBase = new URL(`${protocol}://${host}`)
-  const title = isEnglish
-    ? 'Ehya Masaha | Spaces that bring your ideas to life'
-    : 'إحياء مساحة | مساحات تحيي أفكارك'
+  const metadataBase = new URL(SITE_URL)
+  const title = isEnglish ? EN_TITLE : AR_TITLE
   const description = isEnglish
-    ? 'Discover and book distinctive spaces by the hour for meetings, training, workshops, and shared work across Saudi Arabia.'
-    : 'اكتشف واحجز مساحات مميزة بالساعة للاجتماعات والتدريب وورش العمل والعمل المشترك في مختلف مدن المملكة.'
+    ? 'Discover and book trusted underutilized spaces by the hour for meetings, training, workshops, classrooms, and shared work across Saudi Arabia.'
+    : 'منصة سعودية لإحياء المساحات غير المستغلة وربط أصحاب المساحات بالباحثين عن قاعات التدريب والاجتماعات والفصول ومساحات العمل للحجز بالساعة.'
 
   return {
     metadataBase,
+    applicationName: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
     title,
     description,
+    keywords: isEnglish
+      ? ['space rental Saudi Arabia', 'hourly space booking', 'training rooms', 'meeting rooms', 'classrooms', 'underutilized spaces', 'Ehya Masaha']
+      : ['إحياء مساحة', 'تأجير مساحات', 'حجز قاعات بالساعة', 'قاعات تدريب', 'قاعات اجتماعات', 'فصول دراسية', 'مساحات غير مستغلة', 'مساحات عمل'],
+    authors: [{ name: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة', url: SITE_URL }],
+    creator: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
+    publisher: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
+    alternates: {
+      canonical: '/',
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
+    category: 'marketplace',
+    formatDetection: { email: false, address: false, telephone: false },
     openGraph: {
       title,
       description,
       type: 'website',
+      url: '/',
       locale: isEnglish ? 'en_US' : 'ar_SA',
+      alternateLocale: isEnglish ? ['ar_SA'] : ['en_US'],
       siteName: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
       images: [
         {
           url: '/og.png',
           width: 1731,
           height: 909,
-          alt: 'Ehya Masaha — Space for what comes next',
+          alt: isEnglish ? EN_TITLE : AR_TITLE,
         },
       ],
     },
@@ -63,13 +83,51 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = await cookies()
   const locale = cookieStore.get('masaha_locale')?.value === 'en' ? 'en' : 'ar'
   const dir = locale === 'en' ? 'ltr' : 'rtl'
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_URL}/#organization`,
+        name: 'إحياء مساحة',
+        alternateName: 'Ehya Masaha',
+        url: SITE_URL,
+        logo: `${SITE_URL}/brand/logo-stacked-green.png`,
+        email: 'info@ehyamesaha.sa',
+        telephone: '+966504913274',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'الخبر',
+          addressCountry: 'SA',
+        },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: 'إحياء مساحة',
+        alternateName: 'Ehya Masaha',
+        inLanguage: ['ar-SA', 'en-SA'],
+        publisher: { '@id': `${SITE_URL}/#organization` },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${SITE_URL}/spaces?city={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
+  }
 
   return (
-    <html lang={locale} dir={dir} className={cairo.variable}>
-      <Script id="masaha-opening-state" strategy="beforeInteractive">
-        {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v3')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
-      </Script>
+    <html lang={locale} dir={dir} className={cairo.variable} suppressHydrationWarning>
       <body>
+        <Script id="masaha-opening-state" strategy="beforeInteractive">
+          {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v3')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
+        </Script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
+        />
         <LanguageProvider initialLocale={locale}>
           <ExperienceLayer />
           <FirstVisitOpening />

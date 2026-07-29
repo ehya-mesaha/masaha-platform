@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { getStepError } from '@/components/spaces/create/validation'
 import type { SpaceFormData } from '@/components/spaces/create/types'
+import type { Prisma } from '@/generated/prisma'
 
 const APPROVED_OWNER_SERVICES = new Set([
   'المطبوعات',
@@ -165,11 +166,14 @@ export async function POST(req: NextRequest) {
         serviceConfigs: enabledServices.length
           ? {
               create: enabledServices
-                .map((service: { catalogId: string; price: string; details: string }) => ({
+                .map((service: { catalogId: string; price: string; details: string; config?: Record<string, unknown> }) => ({
                   catalogId: service.catalogId,
                   isEnabled: true,
                   price: service.price === '' ? null : Number(service.price),
                   details: service.details || null,
+                  config: service.config && Object.keys(service.config).length
+                    ? service.config as Prisma.InputJsonValue
+                    : undefined,
                 })),
             }
           : undefined,

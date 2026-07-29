@@ -34,7 +34,9 @@ function countSessions(startDate: string, endDate: string, weekdays: number[]) {
   return count
 }
 
-export default function RecurringSearchForm() {
+type SearchOption = { id: string; name: string }
+
+export default function RecurringSearchForm({ types, cities }: { types: SearchOption[]; cities: SearchOption[] }) {
   const router = useRouter()
   const { locale } = useLanguage()
   const isEnglish = locale === 'en'
@@ -78,7 +80,9 @@ export default function RecurringSearchForm() {
     query.set('mode', mode)
     if (mode === 'program') query.set('fullyAvailable', '1')
     if (city) query.set('city', city)
-    if (type) query.set('type', type)
+    const selectedType = types.find(option => normalize(option.name) === normalize(type))
+    if (selectedType) query.set('typeId', selectedType.id)
+    else if (type) query.set('type', type)
     if (capacity) query.set('capacity', capacity)
     if (startDate) query.set(mode === 'program' ? 'startDate' : 'date', startDate)
     if (endDate && mode === 'program') query.set('endDate', endDate)
@@ -95,7 +99,7 @@ export default function RecurringSearchForm() {
   })
 
   return (
-    <div className="mt-9 max-w-5xl overflow-hidden rounded-2xl border border-white/35 bg-white text-[#1B1B1B] shadow-[0_28px_70px_-32px_rgba(0,0,0,.85)]">
+    <div className="home-search-card mt-9 max-w-5xl overflow-hidden rounded-2xl border border-white/35 bg-white text-[#1B1B1B] shadow-[0_28px_70px_-32px_rgba(0,0,0,.85)]">
       <div className="flex border-b border-[#D8D1C7] bg-[#FAF8F3] p-1.5">
         <button
           type="button"
@@ -115,10 +119,16 @@ export default function RecurringSearchForm() {
 
       <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-3">
         <Field label={isEnglish ? 'City or district' : 'المدينة أو الحي'}>
-          <input value={city} onChange={event => setCity(event.target.value)} placeholder={isEnglish ? 'Example: Al Khobar, Al Aqrabiyah' : 'مثال: الخبر، العقربية'} className="program-field" />
+          <input list="home-city-options" value={city} onChange={event => setCity(event.target.value)} autoComplete="off" placeholder={isEnglish ? 'Choose a city or enter a district' : 'اختر مدينة أو اكتب الحي'} className="program-field" />
+          <datalist id="home-city-options">
+            {cities.map(option => <option key={option.id} value={option.name} />)}
+          </datalist>
         </Field>
         <Field label={isEnglish ? 'Space type' : 'نوع المساحة'}>
-          <input value={type} onChange={event => setType(event.target.value)} placeholder={isEnglish ? 'Classroom, office, meeting hall' : 'قاعة دراسية، مكتب، قاعة اجتماعات'} className="program-field" />
+          <input list="home-space-type-options" value={type} onChange={event => setType(event.target.value)} autoComplete="off" placeholder={isEnglish ? 'Choose a space type' : 'اختر نوع المساحة'} className="program-field" />
+          <datalist id="home-space-type-options">
+            {types.map(option => <option key={option.id} value={option.name} />)}
+          </datalist>
         </Field>
         <Field label={isEnglish ? 'Number of people' : 'عدد الأشخاص'}>
           <input value={capacity} onChange={event => setCapacity(event.target.value)} type="number" inputMode="numeric" min="1" placeholder="20" className="program-field" dir="ltr" />
@@ -185,6 +195,16 @@ export default function RecurringSearchForm() {
       </div>
     </div>
   )
+}
+
+function normalize(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase('ar')
+    .normalize('NFD')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/[إأآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

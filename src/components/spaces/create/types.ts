@@ -33,6 +33,13 @@ export type SpaceFormData = {
   rules: RuleItem[]
 }
 
+export type PrintMatrixConfig = {
+  bwSingle?: number
+  bwDouble?: number
+  colorSingle?: number
+  colorDouble?: number
+}
+
 export type ServiceItem = {
   catalogId: string
   name: string
@@ -42,6 +49,7 @@ export type ServiceItem = {
   category: string
   isEnabled: boolean
   details: string
+  config: PrintMatrixConfig
 }
 
 export type PricingTierItem = { minHours: string; discountPercent: string }
@@ -52,6 +60,7 @@ export type ServiceCatalogItem = {
   category: string
   pricingType: string
   defaultPrice: number | null
+  defaultConfig: PrintMatrixConfig | null
 }
 
 export type WorkingHoursItem = {
@@ -67,12 +76,14 @@ export type RuleItem = {
 }
 
 export type SpaceType = { id: string; name: string }
+export type City = { id: string; name: string }
 export type Amenity = { id: string; name: string; icon: string | null; category: string | null }
 
 export type StepProps = {
   form: SpaceFormData
   update: (field: string, value: unknown) => void
   types?: SpaceType[]
+  cities?: City[]
   amenities?: Amenity[]
   serviceCatalog?: ServiceCatalogItem[]
   categoriesLoading?: boolean

@@ -517,6 +517,17 @@ html[dir="rtl"] .home-hero-overlay {
   animation: softScale 0.7s cubic-bezier(.2,.8,.2,1) both;
 }
 
+.category-link,
+.space-card,
+.space-detail-section,
+.home-proof-item,
+.home-owner-cta,
+.dashboard-page > section,
+.dashboard-page > article,
+[data-reveal] {
+  animation: softScale .68s cubic-bezier(.2,.8,.2,1) both;
+}
+
 .hover-lift {
   transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, background-color 0.28s ease;
 }
@@ -1158,6 +1169,21 @@ html[dir="rtl"] .auth-visual::after {
   }
 }
 
+/* Keep the mobile search and proof rail in the document flow. The desktop rail
+   is intentionally pinned to the hero edge, but that would cover the final
+   search controls once the form stacks vertically on narrow screens. */
+@media (max-width: 767px) {
+  .home-hero-premium > .home-proof-rail {
+    position: relative !important;
+    inset: auto !important;
+  }
+
+  .home-hero-premium,
+  .home-hero-premium .home-hero-content {
+    min-height: 0;
+  }
+}
+
 /* Launch hardening: filters, seller wizard and admin operations */
 .spaces-filter-panel.premium-card {
   position: sticky;
@@ -1198,6 +1224,10 @@ html[dir="rtl"] .auth-visual::after {
   z-index: 5;
   flex: none;
   box-shadow: 0 -14px 30px -28px rgba(9, 44, 39, .75);
+}
+
+.spaces-filter-mobile-toggle {
+  display: none;
 }
 
 .space-wizard-page {
@@ -1289,12 +1319,45 @@ html[dir="rtl"] .auth-visual::after {
   .filter-apply-bar {
     position: static;
   }
+
+  .spaces-filter-mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    margin-inline-start: auto;
+    border: 1px solid #D8D1C7;
+    border-radius: .65rem;
+    background: #F5F1E8;
+    padding: .45rem .7rem;
+    color: #0E3B34;
+    font-size: .7rem;
+    font-weight: 800;
+  }
 }
 
 @media (max-width: 767px) {
   .home-hero-premium,
-  .home-hero-content { min-height: calc(100svh - 88px); }
-  .home-hero-content { justify-content: flex-start; padding-top: 4rem; padding-bottom: 7.5rem; }
+  .home-hero-content { min-height: 0; }
+  .home-hero-premium { min-height: auto; }
+  .home-hero-content { justify-content: flex-start; padding-top: 3.25rem; padding-bottom: 2rem; }
+  .home-proof-rail {
+    position: relative;
+    inset: auto;
+  }
+  .home-search-card {
+    width: 100%;
+    margin-top: 1.75rem;
+  }
+  .spaces-filter-panel:not(.is-mobile-open) .spaces-filter-body,
+  .spaces-filter-panel:not(.is-mobile-open) .filter-apply-bar {
+    display: none;
+  }
+  .spaces-filter-panel .spaces-filter-header {
+    padding-block: .9rem;
+  }
+  .spaces-filter-panel .spaces-filter-header > a {
+    display: none;
+  }
   .home-proof-item { min-height: 4.25rem; padding: .75rem .9rem; }
   .home-proof-item:nth-child(3) { display: none; }
   .home-proof-item:nth-child(2) { border-inline-end: 0; }

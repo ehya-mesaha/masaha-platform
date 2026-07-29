@@ -1,0 +1,4 @@
+ALTER TYPE "ServicePricingType" ADD VALUE IF NOT EXISTS 'PRINT_MATRIX';
+
+ALTER TABLE "ServiceCatalog"
+ADD COLUMN IF NOT EXISTS "defaultConfig" JSONB;

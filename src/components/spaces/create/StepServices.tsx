@@ -1,7 +1,14 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ServiceItem, StepProps } from './types'
+import { PrintMatrixConfig, ServiceItem, StepProps } from './types'
+
+const MATRIX_FIELDS: Array<[keyof PrintMatrixConfig, string]> = [
+  ['bwSingle', 'أبيض وأسود - وجه واحد'],
+  ['bwDouble', 'أبيض وأسود - وجهين'],
+  ['colorSingle', 'ملون - وجه واحد'],
+  ['colorDouble', 'ملون - وجهين'],
+]
 
 const TABS = [
   ['الكل', 'all'],
@@ -52,7 +59,7 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
   return (
     <div>
       <h2 className="font-display mb-1 text-xl font-extrabold text-[#1B1B1B]">إضافة خدمات المساحة</h2>
-      <p className="mb-6 text-sm text-[#5F6764]">اختر خدمة واحدة على الأقل من القائمة المعتمدة وحدد سعرها. لا يمكن إضافة خدمات خارج هذه القائمة.</p>
+      <p className="mb-6 text-sm text-[#5F6764]">الخدمات اختيارية بالكامل. فعّل فقط ما تقدمه لمساحتك وحدد سعره؛ ولا يمكن إضافة خدمات خارج القائمة المعتمدة.</p>
 
       <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -91,20 +98,41 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
 
               {service.isEnabled && (
                 <div className="mt-4 space-y-3 border-t border-[#D8D1C7] pt-4">
-                  <label className="block">
-                    <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">السعر (ريال) · {pricingLabel(service.pricingType)}</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={service.price}
-                      onChange={event => change(service.catalogId, { price: event.target.value })}
-                      className="field py-2 text-sm"
-                      dir="ltr"
-                    />
-                  </label>
+                  {service.pricingType === 'PRINT_MATRIX' ? (
+                    <div>
+                      <span className="mb-1.5 block text-[11px] font-bold text-[#5F6764]">أسعار الطباعة (ريال لكل 10 صفحات) · حدّد سعرك الخاص لكل نوع</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {MATRIX_FIELDS.map(([key, label]) => (
+                          <label key={key} className="block">
+                            <span className="mb-1 block text-[10px] text-[#5F6764]">{label}</span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={service.config?.[key] ?? ''}
+                              onChange={event => change(service.catalogId, { config: { ...service.config, [key]: Number(event.target.value) || 0 } })}
+                              className="field py-2 text-sm"
+                              dir="ltr"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="block">
+                      <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">السعر (ريال) · {pricingLabel(service.pricingType)}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={service.price}
+                        onChange={event => change(service.catalogId, { price: event.target.value })}
+                        className="field py-2 text-sm"
+                        dir="ltr"
+                      />
+                    </label>
+                  )}
                   {(service.name === 'المطبوعات' || service.name === 'ضيافة خفيفة') && (
                     <label className="block">
-                      <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">تفاصيل الخدمة</span>
+                      <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">{service.name === 'المطبوعات' ? 'رقم التواصل وتفاصيل أسعار الطباعة' : 'تفاصيل الخدمة'}</span>
                       <textarea
                         rows={2}
                         value={service.details}
@@ -131,6 +159,7 @@ function pricingLabel(type: string) {
     PER_HOUR: 'بالساعة',
     PER_ITEM: 'للقطعة',
     PER_TEN_PAGES: 'لكل 10 صفحات',
+    PRINT_MATRIX: 'مصفوفة طباعة',
   }
   return labels[type] || 'حسب الخدمة'
 }

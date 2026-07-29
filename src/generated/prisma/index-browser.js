@@ -159,6 +159,15 @@ exports.Prisma.SpaceTypeScalarFieldEnum = {
   name: 'name'
 };
 
+exports.Prisma.CityScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.AmenityScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -289,6 +298,7 @@ exports.Prisma.ServiceCatalogScalarFieldEnum = {
   category: 'category',
   pricingType: 'pricingType',
   defaultPrice: 'defaultPrice',
+  defaultConfig: 'defaultConfig',
   isActive: 'isActive',
   sortOrder: 'sortOrder',
   createdAt: 'createdAt',
@@ -321,6 +331,7 @@ exports.Prisma.BookingScalarFieldEnum = {
   endTime: 'endTime',
   persons: 'persons',
   notes: 'notes',
+  requesterIdNumber: 'requesterIdNumber',
   status: 'status',
   sellerNote: 'sellerNote',
   totalHours: 'totalHours',
@@ -429,6 +440,7 @@ exports.Prisma.SellerApplicationScalarFieldEnum = {
   schoolName: 'schoolName',
   branchName: 'branchName',
   commercialRegisterNo: 'commercialRegisterNo',
+  nationalIdNumber: 'nationalIdNumber',
   multipleOwners: 'multipleOwners',
   powerOfAttorneyNumber: 'powerOfAttorneyNumber',
   brokerageContractNo: 'brokerageContractNo',
@@ -591,6 +603,7 @@ exports.ServicePricingType = exports.$Enums.ServicePricingType = {
   PER_HOUR: 'PER_HOUR',
   PER_ITEM: 'PER_ITEM',
   PER_TEN_PAGES: 'PER_TEN_PAGES',
+  PRINT_MATRIX: 'PRINT_MATRIX',
   CUSTOM: 'CUSTOM'
 };
 
@@ -642,6 +655,7 @@ exports.Prisma.ModelName = {
   AdminAuditLog: 'AdminAuditLog',
   UserDocument: 'UserDocument',
   SpaceType: 'SpaceType',
+  City: 'City',
   Amenity: 'Amenity',
   Space: 'Space',
   SchoolOrganization: 'SchoolOrganization',

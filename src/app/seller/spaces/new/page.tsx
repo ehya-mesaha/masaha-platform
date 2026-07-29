@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { SpaceFormData, SpaceType, Amenity, ServiceCatalogItem, getInitialForm } from '@/components/spaces/create/types'
+import { SpaceFormData, SpaceType, City, Amenity, ServiceCatalogItem, getInitialForm } from '@/components/spaces/create/types'
 import StepIndicator from '@/components/spaces/create/StepIndicator'
 import StepBasicInfo from '@/components/spaces/create/StepBasicInfo'
 import StepLocation from '@/components/spaces/create/StepLocation'
@@ -22,6 +22,7 @@ export default function NewSpacePage() {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(() => new Set())
   const [form, setForm] = useState<SpaceFormData>(getInitialForm)
   const [types, setTypes] = useState<SpaceType[]>([])
+  const [cities, setCities] = useState<City[]>([])
   const [amenities, setAmenities] = useState<Amenity[]>([])
   const [serviceCatalog, setServiceCatalog] = useState<ServiceCatalogItem[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
@@ -38,6 +39,7 @@ export default function NewSpacePage() {
       })
       .then(data => {
         setTypes(data.types || [])
+        setCities(data.cities || [])
         setAmenities(data.amenities || [])
         const catalog: ServiceCatalogItem[] = data.ownerServices || []
         setServiceCatalog(catalog)
@@ -52,6 +54,7 @@ export default function NewSpacePage() {
             category: service.category,
             isEnabled: false,
             details: '',
+            config: service.defaultConfig || {},
           })),
         })
         setCategoriesError('')
@@ -127,7 +130,7 @@ export default function NewSpacePage() {
     }
   }
 
-  const stepProps = { form, update, types, amenities, serviceCatalog, categoriesLoading, categoriesError }
+  const stepProps = { form, update, types, cities, amenities, serviceCatalog, categoriesLoading, categoriesError }
   const progress = Math.round(((step - 1) / 8) * 100)
 
   const StepComponent = [

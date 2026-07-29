@@ -11,7 +11,7 @@ export default function SellerApplicationPage() {
   const router = useRouter()
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '', schoolName: '', branchName: '',
-    commercialRegisterNo: '', multipleOwners: false, powerOfAttorneyNumber: '',
+    commercialRegisterNo: '', nationalIdNumber: '', multipleOwners: false, powerOfAttorneyNumber: '',
     brokerageContractNo: '', consentAccepted: false,
   })
   const [documents, setDocuments] = useState<{ type: DocType; fileUrl: string }[]>([])
@@ -80,27 +80,28 @@ export default function SellerApplicationPage() {
               <Field label="اسم المدرسة أو الجهة" value={form.schoolName} set={(value) => setForm({ ...form, schoolName: value })} />
               <Field label="اسم الفرع (اختياري)" value={form.branchName} set={(value) => setForm({ ...form, branchName: value })} />
               <Field label="رقم السجل التجاري" value={form.commercialRegisterNo} set={(value) => setForm({ ...form, commercialRegisterNo: value })} dir="ltr" />
-              <Field label="رقم عقد الوساطة (إن وجد)" value={form.brokerageContractNo} set={(value) => setForm({ ...form, brokerageContractNo: value })} dir="ltr" required={false} />
+              <Field label="رقم الهوية الوطنية" value={form.nationalIdNumber} set={(value) => setForm({ ...form, nationalIdNumber: value })} dir="ltr" />
+              <Field label="رقم عقد الوساطة (اختياري)" value={form.brokerageContractNo} set={(value) => setForm({ ...form, brokerageContractNo: value })} dir="ltr" required={false} />
             </div>
             <label className="mt-4 flex items-center gap-3 rounded-xl bg-[#F5F1E8] p-4 text-sm font-bold text-[#33423F]">
               <input type="checkbox" checked={form.multipleOwners} onChange={(event) => setForm({ ...form, multipleOwners: event.target.checked })} />
               العقار مملوك لأكثر من شخص
             </label>
-            {form.multipleOwners && <div className="mt-4"><Field label="رقم الوكالة" value={form.powerOfAttorneyNumber} set={(value) => setForm({ ...form, powerOfAttorneyNumber: value })} dir="ltr" /></div>}
+            {form.multipleOwners && <div className="mt-4"><Field label="رقم الوكالة (اختياري)" value={form.powerOfAttorneyNumber} set={(value) => setForm({ ...form, powerOfAttorneyNumber: value })} dir="ltr" required={false} /></div>}
           </Section>
 
           <Section title="3. المستندات">
             <p className="mb-4 text-sm text-[#5F6764]">PDF أو صورة واضحة. تحفظ المستندات للمراجعة الإدارية فقط.</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Upload label="الهوية الوطنية" type="NATIONAL_ID" required uploaded={documents.some((item) => item.type === 'NATIONAL_ID')} uploading={uploading} onFile={upload} />
-              <Upload label="السجل التجاري" type="COMMERCIAL_REGISTER" required uploaded={documents.some((item) => item.type === 'COMMERCIAL_REGISTER')} uploading={uploading} onFile={upload} />
-              <Upload label="صك الملكية أو ما يثبت الحق" type="TITLE_DEED" required uploaded={documents.some((item) => item.type === 'TITLE_DEED')} uploading={uploading} onFile={upload} />
-              {form.multipleOwners && <Upload label="الوكالة الشرعية" type="POWER_OF_ATTORNEY" required uploaded={documents.some((item) => item.type === 'POWER_OF_ATTORNEY')} uploading={uploading} onFile={upload} />}
+              <Upload label="الهوية الوطنية (اختياري)" type="NATIONAL_ID" required={false} uploaded={documents.some((item) => item.type === 'NATIONAL_ID')} uploading={uploading} onFile={upload} />
+              <Upload label="السجل التجاري (اختياري)" type="COMMERCIAL_REGISTER" required={false} uploaded={documents.some((item) => item.type === 'COMMERCIAL_REGISTER')} uploading={uploading} onFile={upload} />
+              <Upload label="صك الملكية أو ما يثبت الحق (اختياري)" type="TITLE_DEED" required={false} uploaded={documents.some((item) => item.type === 'TITLE_DEED')} uploading={uploading} onFile={upload} />
+              {form.multipleOwners && <Upload label="الوكالة الشرعية (اختياري)" type="POWER_OF_ATTORNEY" required={false} uploaded={documents.some((item) => item.type === 'POWER_OF_ATTORNEY')} uploading={uploading} onFile={upload} />}
             </div>
           </Section>
 
           <section className="premium-card p-6">
-            <label className="flex items-start gap-3 text-sm leading-7 text-[#33423F]"><input required className="mt-2" type="checkbox" checked={form.consentAccepted} onChange={(event) => setForm({ ...form, consentAccepted: event.target.checked })} /><span>أقر بصحة البيانات والمستندات، وأوافق على أن تتواصل معي إحياء مساحة لاستكمال المراجعة وعقد الوساطة.</span></label>
+            <label className="flex items-start gap-3 text-sm leading-7 text-[#33423F]"><input required className="mt-2" type="checkbox" checked={form.consentAccepted} onChange={(event) => setForm({ ...form, consentAccepted: event.target.checked })} /><span>أقر بصحة البيانات والمستندات المرفقة، وبأن مقدم الطلب أو معتمد الجهة مخول نظامًا بتمثيل مالك العقار أو مالكه، وأوافق على الشروط والأحكام وسياسة الخصوصية وسياسة الملكية الفكرية، وأوافق على استخدام هذه البيانات لإعداد عقد الوساطة العقارية عبر منصة فال التابعة للهيئة العامة للعقار.</span></label>
             {error && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{error}</p>}
             <button disabled={loading || uploading !== null} className="mt-5 w-full rounded-xl bg-[#0E3B34] px-5 py-3 font-bold text-white disabled:opacity-60">{loading ? 'جاري إرسال الطلب...' : 'إرسال طلب الانضمام'}</button>
             <p className="mt-4 text-center text-xs text-[#5F6764]">لديك حساب؟ <Link href="/auth/login" className="font-bold text-[#0E3B34]">تسجيل الدخول</Link></p>

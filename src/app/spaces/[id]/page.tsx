@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import PublicNavbar from '@/components/layout/PublicNavbar'
@@ -12,13 +12,22 @@ import StartConversationButton from '@/components/chat/StartConversationButton'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
-  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل للمبلغ عند إلغاء الحجز', color: 'bg-green-50 text-green-700 border-green-200' },
-  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% من مبلغ الحجز', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  FLEXIBLE: { name: 'مرنة', desc: 'استرداد كامل عند الإلغاء قبل موعد الحجز بـ24 ساعة', color: 'bg-green-50 text-green-700 border-green-200' },
+  MODERATE: { name: 'متوسطة', desc: 'استرداد 50% عند الإلغاء قبل موعد الحجز بـ5 أيام', color: 'bg-amber-50 text-amber-700 border-amber-200' },
   STRICT: { name: 'صارمة', desc: 'لا يُسترد أي مبلغ عند إلغاء الحجز', color: 'bg-red-50 text-red-700 border-red-200' },
 }
 
+const PRINT_MATRIX_FIELDS: Array<[key: 'bwSingle' | 'bwDouble' | 'colorSingle' | 'colorDouble', label: string]> = [
+  ['bwSingle', 'أبيض وأسود - وجه واحد'],
+  ['bwDouble', 'أبيض وأسود - وجهين'],
+  ['colorSingle', 'ملون - وجه واحد'],
+  ['colorDouble', 'ملون - وجهين'],
+]
+
+type PrintMatrixConfig = { bwSingle?: number; bwDouble?: number; colorSingle?: number; colorDouble?: number }
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
-type Service = { id: string; name: string; description: string | null; price: number; pricingType: string }
+type Service = { id: string; name: string; description: string | null; price: number; pricingType: string; config: PrintMatrixConfig | null }
+type PricingTier = { minHours: number; discountPercent: number }
 type Rule = { id: string; rule: string }
 type Review = {
   id: string
@@ -55,6 +64,7 @@ type Space = {
   amenities: { amenity: { id: string; name: string; icon: string | null } }[]
   workingHours: WorkingHour[]
   services: Service[]
+  pricingTiers: PricingTier[]
   rules: Rule[]
   reviews: Review[]
   reviewSummary: { average: number; count: number }
@@ -72,19 +82,47 @@ function RatingStars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'm
   )
 }
 
+function parseHours(start: string, end: string) {
+  if (!start || !end) return 0
+  const [sh, sm] = start.split(':').map(Number)
+  const [eh, em] = end.split(':').map(Number)
+  if ([sh, sm, eh, em].some(n => Number.isNaN(n))) return 0
+  return Math.max(0, (eh * 60 + em - (sh * 60 + sm)) / 60)
+}
+
+type ServiceSelection = { enabled: boolean; quantity: number; matrix: PrintMatrixConfig }
+
+function serviceLineTotal(service: Service, selection: ServiceSelection, persons: number, hours: number) {
+  if (!selection.enabled) return 0
+  if (service.pricingType === 'PRINT_MATRIX') {
+    const config = service.config || {}
+    return PRINT_MATRIX_FIELDS.reduce((sum, [key]) => sum + (Number(config[key]) || 0) * (Number(selection.matrix[key]) || 0), 0)
+  }
+  let quantity = Math.max(1, selection.quantity || 1)
+  if (service.pricingType === 'PER_PERSON') quantity = Math.max(1, persons || quantity)
+  if (service.pricingType === 'PER_HOUR') quantity = quantity * hours
+  return service.price * quantity
+}
+
+const STEP_TITLES = ['بيانات الحجز', 'اختيار الخدمات', 'مراجعة الطلب', 'الدفع والإتمام']
+
 export default function SpaceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [space, setSpace] = useState<Space | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeImage, setActiveImage] = useState(0)
+  const [todayValue] = useState(() => new Date().toISOString().split('T')[0])
+
   const [bookingOpen, setBookingOpen] = useState(false)
-  const [bookingForm, setBookingForm] = useState({ date: '', startTime: '', endTime: '', persons: '', notes: '' })
+  const [bookingStep, setBookingStep] = useState(1)
+  const [bookingForm, setBookingForm] = useState({ requesterIdNumber: '', date: '', startTime: '', endTime: '', persons: '', purpose: '' })
+  const [selectedServices, setSelectedServices] = useState<Record<string, ServiceSelection>>({})
+  const [paymentMethod, setPaymentMethod] = useState('mada')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState(false)
-  const [selectedServices, setSelectedServices] = useState<Record<string, number>>({})
-  const [activeImage, setActiveImage] = useState(0)
-  const [todayValue] = useState(() => new Date().toISOString().split('T')[0])
 
   useEffect(() => {
     fetch(`/api/spaces/${id}`)
@@ -93,24 +131,102 @@ export default function SpaceDetailPage() {
       .catch(() => setLoading(false))
   }, [id])
 
-  async function handleBooking(e: React.FormEvent) {
-    e.preventDefault()
+  function openBooking() {
+    setBookingStep(1)
     setBookingError('')
-    if (!bookingForm.date) {
-      setBookingError('اختر تاريخ الحجز من التقويم')
-      return
+    setBookingOpen(true)
+  }
+
+  function closeBooking() {
+    setBookingOpen(false)
+    setBookingSuccess(false)
+    setBookingError('')
+  }
+
+  function toggleService(serviceId: string) {
+    setSelectedServices(current => {
+      const existing = current[serviceId] || { enabled: false, quantity: 1, matrix: {} }
+      return { ...current, [serviceId]: { ...existing, enabled: !existing.enabled } }
+    })
+  }
+
+  function updateServiceQuantity(serviceId: string, quantity: number) {
+    setSelectedServices(current => ({
+      ...current,
+      [serviceId]: { ...(current[serviceId] || { enabled: true, quantity: 1, matrix: {} }), quantity: Math.max(1, quantity) },
+    }))
+  }
+
+  function updateServiceMatrix(serviceId: string, key: keyof PrintMatrixConfig, value: number) {
+    setSelectedServices(current => {
+      const existing = current[serviceId] || { enabled: true, quantity: 1, matrix: {} }
+      return { ...current, [serviceId]: { ...existing, matrix: { ...existing.matrix, [key]: Math.max(0, value) } } }
+    })
+  }
+
+  const hours = useMemo(() => parseHours(bookingForm.startTime, bookingForm.endTime), [bookingForm.startTime, bookingForm.endTime])
+  const persons = Number(bookingForm.persons) || 0
+
+  const pricing = useMemo(() => {
+    if (!space) return { basePrice: 0, discountPercent: 0, discountAmount: 0, servicesTotal: 0, grandTotal: 0, serviceLines: [] as { name: string; total: number }[] }
+    const basePrice = space.price * hours
+    const tier = [...space.pricingTiers].sort((a, b) => b.minHours - a.minHours).find(t => hours >= t.minHours)
+    const discountPercent = tier?.discountPercent ?? 0
+    const discountAmount = basePrice * discountPercent / 100
+    const serviceLines = space.services
+      .filter(service => selectedServices[service.id]?.enabled)
+      .map(service => ({ name: service.name, total: serviceLineTotal(service, selectedServices[service.id], persons, hours) }))
+      .filter(line => line.total > 0)
+    const servicesTotal = serviceLines.reduce((sum, line) => sum + line.total, 0)
+    const grandTotal = basePrice - discountAmount + servicesTotal
+    return { basePrice, discountPercent, discountAmount, servicesTotal, grandTotal, serviceLines }
+  }, [space, hours, persons, selectedServices])
+
+  function validateStep(step: number): string {
+    if (step === 1) {
+      if (!bookingForm.requesterIdNumber.trim()) return 'أدخل رقم الهوية الوطنية أو السجل التجاري'
+      if (!bookingForm.date) return 'اختر تاريخ الحجز من التقويم'
+      if (!bookingForm.startTime || !bookingForm.endTime) return 'حدد وقت البداية والنهاية'
+      if (hours <= 0) return 'يجب أن يكون وقت النهاية بعد وقت البداية'
     }
+    if (step === 4 && !agreedToTerms) return 'يجب الموافقة على الشروط والأحكام لإتمام الحجز'
+    return ''
+  }
+
+  function goNext() {
+    const error = validateStep(bookingStep)
+    if (error) { setBookingError(error); return }
+    setBookingError('')
+    setBookingStep(current => Math.min(4, current + 1))
+  }
+
+  function goPrev() {
+    setBookingError('')
+    setBookingStep(current => Math.max(1, current - 1))
+  }
+
+  async function handleConfirmBooking() {
+    const error = validateStep(4)
+    if (error) { setBookingError(error); return }
+    setBookingError('')
     setBookingLoading(true)
     try {
+      const services = Object.entries(selectedServices)
+        .filter(([, selection]) => selection.enabled)
+        .map(([configId, selection]) => ({ configId, quantity: selection.quantity, matrix: selection.matrix }))
+
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           spaceId: id,
-          ...bookingForm,
-          services: Object.entries(selectedServices)
-            .filter(([, quantity]) => quantity > 0)
-            .map(([configId, quantity]) => ({ configId, quantity })),
+          requesterIdNumber: bookingForm.requesterIdNumber,
+          date: bookingForm.date,
+          startTime: bookingForm.startTime,
+          endTime: bookingForm.endTime,
+          persons: bookingForm.persons,
+          notes: bookingForm.purpose,
+          services,
         }),
       })
       const data = await res.json()
@@ -331,7 +447,7 @@ export default function SpaceDetailPage() {
               </div>
             )}
 
-            {/* Extra Services */}
+            {/* Extra Services — read-only info here; selection happens in the booking flow */}
             <div className="space-detail-section">
                 <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4 flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#B99A63]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -340,41 +456,29 @@ export default function SpaceDetailPage() {
                   خدمات المساحة
                 </h3>
                 {space.services && space.services.length > 0 ? (
-                  <div className="space-y-3">
-                    {space.services.map(s => (
-                    <label key={s.id} className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-3">
-                      <div>
-                        <span className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={(selectedServices[s.id] ?? 0) > 0}
-                            onChange={event => setSelectedServices(current => ({ ...current, [s.id]: event.target.checked ? 1 : 0 }))}
-                            className="h-4 w-4 accent-[#0E3B34]"
-                          />
-                          <span className="text-sm font-medium text-[#1B1B1B]">{s.name}</span>
-                        </span>
-                        {s.description && <p className="text-xs text-[#5F6764] mt-0.5">{s.description}</p>}
-                      </div>
-                      <div className="flex items-center gap-2 text-end">
-                        {(selectedServices[s.id] ?? 0) > 0 && (
-                          <input
-                            type="number"
-                            min="1"
-                            max="999"
-                            value={selectedServices[s.id]}
-                            onChange={event => setSelectedServices(current => ({ ...current, [s.id]: Math.max(1, Number(event.target.value) || 1) }))}
-                            onClick={event => event.stopPropagation()}
-                            className="w-16 rounded-lg border border-[#D8D1C7] bg-white px-2 py-1.5 text-center text-xs"
-                            aria-label={`كمية ${s.name}`}
-                            dir="ltr"
-                          />
-                        )}
-                        <span className="text-sm font-bold text-[#0E3B34]">{s.price.toLocaleString('en-US')} ر.س</span>
-                        <p className="text-[10px] text-[#5F6764]">{s.pricingType === 'PER_PERSON' ? 'للشخص' : 'للحجز'}</p>
-                      </div>
-                    </label>
-                    ))}
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      {space.services.map(s => (
+                        <div key={s.id} className="flex items-center justify-between gap-4 rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-3">
+                          <div>
+                            <span className="text-sm font-medium text-[#1B1B1B]">{s.name}</span>
+                            {s.description && <p className="text-xs text-[#5F6764] mt-0.5">{s.description}</p>}
+                          </div>
+                          <div className="text-end flex-none">
+                            {s.pricingType === 'PRINT_MATRIX' ? (
+                              <span className="text-xs font-bold text-[#0E3B34]">تفاصيل الأسعار عند الحجز</span>
+                            ) : (
+                              <>
+                                <span className="text-sm font-bold text-[#0E3B34]">{s.price.toLocaleString('en-US')} ر.س</span>
+                                <p className="text-[10px] text-[#5F6764]">{pricingTypeLabel(s.pricingType)}</p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-[#5F6764]">يمكنك اختيار الخدمات وتحديد كمياتها بعد الضغط على «احجز».</p>
+                  </>
                 ) : (
                   <div className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">
                     لا توجد خدمات إضافية مفعلة لهذه المساحة حاليًا.
@@ -527,7 +631,7 @@ export default function SpaceDetailPage() {
 
               <div className="p-6">
 
-              <button onClick={() => setBookingOpen(true)}
+              <button onClick={openBooking}
                 className="btn-gold mb-3 flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-sm font-extrabold">
                 احجز
               </button>
@@ -605,14 +709,14 @@ export default function SpaceDetailPage() {
           <p className="text-[10px] font-bold text-[#5F6764]">{space.name}</p>
           <p className="font-display text-lg font-extrabold text-[#1B1B1B]">{space.price.toLocaleString('en-US')} <span className="text-xs font-semibold text-[#5F6764]">ر.س / {priceLabel}</span></p>
         </div>
-        <button onClick={() => setBookingOpen(true)}
+        <button onClick={openBooking}
           className="btn-primary min-w-36 rounded-lg px-5 py-3 text-sm font-bold">
           احجز
         </button>
       </div>
 
-      {/* Booking Modal */}
-      <Modal open={bookingOpen} onClose={() => { setBookingOpen(false); setBookingSuccess(false); setBookingError('') }} title="تأكيد الحجز">
+      {/* Booking Modal — 4-step flow: booking data -> services -> review -> payment */}
+      <Modal open={bookingOpen} onClose={closeBooking} title={bookingSuccess ? 'تم الحجز' : STEP_TITLES[bookingStep - 1]}>
         {bookingSuccess ? (
           <div className="text-center py-6">
             <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
@@ -622,73 +726,239 @@ export default function SpaceDetailPage() {
             </div>
             <h3 className="text-lg font-bold text-[#1B1B1B] mb-2">تم تأكيد حجزك!</h3>
             <p className="text-[#5F6764] text-sm mb-6">ستجد تفاصيل الموعد والوحدة في صفحة حجوزاتي.</p>
-            <button onClick={() => { setBookingOpen(false); setBookingSuccess(false) }}
+            <button onClick={closeBooking}
               className="bg-[#0E3B34] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#092C27]">
               حسناً
             </button>
           </div>
         ) : (
-          <form onSubmit={handleBooking} className="space-y-4">
+          <div className="space-y-4">
+            {/* Step indicator */}
+            <div className="flex items-center gap-1.5">
+              {STEP_TITLES.map((title, index) => (
+                <div key={title} className="flex flex-1 items-center gap-1.5">
+                  <span className={`flex h-6 w-6 flex-none items-center justify-center rounded-full text-[11px] font-bold ${
+                    index + 1 <= bookingStep ? 'bg-[#0E3B34] text-white' : 'bg-[#F5F1E8] text-[#5F6764]'
+                  }`}>{index + 1}</span>
+                  {index < STEP_TITLES.length - 1 && <span className={`h-0.5 flex-1 rounded ${index + 1 < bookingStep ? 'bg-[#0E3B34]' : 'bg-[#E8E1D3]'}`} />}
+                </div>
+              ))}
+            </div>
+
             {bookingError && (
               <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">{bookingError}</div>
             )}
-            <div>
-              <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">التاريخ</label>
-              <DatePickerCalendar
-                value={bookingForm.date}
-                onChange={date => setBookingForm(p => ({ ...p, date }))}
-                minDate={todayValue}
-                maxDate={maxBookingDate}
-                isDateEnabled={date => !hasOpenDayRules || openDaySet.has(date.getDay())}
-              />
-              <input type="hidden" value={bookingForm.date}
-                onChange={e => setBookingForm(p => ({ ...p, date: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
-                required min={new Date().toISOString().split('T')[0]} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت البداية</label>
-                <input type="time" value={bookingForm.startTime}
-                  onChange={e => setBookingForm(p => ({ ...p, startTime: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" required dir="ltr" />
+
+            {/* Step 1: Booking data */}
+            {bookingStep === 1 && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">رقم الهوية الوطنية أو السجل التجاري</label>
+                  <input value={bookingForm.requesterIdNumber}
+                    onChange={e => setBookingForm(p => ({ ...p, requesterIdNumber: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
+                    placeholder="أدخل الرقم" dir="ltr" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">التاريخ</label>
+                  <DatePickerCalendar
+                    value={bookingForm.date}
+                    onChange={date => setBookingForm(p => ({ ...p, date }))}
+                    minDate={todayValue}
+                    maxDate={maxBookingDate}
+                    isDateEnabled={date => !hasOpenDayRules || openDaySet.has(date.getDay())}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت البداية</label>
+                    <input type="time" value={bookingForm.startTime}
+                      onChange={e => setBookingForm(p => ({ ...p, startTime: e.target.value }))}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت النهاية</label>
+                    <input type="time" value={bookingForm.endTime}
+                      onChange={e => setBookingForm(p => ({ ...p, endTime: e.target.value }))}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">عدد الحضور</label>
+                  <input type="number" value={bookingForm.persons}
+                    onChange={e => setBookingForm(p => ({ ...p, persons: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
+                    placeholder="اختياري" min={1} dir="ltr" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وصف الفعالية</label>
+                  <textarea value={bookingForm.purpose}
+                    onChange={e => setBookingForm(p => ({ ...p, purpose: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] resize-none"
+                    rows={3} placeholder="اكتب نبذة عن الفعالية أو الغرض من الحجز..." />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت النهاية</label>
-                <input type="time" value={bookingForm.endTime}
-                  onChange={e => setBookingForm(p => ({ ...p, endTime: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" required dir="ltr" />
+            )}
+
+            {/* Step 2: Services */}
+            {bookingStep === 2 && (
+              <div className="space-y-3">
+                {space.services.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">
+                    لا توجد خدمات إضافية متاحة لهذه المساحة.
+                  </div>
+                ) : space.services.map(service => {
+                  const selection = selectedServices[service.id] || { enabled: false, quantity: 1, matrix: {} }
+                  return (
+                    <div key={service.id} className={`rounded-xl border p-3 transition ${selection.enabled ? 'border-[#0E3B34]/30 bg-[#F5F1E8]' : 'border-[#D8D1C7] bg-white'}`}>
+                      <label className="flex cursor-pointer items-center justify-between gap-3">
+                        <span className="flex items-center gap-2">
+                          <input type="checkbox" checked={selection.enabled} onChange={() => toggleService(service.id)} className="h-4 w-4 accent-[#0E3B34]" />
+                          <span className="text-sm font-medium text-[#1B1B1B]">{service.name}</span>
+                        </span>
+                        {service.pricingType !== 'PRINT_MATRIX' && (
+                          <span className="text-xs font-bold text-[#0E3B34]">{service.price.toLocaleString('en-US')} ر.س · {pricingTypeLabel(service.pricingType)}</span>
+                        )}
+                      </label>
+                      {service.description && <p className="mt-1 text-xs text-[#5F6764]">{service.description}</p>}
+
+                      {selection.enabled && service.pricingType === 'PRINT_MATRIX' && (
+                        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#D8D1C7] pt-3">
+                          {PRINT_MATRIX_FIELDS.map(([key, label]) => {
+                            const unitPrice = Number(service.config?.[key]) || 0
+                            if (unitPrice <= 0) return null
+                            return (
+                              <label key={key} className="block">
+                                <span className="mb-1 block text-[10px] text-[#5F6764]">{label} · {unitPrice.toLocaleString('en-US')} ر.س / 10 صفحات</span>
+                                <input type="number" min="0" value={selection.matrix[key] ?? ''}
+                                  onChange={e => updateServiceMatrix(service.id, key, Number(e.target.value) || 0)}
+                                  className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr"
+                                  placeholder="عدد الأطقم (10 صفحات)" />
+                              </label>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {selection.enabled && service.pricingType !== 'PRINT_MATRIX' && service.pricingType !== 'PER_PERSON' && service.pricingType !== 'PER_BOOKING' && (
+                        <div className="mt-3 border-t border-[#D8D1C7] pt-3">
+                          <label className="block max-w-32">
+                            <span className="mb-1 block text-[10px] text-[#5F6764]">{service.pricingType === 'PER_HOUR' ? 'العدد (لكل ساعة)' : 'الكمية'}</span>
+                            <input type="number" min="1" value={selection.quantity}
+                              onChange={e => updateServiceQuantity(service.id, Number(e.target.value) || 1)}
+                              className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr" />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">عدد الأشخاص</label>
-              <input type="number" value={bookingForm.persons}
-                onChange={e => setBookingForm(p => ({ ...p, persons: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
-                placeholder="اختياري" min={1} />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">ملاحظات</label>
-              <textarea value={bookingForm.notes}
-                onChange={e => setBookingForm(p => ({ ...p, notes: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] resize-none"
-                rows={3} placeholder="أي متطلبات خاصة..." />
-            </div>
-            <button type="submit" disabled={bookingLoading}
-              className="w-full bg-[#0E3B34] text-white py-3 rounded-xl text-sm font-semibold hover:bg-[#092C27] transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-              {bookingLoading && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
+            )}
+
+            {/* Step 3: Review */}
+            {bookingStep === 3 && (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 text-sm">
+                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">التاريخ</span><span className="font-bold text-[#1B1B1B]" dir="ltr">{bookingForm.date}</span></p>
+                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">الوقت</span><span className="font-bold text-[#1B1B1B]" dir="ltr">{bookingForm.startTime} - {bookingForm.endTime}</span></p>
+                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">عدد الساعات</span><span className="font-bold text-[#1B1B1B]">{hours.toLocaleString('en-US')}</span></p>
+                  {bookingForm.persons && <p className="flex justify-between"><span className="text-[#5F6764]">عدد الحضور</span><span className="font-bold text-[#1B1B1B]">{bookingForm.persons}</span></p>}
+                </div>
+
+                <div className="rounded-xl border border-[#D8D1C7] p-4 text-sm">
+                  <p className="mb-2 flex justify-between"><span className="text-[#5F6764]">السعر الأساسي</span><span className="font-bold text-[#1B1B1B]">{pricing.basePrice.toLocaleString('en-US')} ر.س</span></p>
+                  {pricing.discountAmount > 0 && (
+                    <p className="mb-2 flex justify-between text-green-700"><span>خصم المدة ({pricing.discountPercent.toLocaleString('en-US')}%)</span><span className="font-bold">-{pricing.discountAmount.toLocaleString('en-US')} ر.س</span></p>
+                  )}
+                  {pricing.serviceLines.map(line => (
+                    <p key={line.name} className="mb-2 flex justify-between text-[#3F4B47]"><span>{line.name}</span><span className="font-bold">{line.total.toLocaleString('en-US')} ر.س</span></p>
+                  ))}
+                  <div className="mt-2 flex justify-between border-t border-[#D8D1C7] pt-2 text-base">
+                    <span className="font-bold text-[#1B1B1B]">الإجمالي</span>
+                    <span className="font-extrabold text-[#0E3B34]">{pricing.grandTotal.toLocaleString('en-US')} ر.س</span>
+                  </div>
+                </div>
+
+                {bookingForm.purpose && (
+                  <div className="rounded-xl border border-dashed border-[#D8D1C7] p-3 text-xs text-[#5F6764]">
+                    <span className="font-bold text-[#3F4B47]">وصف الفعالية: </span>{bookingForm.purpose}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 4: Payment */}
+            {bookingStep === 4 && (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 text-center">
+                  <p className="text-xs font-bold text-[#5F6764]">المبلغ المطلوب</p>
+                  <p className="text-2xl font-extrabold text-[#0E3B34]">{pricing.grandTotal.toLocaleString('en-US')} ر.س</p>
+                </div>
+
+                <div className="space-y-2">
+                  {[
+                    { value: 'mada', label: 'مدى' },
+                    { value: 'card', label: 'بطاقة ائتمان (فيزا / ماستركارد)' },
+                    { value: 'apple_pay', label: 'Apple Pay' },
+                  ].map(method => (
+                    <label key={method.value} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm font-medium ${paymentMethod === method.value ? 'border-[#0E3B34] bg-[#F5F1E8]' : 'border-[#D8D1C7]'}`}>
+                      <input type="radio" name="paymentMethod" checked={paymentMethod === method.value} onChange={() => setPaymentMethod(method.value)} className="h-4 w-4 accent-[#0E3B34]" />
+                      {method.label}
+                    </label>
+                  ))}
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-2 text-xs text-[#3F4B47]">
+                  <input type="checkbox" checked={agreedToTerms} onChange={() => setAgreedToTerms(current => !current)} className="mt-0.5 h-4 w-4 accent-[#0E3B34]" />
+                  <span>أقر بأنني اطلعت على تفاصيل الحجز وأحكام وشروط إحياء مساحة، ووافقت على شروط وأحكام صاحب المساحة، وسياسة الإلغاء والاسترداد، وألتزم بجميع التعليمات المنظمة لاستخدام المساحة، وأتحمل مسؤولية أي أضرار أو مخالفات تصدر مني أو من أي من الحضور أثناء فترة الحجز.</span>
+                </label>
+              </div>
+            )}
+
+            {/* Step navigation */}
+            <div className="flex gap-3 pt-2">
+              {bookingStep > 1 && (
+                <button type="button" onClick={goPrev}
+                  className="flex-1 rounded-xl border border-[#D8D1C7] py-3 text-sm font-semibold text-[#3F4B47] hover:bg-[#F5F1E8] transition-colors">
+                  السابق
+                </button>
               )}
-              {bookingLoading ? 'جاري التأكيد...' : 'تأكيد الحجز'}
-            </button>
-          </form>
+              {bookingStep < 4 ? (
+                <button type="button" onClick={goNext}
+                  className="flex-1 rounded-xl bg-[#0E3B34] py-3 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors">
+                  التالي
+                </button>
+              ) : (
+                <button type="button" onClick={handleConfirmBooking} disabled={bookingLoading}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#0E3B34] py-3 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors disabled:opacity-60">
+                  {bookingLoading && (
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  )}
+                  {bookingLoading ? 'جاري التأكيد...' : `ادفع ${pricing.grandTotal.toLocaleString('en-US')} ر.س`}
+                </button>
+              )}
+            </div>
+          </div>
         )}
       </Modal>
 
       <Footer />
     </div>
   )
+}
+
+function pricingTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    PER_BOOKING: 'للحجز',
+    PER_PERSON: 'للشخص',
+    PER_HOUR: 'بالساعة',
+    PER_ITEM: 'للقطعة',
+    PER_TEN_PAGES: 'لكل 10 صفحات',
+    PRINT_MATRIX: 'مصفوفة طباعة',
+  }
+  return labels[type] || 'حسب الخدمة'
 }

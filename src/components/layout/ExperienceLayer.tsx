@@ -3,19 +3,6 @@
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 
-const revealSelector = [
-  '.page-hero',
-  '.premium-card',
-  '.category-link',
-  '.space-card',
-  '.space-detail-section',
-  '.home-proof-item',
-  '.home-owner-cta',
-  '.dashboard-page > section',
-  '.dashboard-page > article',
-  '[data-reveal]',
-].join(',')
-
 export default function ExperienceLayer() {
   const pathname = usePathname()
   const progressRef = useRef<HTMLDivElement | null>(null)
@@ -24,57 +11,6 @@ export default function ExperienceLayer() {
   useEffect(() => {
     progressRef.current?.classList.remove('is-active')
     if (pendingTimer.current) window.clearTimeout(pendingTimer.current)
-  }, [pathname])
-
-  useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    document.documentElement.classList.add('motion-ready')
-
-    if (reduceMotion) return
-
-    const observed = new WeakSet<Element>()
-    const reveal = (element: Element) => {
-      element.classList.add('is-revealed')
-      observer.unobserve(element)
-    }
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) reveal(entry.target)
-        })
-      },
-      { rootMargin: '0px 0px -7% 0px', threshold: 0.08 },
-    )
-
-    const register = (root: ParentNode) => {
-      const elements = root instanceof Element && root.matches(revealSelector)
-        ? [root, ...root.querySelectorAll(revealSelector)]
-        : [...root.querySelectorAll(revealSelector)]
-
-      elements.forEach((element, index) => {
-        if (observed.has(element) || element.closest('.first-visit-opening')) return
-        observed.add(element)
-        element.classList.add('reveal-target')
-        ;(element as HTMLElement).style.setProperty('--reveal-order', String(index % 6))
-        if (element.getBoundingClientRect().top < window.innerHeight * 0.94) reveal(element)
-        else observer.observe(element)
-      })
-    }
-
-    register(document)
-    const mutationObserver = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node instanceof Element) register(node)
-        })
-      })
-    })
-    mutationObserver.observe(document.body, { childList: true, subtree: true })
-
-    return () => {
-      observer.disconnect()
-      mutationObserver.disconnect()
-    }
   }, [pathname])
 
   useEffect(() => {

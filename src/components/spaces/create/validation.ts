@@ -44,9 +44,17 @@ export function getStepError(step: number, form: SpaceFormData): string {
 
   if (step === 5) {
     const enabledServices = form.services.filter(service => service.isEnabled)
-    if (enabledServices.length < 1) return 'فعّل خدمة واحدة على الأقل من الخدمات المعتمدة.'
-    if (enabledServices.some(service => service.price === '' || Number(service.price) < 0 || !Number.isFinite(Number(service.price)))) {
+    const flatServices = enabledServices.filter(service => service.pricingType !== 'PRINT_MATRIX')
+    if (flatServices.some(service => service.price === '' || Number(service.price) < 0 || !Number.isFinite(Number(service.price)))) {
       return 'أدخل سعرًا صحيحًا لكل خدمة مفعلة.'
+    }
+    const matrixServices = enabledServices.filter(service => service.pricingType === 'PRINT_MATRIX')
+    if (matrixServices.some(service => {
+      const config = service.config || {}
+      const values = [config.bwSingle, config.bwDouble, config.colorSingle, config.colorDouble]
+      return values.every(value => !value || value <= 0)
+    })) {
+      return 'أدخل سعرًا واحدًا على الأقل في مصفوفة الطباعة لكل خدمة مفعلة.'
     }
   }
 

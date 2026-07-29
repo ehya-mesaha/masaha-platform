@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { Prisma } from '@/generated/prisma'
 
 export async function GET() {
   try {
-    const [types, amenities, ownerServices, partnerServices] = await Promise.all([
+    const [types, cities, amenities, ownerServices, partnerServices] = await Promise.all([
       prisma.spaceType.findMany({ orderBy: { name: 'asc' } }),
+      prisma.city.findMany({ where: { isActive: true }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
       prisma.amenity.findMany({ orderBy: { name: 'asc' } }),
       prisma.serviceCatalog.findMany({ orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
       prisma.partnerService.findMany({ orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
     ])
-    return NextResponse.json({ types, amenities, ownerServices, partnerServices })
+    return NextResponse.json({ types, cities, amenities, ownerServices, partnerServices })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'حدث خطأ أثناء تحميل التصنيفات' }, { status: 500 })
@@ -28,17 +30,22 @@ export async function POST(req: NextRequest) {
     if (body.type === 'space-type') {
       return NextResponse.json({ item: await prisma.spaceType.create({ data: { name } }) }, { status: 201 })
     }
+    if (body.type === 'city') {
+      return NextResponse.json({ item: await prisma.city.create({ data: { name, sortOrder: Number(body.sortOrder) || 0 } }) }, { status: 201 })
+    }
     if (body.type === 'amenity') {
       return NextResponse.json({ item: await prisma.amenity.create({ data: { name, category: clean(body.category) || null } }) }, { status: 201 })
     }
     if (body.type === 'owner-service') {
+      const type = pricingType(body.pricingType)
       const item = await prisma.serviceCatalog.create({
         data: {
           name,
           description: clean(body.description),
           category: clean(body.category) || 'other',
-          pricingType: pricingType(body.pricingType),
-          defaultPrice: nullableNumber(body.price),
+          pricingType: type,
+          defaultPrice: type === 'PRINT_MATRIX' ? null : nullableNumber(body.price),
+          defaultConfig: type === 'PRINT_MATRIX' ? printMatrixConfig(body.config) : undefined,
           sortOrder: Number(body.sortOrder) || 0,
         },
       })
@@ -73,16 +80,19 @@ export async function PUT(req: NextRequest) {
 
     let item
     if (body.type === 'space-type') item = await prisma.spaceType.update({ where: { id: body.id }, data: { name } })
+    else if (body.type === 'city') item = await prisma.city.update({ where: { id: body.id }, data: { name, isActive: body.isActive !== false } })
     else if (body.type === 'amenity') item = await prisma.amenity.update({ where: { id: body.id }, data: { name, category: clean(body.category) || null } })
     else if (body.type === 'owner-service') {
+      const type = pricingType(body.pricingType)
       item = await prisma.serviceCatalog.update({
         where: { id: body.id },
         data: {
           name,
           description: clean(body.description),
           category: clean(body.category) || 'other',
-          pricingType: pricingType(body.pricingType),
-          defaultPrice: nullableNumber(body.price),
+          pricingType: type,
+          defaultPrice: type === 'PRINT_MATRIX' ? null : nullableNumber(body.price),
+          defaultConfig: type === 'PRINT_MATRIX' ? printMatrixConfig(body.config) : Prisma.JsonNull,
           isActive: body.isActive !== false,
         },
       })
@@ -111,6 +121,7 @@ export async function DELETE(req: NextRequest) {
     if (!user || user.role !== 'ADMIN') return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
     const { type, id } = await req.json()
     if (type === 'space-type') await prisma.spaceType.delete({ where: { id } })
+    else if (type === 'city') await prisma.city.delete({ where: { id } })
     else if (type === 'amenity') await prisma.amenity.delete({ where: { id } })
     else if (type === 'owner-service') await prisma.serviceCatalog.delete({ where: { id } })
     else if (type === 'partner-service') await prisma.partnerService.delete({ where: { id } })
@@ -133,6 +144,18 @@ function nullableNumber(value: unknown) {
 }
 
 function pricingType(value: unknown) {
-  const allowed = ['PER_BOOKING', 'PER_PERSON', 'PER_HOUR', 'PER_ITEM', 'PER_TEN_PAGES', 'CUSTOM'] as const
+  const allowed = ['PER_BOOKING', 'PER_PERSON', 'PER_HOUR', 'PER_ITEM', 'PER_TEN_PAGES', 'PRINT_MATRIX', 'CUSTOM'] as const
   return allowed.includes(value as typeof allowed[number]) ? value as typeof allowed[number] : 'PER_BOOKING'
+}
+
+const PRINT_MATRIX_KEYS = ['bwSingle', 'bwDouble', 'colorSingle', 'colorDouble'] as const
+
+function printMatrixConfig(value: unknown) {
+  const source = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
+  const config: Record<string, number> = {}
+  for (const key of PRINT_MATRIX_KEYS) {
+    const parsed = Number(source[key])
+    config[key] = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+  }
+  return config
 }

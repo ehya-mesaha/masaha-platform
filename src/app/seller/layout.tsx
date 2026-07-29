@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import DashboardSidebar from '@/components/layout/DashboardSidebarPro'
 
+export const metadata: Metadata = { robots: { index: false, follow: false } }
+
 export default async function SellerLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
   if (!user) redirect('/auth/login')
@@ -27,3 +29,4 @@ export default async function SellerLayout({ children }: { children: React.React
     </div>
   )
 }
+import type { Metadata } from 'next'

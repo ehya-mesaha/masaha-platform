@@ -7,7 +7,7 @@ type DocumentInput = { type: 'NATIONAL_ID' | 'COMMERCIAL_REGISTER' | 'TITLE_DEED
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const required = ['name', 'email', 'phone', 'password', 'schoolName', 'commercialRegisterNo']
+    const required = ['name', 'email', 'phone', 'password', 'schoolName', 'commercialRegisterNo', 'nationalIdNumber']
     if (required.some((field) => !String(body[field] || '').trim())) {
       return NextResponse.json({ error: 'يرجى استكمال جميع البيانات الأساسية' }, { status: 400 })
     }
@@ -15,13 +15,6 @@ export async function POST(request: NextRequest) {
     if (String(body.password).length < 8) return NextResponse.json({ error: 'كلمة المرور يجب أن تتكون من 8 أحرف على الأقل' }, { status: 400 })
 
     const documents = (Array.isArray(body.documents) ? body.documents : []) as DocumentInput[]
-    const requiredDocumentTypes = ['NATIONAL_ID', 'COMMERCIAL_REGISTER', 'TITLE_DEED']
-    if (requiredDocumentTypes.some((type) => !documents.some((document) => document.type === type && document.fileUrl))) {
-      return NextResponse.json({ error: 'يرجى رفع الهوية والسجل التجاري ومستند الملكية' }, { status: 400 })
-    }
-    if (body.multipleOwners && !documents.some((document) => document.type === 'POWER_OF_ATTORNEY')) {
-      return NextResponse.json({ error: 'الوكالة مطلوبة عند وجود أكثر من مالك' }, { status: 400 })
-    }
 
     const email = String(body.email).trim().toLowerCase()
     if (await prisma.user.findUnique({ where: { email } })) {
@@ -45,6 +38,7 @@ export async function POST(request: NextRequest) {
           schoolName: String(body.schoolName).trim(),
           branchName: body.branchName ? String(body.branchName).trim() : null,
           commercialRegisterNo: String(body.commercialRegisterNo).trim(),
+          nationalIdNumber: String(body.nationalIdNumber).trim(),
           multipleOwners: Boolean(body.multipleOwners),
           powerOfAttorneyNumber: body.powerOfAttorneyNumber ? String(body.powerOfAttorneyNumber).trim() : null,
           brokerageContractNo: body.brokerageContractNo ? String(body.brokerageContractNo).trim() : null,

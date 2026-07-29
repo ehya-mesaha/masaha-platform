@@ -39,7 +39,7 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-extrabold leading-tight text-white">أنشئ حساب طالب مساحة</h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-white/70">احجز المساحات والبرامج مباشرة، واحتفظ بكل حجوزاتك في لوحة واحدة.</p>
           <div className="mt-8 rounded-2xl border border-white/15 bg-white/10 p-5">
-            <p className="font-bold text-white">هل تمثل مدرسة أو تملك مساحة؟</p>
+            <p className="font-bold text-white">هل أنت صاحب مساحة؟</p>
             <p className="mt-2 text-sm text-white/65">لأمان وجودة المنصة، يوجد مسار انضمام مستقل لمراجعة بيانات الجهة ومستنداتها.</p>
             <Link href="/seller-application" className="mt-4 inline-flex rounded-xl bg-[#B99A63] px-4 py-2.5 text-sm font-bold text-[#1B1B1B]">تقديم طلب انضمام</Link>
           </div>

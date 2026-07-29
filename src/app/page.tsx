@@ -10,7 +10,7 @@ export const revalidate = 0
 
 async function getFeaturedSpaces() {
   try {
-    return await prisma.space.findMany({
+    return await retryRead(() => prisma.space.findMany({
       where: { status: 'APPROVED' },
       include: {
         type: true,
@@ -18,7 +18,7 @@ async function getFeaturedSpaces() {
       },
       orderBy: { createdAt: 'desc' },
       take: 6,
-    })
+    }))
   } catch {
     return []
   }
@@ -26,9 +26,30 @@ async function getFeaturedSpaces() {
 
 async function getTypes() {
   try {
-    return await prisma.spaceType.findMany({ orderBy: { name: 'asc' } })
+    return await retryRead(() => prisma.spaceType.findMany({ orderBy: { name: 'asc' } }))
   } catch {
     return []
+  }
+}
+
+async function getCities() {
+  try {
+    return await retryRead(() => prisma.city.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      select: { id: true, name: true },
+    }))
+  } catch {
+    return []
+  }
+}
+
+async function retryRead<T>(read: () => Promise<T>): Promise<T> {
+  try {
+    return await read()
+  } catch {
+    await new Promise(resolve => setTimeout(resolve, 250))
+    return read()
   }
 }
 
@@ -39,7 +60,7 @@ const ArrowIcon = () => (
 )
 
 export default async function HomePage() {
-  const [spaces, types] = await Promise.all([getFeaturedSpaces(), getTypes()])
+  const [spaces, types, cities] = await Promise.all([getFeaturedSpaces(), getTypes(), getCities()])
 
   return (
     <div className="public-shell min-h-screen">
@@ -67,7 +88,7 @@ export default async function HomePage() {
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
               قاعات دراسية، مكاتب، قاعات اجتماعات… مصممة لتصل للمكان الأنسب لك.
             </p>
-            <RecurringSearchForm />
+            <RecurringSearchForm types={types} cities={cities} />
           </div>
         </div>
 

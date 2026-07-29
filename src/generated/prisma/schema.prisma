@@ -75,6 +75,7 @@ enum ServicePricingType {
   PER_HOUR
   PER_ITEM
   PER_TEN_PAGES
+  PRINT_MATRIX
   CUSTOM
 }
 
@@ -171,6 +172,15 @@ model SpaceType {
   name         String             @unique
   spaces       Space[]
   needRequests SpaceNeedRequest[]
+}
+
+model City {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Amenity {
@@ -357,16 +367,17 @@ model SpaceService {
 }
 
 model ServiceCatalog {
-  id           String             @id @default(cuid())
-  name         String             @unique
-  description  String
-  category     String
-  pricingType  ServicePricingType
-  defaultPrice Float?
-  isActive     Boolean            @default(true)
-  sortOrder    Int                @default(0)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id            String             @id @default(cuid())
+  name          String             @unique
+  description   String
+  category      String
+  pricingType   ServicePricingType
+  defaultPrice  Float?
+  defaultConfig Json?
+  isActive      Boolean            @default(true)
+  sortOrder     Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   spaceConfigs SpaceServiceConfig[]
 }
@@ -399,24 +410,25 @@ model SpaceRule {
 }
 
 model Booking {
-  id             String        @id @default(cuid())
-  date           DateTime
-  startTime      DateTime
-  endTime        DateTime
-  persons        Int?
-  notes          String?
-  status         BookingStatus @default(CONFIRMED)
-  sellerNote     String?
-  totalHours     Float         @default(0)
-  basePrice      Float         @default(0)
-  discountAmount Float         @default(0)
-  servicesTotal  Float         @default(0)
-  grandTotal     Float         @default(0)
-  cancelledAt    DateTime?
-  cancelledBy    String?
-  refundAmount   Float?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  date              DateTime
+  startTime         DateTime
+  endTime           DateTime
+  persons           Int?
+  notes             String?
+  requesterIdNumber String?
+  status            BookingStatus @default(CONFIRMED)
+  sellerNote        String?
+  totalHours        Float         @default(0)
+  basePrice         Float         @default(0)
+  discountAmount    Float         @default(0)
+  servicesTotal     Float         @default(0)
+  grandTotal        Float         @default(0)
+  cancelledAt       DateTime?
+  cancelledBy       String?
+  refundAmount      Float?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   spaceId   String
   space     Space           @relation(fields: [spaceId], references: [id])
@@ -554,6 +566,7 @@ model SellerApplication {
   schoolName            String
   branchName            String?
   commercialRegisterNo  String
+  nationalIdNumber      String?
   multipleOwners        Boolean                 @default(false)
   powerOfAttorneyNumber String?
   brokerageContractNo   String?

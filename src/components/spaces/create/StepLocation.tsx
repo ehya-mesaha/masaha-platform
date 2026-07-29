@@ -26,7 +26,7 @@ function extractCoordinates(value: string) {
   return null
 }
 
-export default function StepLocation({ form, update }: StepProps) {
+export default function StepLocation({ form, update, cities = [] }: StepProps) {
   const [locationUrl, setLocationUrl] = useState('')
   const [urlError, setUrlError] = useState('')
   const [zoom, setZoom] = useState(13)
@@ -65,6 +65,12 @@ export default function StepLocation({ form, update }: StepProps) {
 
   function chooseCity(city: string) {
     update('city', city)
+    // Only snap the pin to the city's generic center the first time a city is picked
+    // (i.e. before the seller has set a precise location via link/click/manual entry).
+    // Once real coordinates exist, changing the city text must never move the map again —
+    // the map and the address fields are independent, matching how sellers actually work:
+    // they may fix a typo in the city/district after already placing an exact pin.
+    if (form.latitude || form.longitude) return
     const center = CITY_CENTERS[city]
     if (center) setCoordinates(center.lat, center.lng)
   }
@@ -94,7 +100,7 @@ export default function StepLocation({ form, update }: StepProps) {
                 className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white"
               >
                 <option value="">اختر المدينة</option>
-                {SAUDI_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {(cities.length ? cities.map(city => city.name) : SAUDI_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
@@ -289,4 +295,17 @@ const CITY_CENTERS: Record<string, { lat: number; lng: number }> = {
   'جدة': { lat: 21.5433, lng: 39.1728 },
   'مكة المكرمة': { lat: 21.3891, lng: 39.8579 },
   'المدينة المنورة': { lat: 24.5247, lng: 39.5692 },
+  'تبوك': { lat: 28.3838, lng: 36.5550 },
+  'بريدة': { lat: 26.3260, lng: 43.9750 },
+  'حائل': { lat: 27.5114, lng: 41.6900 },
+  'الطائف': { lat: 21.2703, lng: 40.4158 },
+  'أبها': { lat: 18.2164, lng: 42.5053 },
+  'خميس مشيط': { lat: 18.3060, lng: 42.7297 },
+  'نجران': { lat: 17.4924, lng: 44.1277 },
+  'جازان': { lat: 16.8892, lng: 42.5511 },
+  'ينبع': { lat: 24.0895, lng: 38.0618 },
+  'الجبيل': { lat: 27.0046, lng: 49.6605 },
+  'القطيف': { lat: 26.5205, lng: 49.9975 },
+  'الأحساء': { lat: 25.3838, lng: 49.5860 },
+  'عنيزة': { lat: 26.0837, lng: 43.9930 },
 }

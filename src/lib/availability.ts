@@ -131,7 +131,12 @@ export function calculateCancellation(input: {
   grandTotal: number
   now?: Date
 }) {
-  if (input.policy === 'FLEXIBLE') return { refundPercent: 100, refundAmount: input.grandTotal }
-  if (input.policy === 'MODERATE') return { refundPercent: 50, refundAmount: input.grandTotal * 0.5 }
+  const hoursBeforeBooking = (input.bookingStart.getTime() - (input.now ?? new Date()).getTime()) / 3_600_000
+  if (input.policy === 'FLEXIBLE' && hoursBeforeBooking >= 24) {
+    return { refundPercent: 100, refundAmount: input.grandTotal }
+  }
+  if (input.policy === 'MODERATE' && hoursBeforeBooking >= 5 * 24) {
+    return { refundPercent: 50, refundAmount: input.grandTotal * 0.5 }
+  }
   return { refundPercent: 0, refundAmount: 0 }
 }

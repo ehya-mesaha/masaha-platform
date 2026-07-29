@@ -29,6 +29,7 @@ type FilterParams = {
 
 type Props = {
   types: SpaceType[]
+  cities: SpaceType[]
   params: FilterParams
 }
 
@@ -44,7 +45,7 @@ const DAY_OPTIONS = [
 
 const BUDGET_PRESETS = [1000, 5000, 10000, 25000, 50000, 100000]
 
-export default function SpacesFiltersPro({ types, params }: Props) {
+export default function SpacesFiltersPro({ types, cities, params }: Props) {
   const router = useRouter()
   const { locale, t } = useLanguage()
   const initialDays = useMemo(() => new Set((params.weekdays || params.days || '').split(',').filter(Boolean)), [params.days, params.weekdays])
@@ -59,6 +60,10 @@ export default function SpacesFiltersPro({ types, params }: Props) {
   const [sort, setSort] = useState(params.sort || 'newest')
   const [fullyAvailable, setFullyAvailable] = useState(params.fullyAvailable !== '0')
   const [selectedDays, setSelectedDays] = useState(initialDays)
+  const [mobileOpen, setMobileOpen] = useState(() => Boolean(
+    params.city || params.typeId || params.minPrice || params.maxPrice || params.capacity
+    || params.date || params.startTime || params.endTime || params.weekdays || params.days,
+  ))
 
   function toggleDay(value: string) {
     setSelectedDays(prev => {
@@ -97,7 +102,7 @@ export default function SpacesFiltersPro({ types, params }: Props) {
   }
 
   return (
-    <div className="spaces-filter-panel premium-card sticky top-20 animate-in">
+    <div className={`spaces-filter-panel premium-card sticky top-20 animate-in ${mobileOpen ? 'is-mobile-open' : ''}`}>
       <div className="spaces-filter-header flex items-center justify-between gap-4 px-5 pb-4 pt-5">
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0E3B34] text-[#B99A63]">
@@ -115,17 +120,32 @@ export default function SpacesFiltersPro({ types, params }: Props) {
         <Link href="/spaces" className="text-xs font-semibold text-[#B99A63] hover:text-[#0E3B34]">
           {t('clear')}
         </Link>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(open => !open)}
+          className="spaces-filter-mobile-toggle"
+          aria-expanded={mobileOpen}
+          aria-controls="spaces-filter-controls"
+        >
+          {mobileOpen ? (locale === 'en' ? 'Hide' : 'إخفاء') : (locale === 'en' ? 'Show' : 'عرض')}
+          <span aria-hidden="true">{mobileOpen ? '−' : '+'}</span>
+        </button>
       </div>
 
-      <div className="spaces-filter-body space-y-5 px-5 pb-2">
+      <div id="spaces-filter-controls" className="spaces-filter-body space-y-5 px-5 pb-2">
         <div>
           <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('cityDistrict')}</label>
           <input
+            list="spaces-city-options"
             value={city}
             onChange={e => setCity(e.target.value)}
             placeholder={t('cityPlaceholder')}
+            autoComplete="off"
             className="field"
           />
+          <datalist id="spaces-city-options">
+            {cities.map(option => <option key={option.id} value={option.name} />)}
+          </datalist>
         </div>
 
         <div>

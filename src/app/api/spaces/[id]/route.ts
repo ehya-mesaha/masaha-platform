@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { getStepError } from '@/components/spaces/create/validation'
 import type { SpaceFormData } from '@/components/spaces/create/types'
+import type { Prisma } from '@/generated/prisma'
 
 const APPROVED_OWNER_SERVICES = new Set([
   'المطبوعات',
@@ -85,6 +86,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
               description: config.details || config.catalog.description,
               price: config.price ?? config.catalog.defaultPrice ?? 0,
               pricingType: config.catalog.pricingType,
+              config: config.config ?? config.catalog.defaultConfig ?? null,
             }))
           : space.services.map(service => ({
               id: service.id,
@@ -92,6 +94,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
               description: service.description,
               price: service.price,
               pricingType: service.pricingType,
+              config: null,
             })),
         reviews,
         reviewSummary,
@@ -127,11 +130,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       identicalUnitsCount, advertisingLicenseNumber, pricingTiers,
     } = body
 
+    const isFullWizardPayload = Array.isArray(workingHours)
+      && Array.isArray(services)
+      && Array.isArray(rules)
+      && Array.isArray(pricingTiers)
+      && typeof postalCode === 'string'
     let validationError = ''
-    try {
-      validationError = getStepError(9, body as SpaceFormData)
-    } catch {
-      validationError = 'بيانات المساحة غير مكتملة.'
+    if (isFullWizardPayload) {
+      try {
+        validationError = getStepError(9, body as SpaceFormData)
+      } catch {
+        validationError = 'بيانات المساحة غير مكتملة.'
+      }
+    } else {
+      if (typeof name !== 'string' || name.trim().length < 3) validationError = 'أدخل اسمًا واضحًا للمساحة لا يقل عن 3 أحرف.'
+      else if (typeof typeId !== 'string' || !typeId) validationError = 'اختر تصنيف المساحة.'
+      else if (typeof city !== 'string' || !city.trim()) validationError = 'اختر المدينة.'
+      else if (!Number.isFinite(Number(price)) || Number(price) <= 0) validationError = 'أدخل سعرًا صحيحًا للساعة أكبر من صفر.'
+      else if (!Array.isArray(images) || images.length < 1) validationError = 'أضف صورة واحدة على الأقل للمساحة.'
     }
     if (validationError) return NextResponse.json({ error: validationError }, { status: 400 })
 
@@ -174,12 +190,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         await tx.spaceServiceConfig.deleteMany({ where: { spaceId: id } })
         if (enabledServices.length) {
           await tx.spaceServiceConfig.createMany({
-            data: enabledServices.map((service: { catalogId: string; price?: string | number; details?: string }) => ({
+            data: enabledServices.map((service: { catalogId: string; price?: string | number; details?: string; config?: Record<string, unknown> }) => ({
               spaceId: id,
               catalogId: service.catalogId,
               isEnabled: true,
               price: service.price === '' || service.price == null ? null : Number(service.price),
               details: service.details?.trim() || null,
+              config: service.config && Object.keys(service.config).length
+                ? service.config as Prisma.InputJsonValue
+                : undefined,
             })),
           })
         }

@@ -10,6 +10,7 @@ const copy = {
     eyebrow: 'نحن هنا لمساعدتك',
     title: 'تواصل مع فريق إحياء مساحة',
     intro: 'أرسل استفسارك أو اقتراحك أو شكواك، وسيتابعها الفريق المختص بوضوح واهتمام.',
+    responseTime: 'وسيتم الرد عليك بمدة لا تتجاوز 72 ساعة، بإذن الله.',
     type: 'نوع الرسالة',
     inquiry: 'استفسار',
     suggestion: 'اقتراح',
@@ -30,6 +31,7 @@ const copy = {
     eyebrow: 'We are here to help',
     title: 'Contact the Ehya Masaha team',
     intro: 'Send an inquiry, suggestion, or complaint and the right team will follow up with care and clarity.',
+    responseTime: 'We will respond within 72 hours, God willing.',
     type: 'Message type',
     inquiry: 'Inquiry',
     suggestion: 'Suggestion',
@@ -84,6 +86,7 @@ export default function ContactPage() {
           <p className="text-xs font-extrabold text-[#B99A63]">{text.eyebrow}</p>
           <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight">{text.title}</h1>
           <p className="mt-5 text-sm leading-8 text-white/70">{text.intro}</p>
+          <p className="mt-4 rounded-xl border border-[#B99A63]/35 bg-[#B99A63]/10 px-4 py-3 text-sm font-bold leading-7 text-[#E4D7C0]">{text.responseTime}</p>
           <div className="mt-10 border-t border-white/12 pt-7">
             <h2 className="font-bold">{text.details}</h2>
             <ul className="mt-4 space-y-3 text-sm text-white/75">

@@ -26,6 +26,7 @@ export default function EditSpacePage() {
     district: '',
     address: '',
     capacity: '',
+    identicalUnitsCount: '1',
     price: '',
     pricePeriod: 'hour',
     images: [] as string[],
@@ -47,6 +48,7 @@ export default function EditSpacePage() {
           district: s.district || '',
           address: s.address || '',
           capacity: s.capacity?.toString() || '',
+          identicalUnitsCount: String(s.identicalUnitsCount || Math.max(1, s.units?.length || 1)),
           price: s.price.toString(),
           pricePeriod: s.pricePeriod,
           images: s.images.length ? s.images.map((img: { url: string }) => img.url) : [],
@@ -91,7 +93,7 @@ export default function EditSpacePage() {
         return
       }
 
-      router.push(`/seller/spaces/${id}`)
+      router.push(`/seller/spaces/${id}?submittedForReview=1`)
     } catch {
       setError('حدث خطأ في الاتصال')
     } finally {
@@ -156,6 +158,13 @@ export default function EditSpacePage() {
                 className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">عدد القاعات أو الوحدات المماثلة *</label>
+              <input type="number" value={form.identicalUnitsCount} onChange={e => update('identicalUnitsCount', e.target.value)} required min={1} max={100}
+                className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
+              <p className="mt-1.5 text-xs text-[#5F6764]">يمكن تعديل مساحة تحتوي على أكثر من قاعة. ستبقى التغييرات بانتظار اعتماد مدير المنصة قبل إعادة نشرها.</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">السعر (ر.س) *</label>
@@ -164,11 +173,8 @@ export default function EditSpacePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">الفترة</label>
-                <select value={form.pricePeriod} onChange={e => update('pricePeriod', e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white">
-                  <option value="hour">بالساعة</option>
-                  <option value="day">باليوم</option>
-                </select>
+                <input value="بالساعة" readOnly
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] bg-[#F5F1E8] text-sm text-[#5F6764]" />
               </div>
             </div>
 

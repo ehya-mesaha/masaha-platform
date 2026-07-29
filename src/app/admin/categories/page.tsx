@@ -10,38 +10,85 @@ type Item = {
   pricingType?: string
   defaultPrice?: number | null
   indicativePrice?: number | null
+  defaultConfig?: PrintMatrixConfig | null
 }
 
-type CatalogKey = 'types' | 'amenities' | 'ownerServices' | 'partnerServices'
-type ApiType = 'space-type' | 'amenity' | 'owner-service' | 'partner-service'
+type PrintMatrixConfig = {
+  bwSingle?: number
+  bwDouble?: number
+  colorSingle?: number
+  colorDouble?: number
+}
 
-const sections: Array<{ key: CatalogKey; apiType: ApiType; title: string; subtitle: string; detailed?: boolean }> = [
+type CatalogKey = 'types' | 'cities' | 'amenities' | 'ownerServices' | 'partnerServices'
+type ApiType = 'space-type' | 'city' | 'amenity' | 'owner-service' | 'partner-service'
+
+type Draft = {
+  name: string
+  description: string
+  category: string
+  price: string
+  pricingType: string
+  config: PrintMatrixConfig
+}
+
+const PRICING_OPTIONS: Array<[string, string]> = [
+  ['PER_BOOKING', 'لكل حجز'],
+  ['PER_PERSON', 'لكل فرد'],
+  ['PER_HOUR', 'بالساعة'],
+  ['PER_ITEM', 'للقطعة'],
+  ['PER_TEN_PAGES', 'لكل 10 صفحات'],
+  ['PRINT_MATRIX', 'مصفوفة طباعة (أبيض/ملون × وجه/وجهين)'],
+  ['CUSTOM', 'مخصص'],
+]
+
+const PRICING_LABELS = Object.fromEntries(PRICING_OPTIONS) as Record<string, string>
+
+const MATRIX_FIELDS: Array<[keyof PrintMatrixConfig, string]> = [
+  ['bwSingle', 'أبيض وأسود - وجه واحد (لكل 10 صفحات)'],
+  ['bwDouble', 'أبيض وأسود - وجهين (لكل 10 صفحات)'],
+  ['colorSingle', 'ملون - وجه واحد (لكل 10 صفحات)'],
+  ['colorDouble', 'ملون - وجهين (لكل 10 صفحات)'],
+]
+
+const emptyDraft: Draft = { name: '', description: '', category: '', price: '', pricingType: 'PER_BOOKING', config: {} }
+
+const sections: Array<{ key: CatalogKey; apiType: ApiType; title: string; subtitle: string; detailed?: boolean; pricing?: boolean }> = [
   { key: 'types', apiType: 'space-type', title: 'أنواع المساحات', subtitle: 'التصنيفات التي تظهر في البحث ونموذج إضافة المساحة.' },
+  { key: 'cities', apiType: 'city', title: 'مدن المنصة', subtitle: 'المدن المعتمدة التي تظهر كاقتراحات في البحث وإضافة المساحات.' },
   { key: 'amenities', apiType: 'amenity', title: 'المرافق والتجهيزات', subtitle: 'قائمة موحدة يختار منها أصحاب المساحات فقط.' },
-  { key: 'ownerServices', apiType: 'owner-service', title: 'خدمات صاحب المساحة', subtitle: 'دليل ثابت؛ يفعّل صاحب المساحة الخدمة ويحدد سعرها.', detailed: true },
-  { key: 'partnerServices', apiType: 'partner-service', title: 'خدمات إضافية - شركاء إحياء مساحة', subtitle: 'أسعار تقديرية قابلة للتعديل عند تجهيز عرض السعر.', detailed: true },
+  { key: 'ownerServices', apiType: 'owner-service', title: 'خدمات صاحب المساحة', subtitle: 'دليل ثابت؛ يفعّل صاحب المساحة الخدمة ويحدد سعرها. حدد نوع التسعير هنا لضبط طريقة الحساب.', detailed: true, pricing: true },
+  { key: 'partnerServices', apiType: 'partner-service', title: 'خدمات إضافية - شركاء إحياء مساحة', subtitle: 'أسعار تقديرية قابلة للتعديل عند تجهيز عرض السعر.', detailed: true, pricing: true },
 ]
 
 export default function AdminCategoriesPage() {
-  const [data, setData] = useState<Record<CatalogKey, Item[]>>({ types: [], amenities: [], ownerServices: [], partnerServices: [] })
-  const [drafts, setDrafts] = useState<Record<ApiType, { name: string; description: string; category: string; price: string }>>({
-    'space-type': { name: '', description: '', category: '', price: '' },
-    amenity: { name: '', description: '', category: '', price: '' },
-    'owner-service': { name: '', description: '', category: 'other', price: '' },
-    'partner-service': { name: '', description: '', category: '', price: '' },
+  const [data, setData] = useState<Record<CatalogKey, Item[]>>({ types: [], cities: [], amenities: [], ownerServices: [], partnerServices: [] })
+  const [drafts, setDrafts] = useState<Record<ApiType, Draft>>({
+    'space-type': { ...emptyDraft },
+    city: { ...emptyDraft },
+    amenity: { ...emptyDraft },
+    'owner-service': { ...emptyDraft, category: 'other' },
+    'partner-service': { ...emptyDraft },
   })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
     fetch('/api/admin/categories').then(response => response.json()).then(result => {
       setData({
         types: result.types || [],
+        cities: result.cities || [],
         amenities: result.amenities || [],
         ownerServices: result.ownerServices || [],
         partnerServices: result.partnerServices || [],
       })
     })
   }, [])
+
+  function updateDraft(apiType: ApiType, patch: Partial<Draft>) {
+    setDrafts(current => ({ ...current, [apiType]: { ...current[apiType], ...patch } }))
+  }
 
   async function add(section: typeof sections[number]) {
     const draft = drafts[section.apiType]
@@ -54,25 +101,39 @@ export default function AdminCategoriesPage() {
     const result = await response.json()
     if (!response.ok) return setMessage(result.error || 'تعذر الحفظ')
     setData(current => ({ ...current, [section.key]: [...current[section.key], result.item] }))
-    setDrafts(current => ({ ...current, [section.apiType]: { ...current[section.apiType], name: '', description: '', price: '' } }))
+    setDrafts(current => ({ ...current, [section.apiType]: section.pricing ? { ...emptyDraft, category: current[section.apiType].category } : { ...emptyDraft } }))
     setMessage('تمت الإضافة بنجاح')
   }
 
-  async function rename(section: typeof sections[number], item: Item) {
-    const name = prompt('الاسم الجديد', item.name)?.trim()
-    if (!name || name === item.name) return
+  function startEdit(item: Item) {
+    setEditingId(item.id)
+    setEditDraft({
+      name: item.name,
+      description: item.description || '',
+      category: item.category || '',
+      price: item.defaultPrice != null ? String(item.defaultPrice) : item.indicativePrice != null ? String(item.indicativePrice) : '',
+      pricingType: item.pricingType || 'PER_BOOKING',
+      config: item.defaultConfig || {},
+    })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditDraft(emptyDraft)
+  }
+
+  async function saveEdit(section: typeof sections[number], id: string) {
+    if (!editDraft.name.trim()) return
     const response = await fetch('/api/admin/categories', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: section.apiType,
-        ...item,
-        name,
-        price: item.defaultPrice ?? item.indicativePrice ?? '',
-      }),
+      body: JSON.stringify({ type: section.apiType, id, ...editDraft }),
     })
     const result = await response.json()
-    if (response.ok) setData(current => ({ ...current, [section.key]: current[section.key].map(row => row.id === item.id ? result.item : row) }))
+    if (!response.ok) return setMessage(result.error || 'تعذر التحديث')
+    setData(current => ({ ...current, [section.key]: current[section.key].map(row => row.id === id ? result.item : row) }))
+    setMessage('تم التحديث بنجاح')
+    cancelEdit()
   }
 
   async function remove(section: typeof sections[number], id: string) {
@@ -85,6 +146,7 @@ export default function AdminCategoriesPage() {
     const result = await response.json()
     if (!response.ok) return setMessage(result.error || 'تعذر الحذف')
     setData(current => ({ ...current, [section.key]: current[section.key].filter(item => item.id !== id) }))
+    if (editingId === id) cancelEdit()
   }
 
   return (
@@ -105,35 +167,104 @@ export default function AdminCategoriesPage() {
                 <p className="mt-1 text-xs leading-6 text-[#5F6764]">{section.subtitle}</p>
               </div>
               <div className="grid gap-2">
-                <input value={draft.name} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, name: event.target.value } }))} placeholder="اسم العنصر" className="field py-2.5" />
+                <input value={draft.name} onChange={event => updateDraft(section.apiType, { name: event.target.value })} placeholder="اسم العنصر" className="field py-2.5" />
                 {section.detailed && (
                   <>
-                    <input value={draft.description} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, description: event.target.value } }))} placeholder="وصف مختصر" className="field py-2.5" />
+                    <input value={draft.description} onChange={event => updateDraft(section.apiType, { description: event.target.value })} placeholder="وصف مختصر" className="field py-2.5" />
                     <div className="grid grid-cols-2 gap-2">
-                      <input value={draft.category} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, category: event.target.value } }))} placeholder="التصنيف" className="field py-2.5" />
-                      <input type="number" min="0" value={draft.price} onChange={event => setDrafts(current => ({ ...current, [section.apiType]: { ...draft, price: event.target.value } }))} placeholder="السعر الافتراضي" className="field py-2.5" dir="ltr" />
+                      <input value={draft.category} onChange={event => updateDraft(section.apiType, { category: event.target.value })} placeholder="التصنيف" className="field py-2.5" />
+                      {section.pricing ? (
+                        <select value={draft.pricingType} onChange={event => updateDraft(section.apiType, { pricingType: event.target.value })} className="field py-2.5 bg-white">
+                          {PRICING_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                        </select>
+                      ) : (
+                        <input type="number" min="0" value={draft.price} onChange={event => updateDraft(section.apiType, { price: event.target.value })} placeholder="السعر الافتراضي" className="field py-2.5" dir="ltr" />
+                      )}
                     </div>
+                    {section.pricing && draft.pricingType === 'PRINT_MATRIX' ? (
+                      <PrintMatrixFields config={draft.config} onChange={config => updateDraft(section.apiType, { config })} />
+                    ) : section.pricing && (
+                      <input type="number" min="0" value={draft.price} onChange={event => updateDraft(section.apiType, { price: event.target.value })} placeholder="السعر الافتراضي" className="field py-2.5" dir="ltr" />
+                    )}
                   </>
                 )}
                 <button onClick={() => add(section)} className="btn-primary rounded-xl py-2.5 text-sm font-bold">إضافة</button>
               </div>
               <div className="mt-5 space-y-2">
                 {data[section.key].map(item => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F5F1E8] px-4 py-3">
-                    <div className="min-w-0">
-                      <strong className="block truncate text-sm text-[#0E3B34]">{item.name}</strong>
-                      {item.description && <span className="mt-1 block truncate text-[11px] text-[#5F6764]">{item.description}</span>}
+                  editingId === item.id ? (
+                    <div key={item.id} className="space-y-2 rounded-xl border border-[#0E3B34]/30 bg-[#F5F1E8] p-3">
+                      <input value={editDraft.name} onChange={event => setEditDraft(current => ({ ...current, name: event.target.value }))} placeholder="الاسم" className="field py-2 text-sm" />
+                      {section.detailed && (
+                        <>
+                          <input value={editDraft.description} onChange={event => setEditDraft(current => ({ ...current, description: event.target.value }))} placeholder="وصف مختصر" className="field py-2 text-sm" />
+                          <div className="grid grid-cols-2 gap-2">
+                            <input value={editDraft.category} onChange={event => setEditDraft(current => ({ ...current, category: event.target.value }))} placeholder="التصنيف" className="field py-2 text-sm" />
+                            {section.pricing ? (
+                              <select value={editDraft.pricingType} onChange={event => setEditDraft(current => ({ ...current, pricingType: event.target.value }))} className="field py-2 text-sm bg-white">
+                                {PRICING_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                              </select>
+                            ) : (
+                              <input type="number" min="0" value={editDraft.price} onChange={event => setEditDraft(current => ({ ...current, price: event.target.value }))} placeholder="السعر" className="field py-2 text-sm" dir="ltr" />
+                            )}
+                          </div>
+                          {section.pricing && editDraft.pricingType === 'PRINT_MATRIX' ? (
+                            <PrintMatrixFields config={editDraft.config} onChange={config => setEditDraft(current => ({ ...current, config }))} />
+                          ) : section.pricing && (
+                            <input type="number" min="0" value={editDraft.price} onChange={event => setEditDraft(current => ({ ...current, price: event.target.value }))} placeholder="السعر" className="field py-2 text-sm" dir="ltr" />
+                          )}
+                        </>
+                      )}
+                      <div className="flex gap-2">
+                        <button onClick={() => saveEdit(section, item.id)} className="btn-primary flex-1 rounded-lg py-2 text-xs font-bold">حفظ</button>
+                        <button onClick={cancelEdit} className="flex-1 rounded-lg border border-[#D8D1C7] py-2 text-xs font-bold text-[#5F6764]">إلغاء</button>
+                      </div>
                     </div>
-                    <div className="flex gap-3 text-xs font-bold">
-                      <button onClick={() => rename(section, item)} className="text-[#0E3B34]">تعديل</button>
-                      <button onClick={() => remove(section, item.id)} className="text-red-600">حذف</button>
+                  ) : (
+                    <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F5F1E8] px-4 py-3">
+                      <div className="min-w-0">
+                        <strong className="block truncate text-sm text-[#0E3B34]">{item.name}</strong>
+                        {item.description && <span className="mt-1 block truncate text-[11px] text-[#5F6764]">{item.description}</span>}
+                        {section.pricing && item.pricingType && (
+                          <span className="mt-1 inline-block rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#0E3B34]">
+                            {PRICING_LABELS[item.pricingType] || item.pricingType}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-none gap-3 text-xs font-bold">
+                        <button onClick={() => startEdit(item)} className="text-[#0E3B34]">تعديل</button>
+                        <button onClick={() => remove(section, item.id)} className="text-red-600">حذف</button>
+                      </div>
                     </div>
-                  </div>
+                  )
                 ))}
               </div>
             </section>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+function PrintMatrixFields({ config, onChange }: { config: PrintMatrixConfig; onChange: (config: PrintMatrixConfig) => void }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-3">
+      <p className="mb-2 text-[11px] font-bold text-[#5F6764]">أسعار المصفوفة (ريال لكل 10 صفحات)</p>
+      <div className="grid grid-cols-2 gap-2">
+        {MATRIX_FIELDS.map(([key, label]) => (
+          <label key={key} className="block">
+            <span className="mb-1 block text-[10px] text-[#5F6764]">{label}</span>
+            <input
+              type="number"
+              min="0"
+              value={config[key] ?? ''}
+              onChange={event => onChange({ ...config, [key]: Number(event.target.value) || 0 })}
+              className="field py-2 text-sm"
+              dir="ltr"
+            />
+          </label>
+        ))}
       </div>
     </div>
   )
