@@ -1,71 +1,219 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import BrandLogo from '@/components/brand/BrandLogo'
+import PublicNavbar from '@/components/layout/PublicNavbar'
+import Footer from '@/components/layout/Footer'
+import legalDocuments from '@/data/legal-documents.json'
 
-export default function PoliciesPage() {
-  return <div className="min-h-screen bg-[#F5F1E8]">
-    <header className="bg-gradient-to-b from-[#0E3B34] to-[#092C27] text-white">
-      <div className="mx-auto max-w-4xl px-6 py-12">
-        <Link href="/" className="mb-8 inline-flex" aria-label="إحياء مساحة">
-          <BrandLogo variant="horizontal" tone="white" className="policy-brand-logo" priority />
-        </Link>
-        <div>
-        <Link href="/" className="text-sm font-bold text-white/70">العودة إلى الرئيسية</Link>
-        <h1 className="mt-6 text-4xl font-extrabold">السياسات والأحكام</h1>
-        <p className="mt-3 max-w-xl text-sm leading-7 text-white/70">نلتزم في إحياء مساحة بالوضوح وحماية حقوق أصحاب المساحات وطلابها.</p>
-        <nav className="mt-6 flex flex-wrap gap-2">{[['#terms', 'شروط الاستخدام'], ['#privacy', 'الخصوصية'], ['#cancellation', 'الإلغاء'], ['#usage', 'الاستخدام المقبول']].map(([href, label]) => <a key={href} href={href} className="rounded-full bg-white/10 px-4 py-2 text-xs font-bold hover:bg-white/20">{label}</a>)}</nav>
-        </div>
-      </div>
-    </header>
-    <main className="mx-auto max-w-4xl space-y-7 px-6 py-10">
-      <PolicyCard id="terms" title="شروط الاستخدام">
-        <Intro>باستخدام منصة إحياء مساحة، فإنك توافق على هذه الشروط وعلى تقديم بيانات صحيحة وحديثة.</Intro>
-        <Item num="1" title="التعريفات">«صاحب المساحة» هو الجهة التي تعرض المساحة، و«طالب المساحة» هو المستخدم الذي يحجزها، و«المنصة» هي إحياء مساحة وخدماتها الرقمية.</Item>
-        <Item num="2" title="الأهلية والحساب">يجب أن يكون المستخدم مؤهلًا نظاميًا، وأن يحافظ على سرية حسابه. يحق للإدارة تعليق الحسابات المضللة أو المخالفة.</Item>
-        <Item num="3" title="توثيق أصحاب المساحات">يخضع طلب الانضمام ومعلومات الجهة والمستندات وعقد الوساطة لمراجعة الإدارة قبل تفعيل الحساب أو نشر المساحات.</Item>
-        <Item num="4" title="الحجز المباشر">يصبح الحجز مؤكدًا مباشرة عند اكتمال التحقق من التوفر. لا يحتاج الحجز إلى قبول لاحق من صاحب المساحة.</Item>
-        <Item num="5" title="التزامات صاحب المساحة">تقديم وصف وصور وبيانات ترخيص دقيقة، والمحافظة على سلامة المساحة وتوفرها في الوقت المؤكد.</Item>
-        <Item num="6" title="التزامات طالب المساحة">احترام قواعد المكان والوقت والسعة المحددة، وتحمل مسؤولية الأضرار الناتجة عن سوء الاستخدام.</Item>
-        <Item num="7" title="حدود المسؤولية">تقدم المنصة خدمة تنظيم وربط تقني، وتدعم حل النزاعات وفق البيانات المتاحة والأنظمة المعمول بها.</Item>
-      </PolicyCard>
-
-      <PolicyCard id="privacy" title="سياسة الخصوصية">
-        <Intro>تتعامل إحياء مساحة مع البيانات الشخصية وفق الأنظمة المعمول بها في المملكة العربية السعودية.</Intro>
-        <Item num="1" title="البيانات التي نجمعها">بيانات الحساب والتواصل، ومستندات التحقق لأصحاب المساحات، وبيانات الحجوزات والرسائل والتقييمات.</Item>
-        <Item num="2" title="أغراض الاستخدام">تشغيل الحساب والحجوزات، التحقق من الجهات، التواصل بين الأطراف، تحسين الخدمة، والامتثال للمتطلبات النظامية.</Item>
-        <Item num="3" title="الوصول والحماية">يقتصر الوصول إلى المستندات والبيانات الحساسة على الأشخاص المخولين، مع تطبيق ضوابط أمنية وسجل لإجراءات الإدارة.</Item>
-        <Item num="4" title="حقوق المستخدم">يمكنك طلب تصحيح بياناتك أو الاستفسار عن معالجتها عبر <a dir="ltr" href="mailto:info@ehyamesaha.sa" className="font-bold text-[#0E3B34]">info@ehyamesaha.sa</a>.</Item>
-      </PolicyCard>
-
-      <PolicyCard id="cancellation" title="سياسة الإلغاء">
-        <Intro>يمكن لطالب المساحة إلغاء الحجز من صفحة «حجوزاتي». يعرض النظام النتيجة المحسوبة قبل التأكيد، وفق السياسة المحددة للمساحة.</Intro>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <PolicyBox title="مرنة" tone="green">استرداد كامل عند الإلغاء قبل موعد الحجز بـ24 ساعة.</PolicyBox>
-          <PolicyBox title="متوسطة" tone="amber">استرداد 50% عند الإلغاء قبل موعد الحجز بـ5 أيام.</PolicyBox>
-          <PolicyBox title="صارمة" tone="red">لا يُسترد أي مبلغ عند إلغاء الحجز.</PolicyBox>
-        </div>
-        <Item num="1" title="طريقة الاحتساب">تُطبق مهلة السياسة ونسبة الاسترداد تلقائيًا عند الإلغاء، وتُحفظ نتيجة الاحتساب ضمن سجل الحجز.</Item>
-        <Item num="2" title="إلغاء صاحب المساحة">يُسجل الإلغاء ويُشعر طالب المساحة، وقد تتخذ الإدارة إجراءً عند تكراره.</Item>
-        <Item num="3" title="الظروف الاستثنائية">تراجع الإدارة الحالات القاهرة أو النزاعات بناءً على المستندات والأنظمة السارية.</Item>
-        <p className="rounded-xl border border-[#D8D1C7] bg-[#FAF8F3] p-4 text-xs leading-6 text-[#5F6764]">ملاحظة: المنصة لا تنفذ تحصيلًا أو استردادًا ماليًا في الإصدار الحالي؛ تظهر القيم للاحتساب والتوثيق فقط.</p>
-      </PolicyCard>
-
-      <PolicyCard id="usage" title="سياسة الاستخدام المقبول">
-        <Item num="1" title="المحتوى">يجب أن تكون الأوصاف والصور والتقييمات حقيقية ومحترمة وغير مضللة.</Item>
-        <Item num="2" title="الأمان">يُحظر محاولة الوصول غير المصرح به أو إساءة استخدام الحسابات أو تعطيل الخدمة.</Item>
-        <Item num="3" title="الإشراف">يحق للإدارة إخفاء المحتوى المخالف، وتعليق الحساب، والاحتفاظ بسجل القرار الإداري.</Item>
-      </PolicyCard>
-    </main>
-    <footer className="flex flex-col items-center gap-3 pb-10 text-center text-xs text-[#5F6764]">
-      <BrandLogo variant="horizontal" tone="green" className="policy-footer-logo" />
-      <span>جميع الحقوق محفوظة © {new Date().getFullYear()} إحياء مساحة · <span dir="ltr">+966 50 491 3274</span></span>
-    </footer>
-  </div>
+export const metadata: Metadata = {
+  title: 'السياسات والشروط | إحياء مساحة',
+  description:
+    'الوثائق القانونية الرسمية المنظمة لاستخدام منصة إحياء مساحة والحجوزات وأصحاب المساحات والخصوصية والملكية الفكرية.',
+  alternates: { canonical: '/policies' },
 }
 
-function PolicyCard({ id, title, children }: { id: string; title: string; children: React.ReactNode }) { return <section id={id} className="scroll-mt-6 rounded-2xl border border-[#D8D1C7] bg-white p-6 lg:p-8"><h2 className="mb-6 text-xl font-extrabold text-[#1B1B1B]">{title}</h2><div className="space-y-5 text-sm leading-8 text-[#3F4B47]">{children}</div></section> }
-function Intro({ children }: { children: React.ReactNode }) { return <p className="font-bold text-[#0E3B34]">{children}</p> }
-function Item({ num, title, children }: { num: string; title: string; children: React.ReactNode }) { return <div className="border-r-2 border-[#B99A63]/40 pr-4"><h3 className="font-extrabold text-[#1B1B1B]">{num}. {title}</h3><p>{children}</p></div> }
-function PolicyBox({ title, tone, children }: { title: string; tone: 'green' | 'amber' | 'red'; children: React.ReactNode }) {
-  const classes = { green: 'border-green-200 bg-green-50', amber: 'border-amber-200 bg-amber-50', red: 'border-red-200 bg-red-50' }
-  return <div className={`rounded-xl border p-5 ${classes[tone]}`}><h3 className="font-extrabold text-[#1B1B1B]">{title}</h3><p className="mt-2 text-xs leading-6">{children}</p></div>
+const DOCUMENT_META: Record<string, { shortTitle: string; englishTitle: string; number: string }> = {
+  'platform-terms': {
+    shortTitle: 'شروط الاستخدام',
+    englishTitle: 'Platform Terms of Use',
+    number: '01',
+  },
+  'booking-terms': {
+    shortTitle: 'شروط الحجز والخدمات',
+    englishTitle: 'Booking & Service Terms',
+    number: '02',
+  },
+  'owner-terms': {
+    shortTitle: 'شروط أصحاب المساحات',
+    englishTitle: 'Space Owner Terms',
+    number: '03',
+  },
+  privacy: {
+    shortTitle: 'سياسة الخصوصية',
+    englishTitle: 'Privacy Policy',
+    number: '04',
+  },
+  'intellectual-property': {
+    shortTitle: 'الملكية الفكرية',
+    englishTitle: 'Intellectual Property',
+    number: '05',
+  },
+}
+
+export default function PoliciesPage() {
+  return (
+    <div className="min-h-screen bg-[#F5F1E8]">
+      <PublicNavbar />
+      <main dir="rtl" data-no-translate="true">
+        <section className="relative overflow-hidden bg-[#092C27] text-white">
+          <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_15%_30%,#B99A63_0,transparent_28%),linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] [background-size:auto,46px_46px,46px_46px]" />
+          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div className="grid gap-10 lg:grid-cols-[1fr_340px] lg:items-end">
+              <div>
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#B99A63]/30 bg-[#B99A63]/10 px-3.5 py-2 text-xs font-extrabold text-[#E0C589]">
+                  <ShieldIcon />
+                  الوثائق القانونية الرسمية
+                </div>
+                <h1 className="max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+                  وضوح يحفظ الحقوق،
+                  <span className="block text-[#D7B66D]">وثقة تنظّم كل علاقة.</span>
+                </h1>
+                <p className="mt-6 max-w-3xl text-sm leading-8 text-white/70 sm:text-base">
+                  هذه هي النسخة الرسمية الكاملة للوثائق الخمس المنظمة لاستخدام منصة إحياء مساحة.
+                  يُرجى قراءتها قبل إنشاء الحساب أو إضافة مساحة أو إتمام الحجز.
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-white/[.055] p-5 backdrop-blur">
+                <p className="text-xs font-bold text-[#D7B66D]">النسخة المعتمدة</p>
+                <p className="mt-2 text-lg font-extrabold">الإصدار الأول</p>
+                <p className="mt-1 text-xs leading-6 text-white/55">آخر تحديث: 26-7-2026 — 12-2-1448</p>
+                <a
+                  href="/legal/ehya-masaha-legal-pack.docx"
+                  download
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-extrabold text-[#0E3B34] transition hover:bg-[#F4E8CE]"
+                >
+                  <DownloadIcon />
+                  تنزيل الحزمة القانونية
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-[#DED5C7] bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              {legalDocuments.map((document) => {
+                const meta = DOCUMENT_META[document.id]
+                return (
+                  <a
+                    key={document.id}
+                    href={`#${document.id}`}
+                    className="group flex items-center gap-3 rounded-2xl border border-[#E1D9CD] bg-[#FAF8F3] p-4 transition hover:-translate-y-0.5 hover:border-[#B99A63] hover:bg-white hover:shadow-lg"
+                  >
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0E3B34] text-xs font-extrabold text-[#D7B66D]">
+                      {meta.number}
+                    </span>
+                    <span className="min-w-0">
+                      <strong className="block text-sm text-[#17221E]">{meta.shortTitle}</strong>
+                      <span className="mt-0.5 block truncate text-[10px] text-[#7B827E]" dir="ltr">
+                        {meta.englishTitle}
+                      </span>
+                    </span>
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[270px_minmax(0,1fr)] lg:px-8 lg:py-16">
+          <aside className="hidden lg:block">
+            <div className="sticky top-28 rounded-[22px] border border-[#DED5C7] bg-white p-4 shadow-[0_18px_50px_rgba(9,44,39,.06)]">
+              <p className="px-3 pb-3 text-xs font-extrabold text-[#8D7342]">فهرس الوثائق</p>
+              <nav className="space-y-1">
+                {legalDocuments.map((document) => {
+                  const meta = DOCUMENT_META[document.id]
+                  return (
+                    <a key={document.id} href={`#${document.id}`} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#4E5A55] transition hover:bg-[#EEF3EE] hover:text-[#0E3B34]">
+                      <span className="text-[11px] font-extrabold text-[#B1872E]">{meta.number}</span>
+                      {meta.shortTitle}
+                    </a>
+                  )
+                })}
+              </nav>
+              <div className="mt-4 rounded-xl bg-[#0E3B34] p-4 text-white">
+                <p className="text-xs font-extrabold">هل لديك استفسار قانوني؟</p>
+                <Link href="/contact" className="mt-3 inline-flex text-xs font-bold text-[#E0C589] underline underline-offset-4">
+                  تواصل مع فريق إحياء مساحة
+                </Link>
+              </div>
+            </div>
+          </aside>
+
+          <div className="space-y-10">
+            <div className="rounded-2xl border border-[#D8D1C7] bg-[#FFFDF9] p-5 text-sm leading-8 text-[#5B655F]">
+              <strong className="text-[#0E3B34]">ملاحظة لغوية:</strong>{' '}
+              النص العربي أدناه هو النص القانوني الرسمي المعتمد. تظهر عناوين إنجليزية مساندة
+              لتسهيل الوصول، ولا تحل محل النسخة العربية.
+            </div>
+            {legalDocuments.map((document) => (
+              <LegalDocument key={document.id} document={document} />
+            ))}
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+function LegalDocument({
+  document,
+}: {
+  document: (typeof legalDocuments)[number]
+}) {
+  const meta = DOCUMENT_META[document.id]
+  return (
+    <article id={document.id} className="scroll-mt-28 overflow-hidden rounded-[28px] border border-[#D8D1C7] bg-white shadow-[0_24px_70px_rgba(17,40,32,.055)]">
+      <header className="border-b border-[#E5DDD1] bg-gradient-to-l from-[#F8F3E8] to-white px-6 py-7 sm:px-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-extrabold tracking-wider text-[#B1872E]">الوثيقة {meta.number}</p>
+            <h2 className="mt-2 text-2xl font-extrabold leading-tight text-[#102F29] sm:text-3xl">{document.title}</h2>
+            <p className="mt-2 text-xs font-semibold text-[#767E7A]" dir="ltr">{meta.englishTitle}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2 text-[11px] font-bold">
+            <span className="rounded-full bg-[#0E3B34] px-3 py-1.5 text-white">{document.version}</span>
+            <span className="rounded-full border border-[#D8D1C7] bg-white px-3 py-1.5 text-[#6F756F]">{document.updatedAt}</span>
+          </div>
+        </div>
+      </header>
+      <div className="space-y-4 px-6 py-8 sm:px-8 sm:py-10">
+        {document.paragraphs.map((paragraph, index) => (
+          <LegalParagraph
+            key={`${document.id}-${index}`}
+            paragraph={paragraph}
+            previous={document.paragraphs[index - 1]}
+          />
+        ))}
+      </div>
+    </article>
+  )
+}
+
+function LegalParagraph({ paragraph, previous }: { paragraph: string; previous?: string }) {
+  if (paragraph.startsWith('الإصدار') || paragraph.startsWith('آخر تحديث')) return null
+  if (paragraph.startsWith('المادة ')) {
+    return (
+      <div className="mt-10 flex items-center gap-3 first:mt-0">
+        <span className="rounded-full bg-[#0E3B34] px-3 py-1.5 text-xs font-extrabold text-[#E0C589]">{paragraph}</span>
+        <span className="h-px flex-1 bg-[#E3DCCF]" />
+      </div>
+    )
+  }
+  if (previous?.startsWith('المادة ')) {
+    return <h3 className="pb-1 text-xl font-extrabold text-[#17221E]">{paragraph}</h3>
+  }
+  if (/^(أولاً|ثانياً|ثالثاً|رابعاً|خامساً|سادساً|سابعاً|ثامناً|تاسعاً|عاشراً)[.:]/.test(paragraph)) {
+    return <h3 className="mt-8 border-r-4 border-[#B99A63] pr-4 text-lg font-extrabold text-[#0E3B34]">{paragraph}</h3>
+  }
+  if (paragraph.startsWith('•')) {
+    return <p className="flex gap-3 pr-3 text-sm leading-8 text-[#46524D]"><span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[#B99A63]" /><span>{paragraph.slice(1).trim()}</span></p>
+  }
+  if (/^\d+\./.test(paragraph)) {
+    const [number, ...rest] = paragraph.split('.')
+    return <p className="flex gap-3 rounded-xl bg-[#FAF8F3] px-4 py-3 text-sm leading-8 text-[#46524D]"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#E9DFCA] text-xs font-extrabold text-[#795F2D]">{number}</span><span>{rest.join('.').trim()}</span></p>
+  }
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paragraph)) {
+    return <a href={`mailto:${paragraph}`} dir="ltr" className="inline-flex rounded-lg bg-[#EEF3EE] px-3 py-2 text-sm font-extrabold text-[#0E3B34] hover:underline">{paragraph}</a>
+  }
+  return <p className="text-sm leading-8 text-[#46524D] sm:text-[15px]">{paragraph}</p>
+}
+
+function ShieldIcon() {
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+}
+
+function DownloadIcon() {
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
 }

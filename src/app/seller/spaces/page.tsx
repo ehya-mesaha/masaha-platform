@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatSpaceNumber } from '@/lib/format'
 
 export default async function SellerSpacesPage() {
   const user = await getCurrentUser()
@@ -41,7 +41,7 @@ export default async function SellerSpacesPage() {
                 {space.images[0]?.url ? <img src={space.images[0].url} alt={space.name} className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center text-[#8B958E]"><BuildingIcon /></span>}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold text-[#B99A63]">{space.publicRef || 'بانتظار الرقم المرجعي'}</p><h2 className="mt-1 truncate text-lg font-extrabold text-[#1B1B1B]">{space.name}</h2></div><Badge variant={badge.variant}>{badge.label}</Badge></div>
+                <div className="flex items-start justify-between gap-3"><div><p dir="ltr" className="text-right font-mono text-xs font-bold text-[#B99A63]">{formatSpaceNumber(space.refSeq)}</p><h2 className="mt-1 truncate text-lg font-extrabold text-[#1B1B1B]">{space.name}</h2></div><Badge variant={badge.variant}>{badge.label}</Badge></div>
                 <p className="mt-2 text-xs text-[#5F6764]">{space.type.name} · {space.city}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-[#33423F]">
                   <span className="rounded-full bg-[#F5F1E8] px-3 py-1">{formatNumber(space.units.length)} وحدة</span>

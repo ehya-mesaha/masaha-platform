@@ -6,6 +6,7 @@ import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
+import { formatSpaceNumber } from '@/lib/format'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -19,6 +20,7 @@ type Service = { id: string; name: string; description: string | null; price: nu
 type Rule = { id: string; rule: string }
 type Space = {
   id: string
+  refSeq: number
   name: string
   description: string | null
   city: string
@@ -148,7 +150,10 @@ export default function AdminSpaceDetailPage() {
       {/* Header */}
       <div className="card-elevated p-6 mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">{space.name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">{space.name}</h1>
+            <span dir="ltr" className="rounded-full bg-[#F5F1E8] px-2.5 py-1 font-mono text-xs font-bold text-[#0E3B34]">{formatSpaceNumber(space.refSeq)}</span>
+          </div>
           <p className="text-[#5F6764] text-sm mt-1">{space.type.name} · {space.city}{space.district ? ` · ${space.district}` : ''}</p>
           <p className="text-xs text-[#5F6764] mt-1">تاريخ الإنشاء: {new Date(space.createdAt).toLocaleDateString('en-US')}</p>
         </div>

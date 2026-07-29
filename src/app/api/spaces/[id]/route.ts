@@ -151,6 +151,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     if (validationError) return NextResponse.json({ error: validationError }, { status: 400 })
 
+    const [managedType, managedCity] = await Promise.all([
+      prisma.spaceType.findUnique({ where: { id: typeId }, select: { id: true } }),
+      prisma.city.findUnique({ where: { name: city.trim() }, select: { name: true, isActive: true } }),
+    ])
+    if (!managedType) {
+      return NextResponse.json({ error: 'نوع المساحة المحدد غير متاح. حدّث الصفحة واختر نوعًا من القائمة.' }, { status: 400 })
+    }
+    if ((!managedCity || !managedCity.isActive) && city.trim() !== space.city) {
+      return NextResponse.json({ error: 'المدينة المحددة غير متاحة حاليًا. اختر مدينة من القائمة.' }, { status: 400 })
+    }
+
     const enabledServices = (Array.isArray(services) ? services : [])
       .filter((service: { isEnabled?: boolean; catalogId?: string }) => service.isEnabled && service.catalogId)
     const catalogRows = await prisma.serviceCatalog.findMany({
@@ -210,7 +221,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           name,
           typeId,
           description,
-          city,
+          city: managedCity?.name || space.city,
           district,
           address,
           streetName: streetName || null,

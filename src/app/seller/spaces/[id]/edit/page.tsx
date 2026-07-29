@@ -5,14 +5,17 @@ import { useParams, useRouter } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import ImageUploader from '@/components/ui/ImageUploader'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 
 type SpaceType = { id: string; name: string }
+type City = { id: string; name: string }
 type Amenity = { id: string; name: string }
 
 export default function EditSpacePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [types, setTypes] = useState<SpaceType[]>([])
+  const [cities, setCities] = useState<City[]>([])
   const [amenities, setAmenities] = useState<Amenity[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -36,7 +39,7 @@ export default function EditSpacePage() {
   useEffect(() => {
     Promise.all([
       fetch(`/api/spaces/${id}`).then(r => r.json()),
-      fetch('/api/admin/categories').then(r => r.json()),
+      fetch('/api/catalog').then(r => r.json()),
     ]).then(([spaceData, catData]) => {
       const s = spaceData.space
       if (s) {
@@ -56,6 +59,7 @@ export default function EditSpacePage() {
         })
       }
       setTypes(catData.types || [])
+      setCities(catData.cities || [])
       setAmenities(catData.amenities || [])
       setLoading(false)
     })
@@ -105,6 +109,11 @@ export default function EditSpacePage() {
     return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>
   }
 
+  const cityOptions = form.city && !cities.some(city => city.name === form.city)
+    ? [{ id: `legacy:${form.city}`, name: form.city }, ...cities]
+    : cities
+  const selectedCityId = cityOptions.find(city => city.name === form.city)?.id || ''
+
   return (
     <div className="p-8">
       <div className="max-w-2xl mx-auto">
@@ -142,8 +151,17 @@ export default function EditSpacePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">المدينة *</label>
-                <input value={form.city} onChange={e => update('city', e.target.value)} required
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" />
+                <SearchableSelect
+                  value={selectedCityId}
+                  onChange={cityId => update('city', cityOptions.find(city => city.id === cityId)?.name || '')}
+                  options={cityOptions}
+                  placeholder="اختر المدينة"
+                  searchPlaceholder="ابحث عن مدينة..."
+                  emptyText="لا توجد مدينة مطابقة"
+                  buttonClassName="w-full rounded-lg border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm focus:outline-none focus:border-[#0E3B34]"
+                  required
+                  ariaLabel="المدينة"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">الحي</label>

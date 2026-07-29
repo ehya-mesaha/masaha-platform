@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
 import DatePickerCalendar from '@/components/ui/DatePickerCalendar'
 import StartConversationButton from '@/components/chat/StartConversationButton'
+import { formatSpaceNumber } from '@/lib/format'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -39,6 +40,7 @@ type Review = {
 }
 type Space = {
   id: string
+  refSeq: number
   name: string
   description: string | null
   city: string
@@ -336,6 +338,7 @@ export default function SpaceDetailPage() {
                 <div>
                   <p className="mb-2 text-xs font-bold text-[#A3802F]">{space.type.name} · {space.city}</p>
                   <h1 className="font-display text-3xl font-extrabold leading-tight text-[#1B1B1B] sm:text-4xl">{space.name}</h1>
+                  <p dir="ltr" className="mt-1.5 text-right font-mono text-xs font-bold text-[#8B9389]">{formatSpaceNumber(space.refSeq)}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <RatingStars rating={space.reviewSummary.average} />
                     <span className="text-xs font-semibold text-[#0E3B34]">

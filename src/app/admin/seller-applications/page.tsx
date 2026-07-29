@@ -19,6 +19,7 @@ export default async function SellerApplicationsPage() {
   }).catch(() => [])
   return <div className="dashboard-page">
     <header className="page-hero mb-6 p-6"><p className="mb-2 text-xs font-bold text-[#B99A63]">اعتماد الشركاء</p><h1 className="text-2xl font-extrabold text-white">طلبات انضمام أصحاب المساحات</h1><p className="mt-2 text-sm text-white/65">مراجعة البيانات والمستندات والعقد وتفعيل الحساب من مسار واحد.</p></header>
+    <div className="mb-4 flex justify-end"><Link href="/api/admin/exports/seller-applications?format=xlsx" prefetch={false} className="rounded-xl bg-[#0E3B34] px-5 py-2.5 text-sm font-extrabold text-white">تصدير Excel</Link></div>
     <section className="premium-card overflow-hidden">
       <div className="overflow-x-auto"><table className="w-full text-sm">
         <thead className="bg-[#FAF8F3]"><tr>{['الرقم', 'الجهة', 'المسؤول', 'تاريخ التقديم', 'الحالة', ''].map((item) => <th key={item} className="px-5 py-3 text-right font-bold text-[#5F6764]">{item}</th>)}</tr></thead>

@@ -2,6 +2,10 @@ export function formatNumber(value: number) {
   return value.toLocaleString('en-US')
 }
 
+export function formatSpaceNumber(refSeq: number) {
+  return `M-${String(refSeq).padStart(6, '0')}`
+}
+
 export function formatDate(value: string | Date, locale: 'ar' | 'en' = 'ar') {
   return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
     timeZone: 'Asia/Riyadh',

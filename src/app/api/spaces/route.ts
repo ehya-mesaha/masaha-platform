@@ -91,6 +91,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 })
     }
 
+    const [managedType, managedCity] = await Promise.all([
+      prisma.spaceType.findUnique({ where: { id: typeId }, select: { id: true } }),
+      prisma.city.findUnique({ where: { name: city.trim() }, select: { name: true, isActive: true } }),
+    ])
+    if (!managedType) {
+      return NextResponse.json({ error: 'نوع المساحة المحدد غير متاح. حدّث الصفحة واختر نوعًا من القائمة.' }, { status: 400 })
+    }
+    if (!managedCity?.isActive) {
+      return NextResponse.json({ error: 'المدينة المحددة غير متاحة حاليًا. اختر مدينة من القائمة.' }, { status: 400 })
+    }
+
     const enabledServices = (Array.isArray(services) ? services : [])
       .filter((service: { isEnabled?: boolean; catalogId?: string }) => service.isEnabled && service.catalogId)
     const catalogRows = await prisma.serviceCatalog.findMany({
@@ -113,7 +124,7 @@ export async function POST(req: NextRequest) {
         name,
         typeId,
         description,
-        city,
+        city: managedCity.name,
         district,
         address,
         streetName: streetName || null,

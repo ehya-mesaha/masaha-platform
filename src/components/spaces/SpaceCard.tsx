@@ -10,6 +10,7 @@ interface SpaceCardProps {
   pricePeriod: string
   capacity?: number | null
   imageUrl?: string | null
+  spaceNumber?: string
   availableSessions?: number
   totalSessions?: number
   totalHours?: number
@@ -27,6 +28,7 @@ export default function SpaceCard({
   price,
   capacity,
   imageUrl,
+  spaceNumber,
   availableSessions,
   totalSessions,
   totalHours,
@@ -88,9 +90,12 @@ export default function SpaceCard({
 
       {/* Content */}
       <div className="space-card-content bg-[linear-gradient(180deg,#fff_0%,#fffdf9_100%)] p-5">
-        <h3 className="font-display font-extrabold text-[#1B1B1B] text-lg mb-1.5 line-clamp-1 group-hover:text-[#0E3B34]">
+        <h3 className="font-display font-extrabold text-[#1B1B1B] text-lg mb-1 line-clamp-1 group-hover:text-[#0E3B34]">
           {name}
         </h3>
+        {spaceNumber && (
+          <p className="mb-1.5 font-mono text-[10px] tracking-wide text-[#B5B0A2]" dir="ltr">{spaceNumber}</p>
+        )}
         <div className="text-[#5F6764] text-xs mb-4 flex items-center gap-1.5">
           <svg className="w-3.5 h-3.5 text-[#B99A63]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

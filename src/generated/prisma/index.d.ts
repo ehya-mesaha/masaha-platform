@@ -441,7 +441,7 @@ export class PrismaClient<
    * Read more in our [docs](https://pris.ly/d/client).
    */
 
-  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
+  constructor(optionsArg ?: Prisma.PrismaClientConstructorArgs<ClientOptions>);
   $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
 
   /**
@@ -921,8 +921,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.8.0
-   * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
+   * Prisma Client JS version: 7.9.1
+   * Query Engine version: e922089b7d7502aff4249d5da3420f6fa55fc6ad
    */
   export type PrismaVersion = {
     client: string
@@ -1057,6 +1057,19 @@ export namespace Prisma {
   };
 
   /**
+   * Resolved type of the argument passed to the `PrismaClient` constructor.
+   *
+   * When called without a narrower options type (the common case), this resolves
+   * to `PrismaClientOptions` directly, which produces a clear TypeScript error
+   * message (`not assignable to parameter of type 'PrismaClientOptions'`) when
+   * the argument is missing or incomplete. When the user supplies a narrower
+   * options type (e.g. via a literal), it falls back to `Subset` to keep
+   * filtering out unknown properties.
+   */
+  export type PrismaClientConstructorArgs<Options extends PrismaClientOptions> =
+    [PrismaClientOptions] extends [Options] ? PrismaClientOptions : Subset<Options, PrismaClientOptions>;
+
+  /**
    * SelectSubset
    * @desc From `T` pick properties that exist in `U`. Simple version of Intersection.
    * Additionally, it validates, if both select and include are present. If the case, it errors.
@@ -1088,7 +1101,7 @@ export namespace Prisma {
   type XOR<T, U> =
     T extends object ?
     U extends object ?
-      (Without<T, U> & U) | (Without<U, T> & T)
+      ((Without<T, U> & U) | (Without<U, T> & T)) & object
     : U : T
 
 
@@ -3986,7 +3999,7 @@ export namespace Prisma {
      * ```
      * // Shorthand for `emit: 'stdout'`
      * log: ['query', 'info', 'warn', 'error']
-     * 
+     *
      * // Emit as events only
      * log: [
      *   { emit: 'event', level: 'query' },
@@ -3994,14 +4007,14 @@ export namespace Prisma {
      *   { emit: 'event', level: 'warn' }
      *   { emit: 'event', level: 'error' }
      * ]
-     * 
+     *
      * / Emit as events and log to stdout
      * og: [
      *  { emit: 'stdout', level: 'query' },
      *  { emit: 'stdout', level: 'info' },
      *  { emit: 'stdout', level: 'warn' }
      *  { emit: 'stdout', level: 'error' }
-     * 
+     *
      * ```
      * Read more in our [docs](https://pris.ly/d/logging).
      */
@@ -4017,11 +4030,26 @@ export namespace Prisma {
       isolationLevel?: Prisma.TransactionIsolationLevel
     }
     /**
-     * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-planetscale`
+     * A driver adapter that PrismaClient uses to connect to your database, such as the ones provided by `@prisma/adapter-pg`, `@prisma/adapter-libsql`, `@prisma/adapter-planetscale`, etc.
+     *
+     * A driver adapter is **required** unless you connect to your database through Prisma Accelerate (in which case use `accelerateUrl` instead).
+     *
+     * Learn more: https://pris.ly/d/driver-adapters
+     *
+     * @example
+     * ```ts
+     * import { PrismaPg } from '@prisma/adapter-pg'
+     * import { PrismaClient } from './generated/prisma/client'
+     *
+     * const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+     * const prisma = new PrismaClient({ adapter })
+     * ```
      */
     adapter?: runtime.SqlDriverAdapterFactory
     /**
-     * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
+     * The Prisma Accelerate connection URL. Use this option to connect to your database through Prisma Accelerate instead of using a driver adapter to connect directly.
+     *
+     * Learn more: https://pris.ly/d/accelerate
      */
     accelerateUrl?: string
     /**
@@ -11816,6 +11844,7 @@ export namespace Prisma {
   export type SpaceAvgAggregateOutputType = {
     capacity: number | null
     price: number | null
+    refSeq: number | null
     identicalUnitsCount: number | null
     latitude: number | null
     longitude: number | null
@@ -11826,6 +11855,7 @@ export namespace Prisma {
   export type SpaceSumAggregateOutputType = {
     capacity: number | null
     price: number | null
+    refSeq: number | null
     identicalUnitsCount: number | null
     latitude: number | null
     longitude: number | null
@@ -11844,6 +11874,7 @@ export namespace Prisma {
     price: number | null
     pricePeriod: string | null
     publicRef: string | null
+    refSeq: number | null
     advertisingLicenseNumber: string | null
     identicalUnitsCount: number | null
     status: $Enums.SpaceStatus | null
@@ -11875,6 +11906,7 @@ export namespace Prisma {
     price: number | null
     pricePeriod: string | null
     publicRef: string | null
+    refSeq: number | null
     advertisingLicenseNumber: string | null
     identicalUnitsCount: number | null
     status: $Enums.SpaceStatus | null
@@ -11906,6 +11938,7 @@ export namespace Prisma {
     price: number
     pricePeriod: number
     publicRef: number
+    refSeq: number
     advertisingLicenseNumber: number
     identicalUnitsCount: number
     status: number
@@ -11931,6 +11964,7 @@ export namespace Prisma {
   export type SpaceAvgAggregateInputType = {
     capacity?: true
     price?: true
+    refSeq?: true
     identicalUnitsCount?: true
     latitude?: true
     longitude?: true
@@ -11941,6 +11975,7 @@ export namespace Prisma {
   export type SpaceSumAggregateInputType = {
     capacity?: true
     price?: true
+    refSeq?: true
     identicalUnitsCount?: true
     latitude?: true
     longitude?: true
@@ -11959,6 +11994,7 @@ export namespace Prisma {
     price?: true
     pricePeriod?: true
     publicRef?: true
+    refSeq?: true
     advertisingLicenseNumber?: true
     identicalUnitsCount?: true
     status?: true
@@ -11990,6 +12026,7 @@ export namespace Prisma {
     price?: true
     pricePeriod?: true
     publicRef?: true
+    refSeq?: true
     advertisingLicenseNumber?: true
     identicalUnitsCount?: true
     status?: true
@@ -12021,6 +12058,7 @@ export namespace Prisma {
     price?: true
     pricePeriod?: true
     publicRef?: true
+    refSeq?: true
     advertisingLicenseNumber?: true
     identicalUnitsCount?: true
     status?: true
@@ -12139,6 +12177,7 @@ export namespace Prisma {
     price: number
     pricePeriod: string
     publicRef: string | null
+    refSeq: number
     advertisingLicenseNumber: string | null
     identicalUnitsCount: number
     status: $Enums.SpaceStatus
@@ -12189,6 +12228,7 @@ export namespace Prisma {
     price?: boolean
     pricePeriod?: boolean
     publicRef?: boolean
+    refSeq?: boolean
     advertisingLicenseNumber?: boolean
     identicalUnitsCount?: boolean
     status?: boolean
@@ -12238,6 +12278,7 @@ export namespace Prisma {
     price?: boolean
     pricePeriod?: boolean
     publicRef?: boolean
+    refSeq?: boolean
     advertisingLicenseNumber?: boolean
     identicalUnitsCount?: boolean
     status?: boolean
@@ -12272,6 +12313,7 @@ export namespace Prisma {
     price?: boolean
     pricePeriod?: boolean
     publicRef?: boolean
+    refSeq?: boolean
     advertisingLicenseNumber?: boolean
     identicalUnitsCount?: boolean
     status?: boolean
@@ -12306,6 +12348,7 @@ export namespace Prisma {
     price?: boolean
     pricePeriod?: boolean
     publicRef?: boolean
+    refSeq?: boolean
     advertisingLicenseNumber?: boolean
     identicalUnitsCount?: boolean
     status?: boolean
@@ -12326,7 +12369,7 @@ export namespace Prisma {
     organizationId?: boolean
   }
 
-  export type SpaceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "city" | "district" | "address" | "capacity" | "price" | "pricePeriod" | "publicRef" | "advertisingLicenseNumber" | "identicalUnitsCount" | "status" | "adminNotes" | "createdAt" | "updatedAt" | "latitude" | "longitude" | "streetName" | "buildingNumber" | "postalCode" | "landmarks" | "minBookingHours" | "maxAdvanceBookingDays" | "cancellationPolicy" | "typeId" | "sellerId" | "organizationId", ExtArgs["result"]["space"]>
+  export type SpaceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "city" | "district" | "address" | "capacity" | "price" | "pricePeriod" | "publicRef" | "refSeq" | "advertisingLicenseNumber" | "identicalUnitsCount" | "status" | "adminNotes" | "createdAt" | "updatedAt" | "latitude" | "longitude" | "streetName" | "buildingNumber" | "postalCode" | "landmarks" | "minBookingHours" | "maxAdvanceBookingDays" | "cancellationPolicy" | "typeId" | "sellerId" | "organizationId", ExtArgs["result"]["space"]>
   export type SpaceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     type?: boolean | SpaceTypeDefaultArgs<ExtArgs>
     seller?: boolean | UserDefaultArgs<ExtArgs>
@@ -12390,6 +12433,7 @@ export namespace Prisma {
       price: number
       pricePeriod: string
       publicRef: string | null
+      refSeq: number
       advertisingLicenseNumber: string | null
       identicalUnitsCount: number
       status: $Enums.SpaceStatus
@@ -12858,6 +12902,7 @@ export namespace Prisma {
     readonly price: FieldRef<"Space", 'Float'>
     readonly pricePeriod: FieldRef<"Space", 'String'>
     readonly publicRef: FieldRef<"Space", 'String'>
+    readonly refSeq: FieldRef<"Space", 'Int'>
     readonly advertisingLicenseNumber: FieldRef<"Space", 'String'>
     readonly identicalUnitsCount: FieldRef<"Space", 'Int'>
     readonly status: FieldRef<"Space", 'SpaceStatus'>
@@ -45844,6 +45889,7 @@ export namespace Prisma {
     price: 'price',
     pricePeriod: 'pricePeriod',
     publicRef: 'publicRef',
+    refSeq: 'refSeq',
     advertisingLicenseNumber: 'advertisingLicenseNumber',
     identicalUnitsCount: 'identicalUnitsCount',
     status: 'status',
@@ -47036,6 +47082,7 @@ export namespace Prisma {
     price?: FloatFilter<"Space"> | number
     pricePeriod?: StringFilter<"Space"> | string
     publicRef?: StringNullableFilter<"Space"> | string | null
+    refSeq?: IntFilter<"Space"> | number
     advertisingLicenseNumber?: StringNullableFilter<"Space"> | string | null
     identicalUnitsCount?: IntFilter<"Space"> | number
     status?: EnumSpaceStatusFilter<"Space"> | $Enums.SpaceStatus
@@ -47084,6 +47131,7 @@ export namespace Prisma {
     price?: SortOrder
     pricePeriod?: SortOrder
     publicRef?: SortOrderInput | SortOrder
+    refSeq?: SortOrder
     advertisingLicenseNumber?: SortOrderInput | SortOrder
     identicalUnitsCount?: SortOrder
     status?: SortOrder
@@ -47124,6 +47172,7 @@ export namespace Prisma {
   export type SpaceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     publicRef?: string
+    refSeq?: number
     AND?: SpaceWhereInput | SpaceWhereInput[]
     OR?: SpaceWhereInput[]
     NOT?: SpaceWhereInput | SpaceWhereInput[]
@@ -47170,7 +47219,7 @@ export namespace Prisma {
     rules?: SpaceRuleListRelationFilter
     conversations?: ConversationListRelationFilter
     reviews?: SpaceReviewListRelationFilter
-  }, "id" | "publicRef">
+  }, "id" | "publicRef" | "refSeq">
 
   export type SpaceOrderByWithAggregationInput = {
     id?: SortOrder
@@ -47183,6 +47232,7 @@ export namespace Prisma {
     price?: SortOrder
     pricePeriod?: SortOrder
     publicRef?: SortOrderInput | SortOrder
+    refSeq?: SortOrder
     advertisingLicenseNumber?: SortOrderInput | SortOrder
     identicalUnitsCount?: SortOrder
     status?: SortOrder
@@ -47222,6 +47272,7 @@ export namespace Prisma {
     price?: FloatWithAggregatesFilter<"Space"> | number
     pricePeriod?: StringWithAggregatesFilter<"Space"> | string
     publicRef?: StringNullableWithAggregatesFilter<"Space"> | string | null
+    refSeq?: IntWithAggregatesFilter<"Space"> | number
     advertisingLicenseNumber?: StringNullableWithAggregatesFilter<"Space"> | string | null
     identicalUnitsCount?: IntWithAggregatesFilter<"Space"> | number
     status?: EnumSpaceStatusWithAggregatesFilter<"Space"> | $Enums.SpaceStatus
@@ -49817,6 +49868,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -49862,6 +49914,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -49952,6 +50005,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -49997,6 +50051,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -50056,6 +50111,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -53026,6 +53082,7 @@ export namespace Prisma {
     price?: SortOrder
     pricePeriod?: SortOrder
     publicRef?: SortOrder
+    refSeq?: SortOrder
     advertisingLicenseNumber?: SortOrder
     identicalUnitsCount?: SortOrder
     status?: SortOrder
@@ -53049,6 +53106,7 @@ export namespace Prisma {
   export type SpaceAvgOrderByAggregateInput = {
     capacity?: SortOrder
     price?: SortOrder
+    refSeq?: SortOrder
     identicalUnitsCount?: SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
@@ -53067,6 +53125,7 @@ export namespace Prisma {
     price?: SortOrder
     pricePeriod?: SortOrder
     publicRef?: SortOrder
+    refSeq?: SortOrder
     advertisingLicenseNumber?: SortOrder
     identicalUnitsCount?: SortOrder
     status?: SortOrder
@@ -53098,6 +53157,7 @@ export namespace Prisma {
     price?: SortOrder
     pricePeriod?: SortOrder
     publicRef?: SortOrder
+    refSeq?: SortOrder
     advertisingLicenseNumber?: SortOrder
     identicalUnitsCount?: SortOrder
     status?: SortOrder
@@ -53121,6 +53181,7 @@ export namespace Prisma {
   export type SpaceSumOrderByAggregateInput = {
     capacity?: SortOrder
     price?: SortOrder
+    refSeq?: SortOrder
     identicalUnitsCount?: SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
@@ -57939,6 +58000,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -57983,6 +58045,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -58595,6 +58658,7 @@ export namespace Prisma {
     price?: FloatFilter<"Space"> | number
     pricePeriod?: StringFilter<"Space"> | string
     publicRef?: StringNullableFilter<"Space"> | string | null
+    refSeq?: IntFilter<"Space"> | number
     advertisingLicenseNumber?: StringNullableFilter<"Space"> | string | null
     identicalUnitsCount?: IntFilter<"Space"> | number
     status?: EnumSpaceStatusFilter<"Space"> | $Enums.SpaceStatus
@@ -59389,6 +59453,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -59433,6 +59498,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -60611,6 +60677,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -60655,6 +60722,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -60933,6 +61001,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -60977,6 +61046,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61081,6 +61151,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -61125,6 +61196,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61169,6 +61241,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61292,6 +61365,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -61361,6 +61435,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61405,6 +61480,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61509,6 +61585,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -61553,6 +61630,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61597,6 +61675,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61829,6 +61908,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -61921,6 +62001,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -61965,6 +62046,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62069,6 +62151,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -62113,6 +62196,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62157,6 +62241,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62286,6 +62371,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -62361,6 +62447,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62405,6 +62492,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62534,6 +62622,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -62609,6 +62698,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62653,6 +62743,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62757,6 +62848,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -62851,6 +62943,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -62895,6 +62988,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -63060,6 +63154,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -63172,6 +63267,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -63216,6 +63312,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -63320,6 +63417,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -63364,6 +63462,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -63408,6 +63507,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -63692,6 +63792,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -64263,6 +64364,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -64307,6 +64409,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -64484,6 +64587,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -65846,6 +65950,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -65890,6 +65995,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -66239,6 +66345,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -66507,6 +66614,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -66551,6 +66659,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -66781,6 +66890,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -66963,6 +67073,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -67205,6 +67316,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -67249,6 +67361,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -67795,6 +67908,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -67886,6 +68000,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -67930,6 +68045,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -68572,6 +68688,7 @@ export namespace Prisma {
     price: number
     pricePeriod?: string
     publicRef?: string | null
+    refSeq?: number
     advertisingLicenseNumber?: string | null
     identicalUnitsCount?: number
     status?: $Enums.SpaceStatus
@@ -68667,6 +68784,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus
@@ -68711,6 +68829,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     pricePeriod?: StringFieldUpdateOperationsInput | string
     publicRef?: NullableStringFieldUpdateOperationsInput | string | null
+    refSeq?: IntFieldUpdateOperationsInput | number
     advertisingLicenseNumber?: NullableStringFieldUpdateOperationsInput | string | null
     identicalUnitsCount?: IntFieldUpdateOperationsInput | number
     status?: EnumSpaceStatusFieldUpdateOperationsInput | $Enums.SpaceStatus

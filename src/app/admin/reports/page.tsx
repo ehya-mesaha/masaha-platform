@@ -41,6 +41,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
             <p className="mt-2 text-sm text-white/65">مؤشرات الإشغال والحجوزات فقط؛ التقارير المالية خارج النطاق الحالي.</p>
           </div>
           <div className="flex gap-2">
+            <a href={`/api/admin/exports/bookings?format=xlsx&from=${selectedYear}-01-01&to=${selectedYear}-12-31`} className="rounded-xl bg-[#D7B66D] px-4 py-2 text-sm font-extrabold text-[#092C27]">Excel</a>
             {[selectedYear - 1, selectedYear, selectedYear + 1].map((year) => (
               <Link key={year} href={`/admin/reports?year=${year}`} className={`rounded-xl px-4 py-2 text-sm font-bold ${year === selectedYear ? 'bg-[#B99A63] text-[#1B1B1B]' : 'bg-white/10 text-white'}`}>
                 {formatNumber(year)}

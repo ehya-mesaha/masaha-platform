@@ -11,6 +11,8 @@ type Item = {
   defaultPrice?: number | null
   indicativePrice?: number | null
   defaultConfig?: PrintMatrixConfig | null
+  isActive?: boolean
+  sortOrder?: number
 }
 
 type PrintMatrixConfig = {
@@ -30,6 +32,8 @@ type Draft = {
   price: string
   pricingType: string
   config: PrintMatrixConfig
+  isActive: boolean
+  sortOrder: string
 }
 
 const PRICING_OPTIONS: Array<[string, string]> = [
@@ -51,11 +55,20 @@ const MATRIX_FIELDS: Array<[keyof PrintMatrixConfig, string]> = [
   ['colorDouble', 'ملون - وجهين (لكل 10 صفحات)'],
 ]
 
-const emptyDraft: Draft = { name: '', description: '', category: '', price: '', pricingType: 'PER_BOOKING', config: {} }
+const emptyDraft: Draft = {
+  name: '',
+  description: '',
+  category: '',
+  price: '',
+  pricingType: 'PER_BOOKING',
+  config: {},
+  isActive: true,
+  sortOrder: '',
+}
 
-const sections: Array<{ key: CatalogKey; apiType: ApiType; title: string; subtitle: string; detailed?: boolean; pricing?: boolean }> = [
+const sections: Array<{ key: CatalogKey; apiType: ApiType; title: string; subtitle: string; detailed?: boolean; pricing?: boolean; cityManagement?: boolean }> = [
   { key: 'types', apiType: 'space-type', title: 'أنواع المساحات', subtitle: 'التصنيفات التي تظهر في البحث ونموذج إضافة المساحة.' },
-  { key: 'cities', apiType: 'city', title: 'مدن المنصة', subtitle: 'المدن المعتمدة التي تظهر كاقتراحات في البحث وإضافة المساحات.' },
+  { key: 'cities', apiType: 'city', title: 'مدن المنصة', subtitle: 'المدن المتاحة للاختيار في البحث وإضافة المساحات. يمكنك إيقاف مدينة مؤقتًا دون حذف بياناتها.', cityManagement: true },
   { key: 'amenities', apiType: 'amenity', title: 'المرافق والتجهيزات', subtitle: 'قائمة موحدة يختار منها أصحاب المساحات فقط.' },
   { key: 'ownerServices', apiType: 'owner-service', title: 'خدمات صاحب المساحة', subtitle: 'دليل ثابت؛ يفعّل صاحب المساحة الخدمة ويحدد سعرها. حدد نوع التسعير هنا لضبط طريقة الحساب.', detailed: true, pricing: true },
   { key: 'partnerServices', apiType: 'partner-service', title: 'خدمات إضافية - شركاء إحياء مساحة', subtitle: 'أسعار تقديرية قابلة للتعديل عند تجهيز عرض السعر.', detailed: true, pricing: true },
@@ -114,6 +127,8 @@ export default function AdminCategoriesPage() {
       price: item.defaultPrice != null ? String(item.defaultPrice) : item.indicativePrice != null ? String(item.indicativePrice) : '',
       pricingType: item.pricingType || 'PER_BOOKING',
       config: item.defaultConfig || {},
+      isActive: item.isActive !== false,
+      sortOrder: item.sortOrder != null ? String(item.sortOrder) : '',
     })
   }
 
@@ -149,6 +164,27 @@ export default function AdminCategoriesPage() {
     if (editingId === id) cancelEdit()
   }
 
+  async function toggleCity(item: Item) {
+    const response = await fetch('/api/admin/categories', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'city',
+        id: item.id,
+        name: item.name,
+        sortOrder: item.sortOrder || 0,
+        isActive: item.isActive === false,
+      }),
+    })
+    const result = await response.json()
+    if (!response.ok) return setMessage(result.error || 'تعذر تحديث حالة المدينة')
+    setData(current => ({
+      ...current,
+      cities: current.cities.map(city => city.id === item.id ? result.item : city),
+    }))
+    setMessage(result.item.isActive ? 'أصبحت المدينة متاحة في البحث وإضافة المساحات' : 'تم إيقاف المدينة من خيارات البحث وإضافة المساحات')
+  }
+
   return (
     <div className="dashboard-page">
       <div className="page-hero mb-7 p-7">
@@ -168,6 +204,17 @@ export default function AdminCategoriesPage() {
               </div>
               <div className="grid gap-2">
                 <input value={draft.name} onChange={event => updateDraft(section.apiType, { name: event.target.value })} placeholder="اسم العنصر" className="field py-2.5" />
+                {section.cityManagement && (
+                  <input
+                    type="number"
+                    min="0"
+                    value={draft.sortOrder}
+                    onChange={event => updateDraft(section.apiType, { sortOrder: event.target.value })}
+                    placeholder="ترتيب الظهور (مثال: 10)"
+                    className="field py-2.5"
+                    dir="ltr"
+                  />
+                )}
                 {section.detailed && (
                   <>
                     <input value={draft.description} onChange={event => updateDraft(section.apiType, { description: event.target.value })} placeholder="وصف مختصر" className="field py-2.5" />
@@ -195,6 +242,27 @@ export default function AdminCategoriesPage() {
                   editingId === item.id ? (
                     <div key={item.id} className="space-y-2 rounded-xl border border-[#0E3B34]/30 bg-[#F5F1E8] p-3">
                       <input value={editDraft.name} onChange={event => setEditDraft(current => ({ ...current, name: event.target.value }))} placeholder="الاسم" className="field py-2 text-sm" />
+                      {section.cityManagement && (
+                        <div className="grid grid-cols-[1fr_auto] gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            value={editDraft.sortOrder}
+                            onChange={event => setEditDraft(current => ({ ...current, sortOrder: event.target.value }))}
+                            placeholder="ترتيب الظهور"
+                            className="field py-2 text-sm"
+                            dir="ltr"
+                          />
+                          <label className="flex items-center gap-2 rounded-lg border border-[#D8D1C7] bg-white px-3 text-xs font-bold text-[#33423F]">
+                            <input
+                              type="checkbox"
+                              checked={editDraft.isActive}
+                              onChange={event => setEditDraft(current => ({ ...current, isActive: event.target.checked }))}
+                            />
+                            متاحة
+                          </label>
+                        </div>
+                      )}
                       {section.detailed && (
                         <>
                           <input value={editDraft.description} onChange={event => setEditDraft(current => ({ ...current, description: event.target.value }))} placeholder="وصف مختصر" className="field py-2 text-sm" />
@@ -223,8 +291,22 @@ export default function AdminCategoriesPage() {
                   ) : (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F5F1E8] px-4 py-3">
                       <div className="min-w-0">
-                        <strong className="block truncate text-sm text-[#0E3B34]">{item.name}</strong>
+                        <div className="flex items-center gap-2">
+                          <strong className="block truncate text-sm text-[#0E3B34]">{item.name}</strong>
+                          {section.cityManagement && (
+                            <span className={`rounded-full px-2 py-0.5 text-[9px] font-extrabold ${
+                              item.isActive === false
+                                ? 'bg-[#E8E5DF] text-[#6C716E]'
+                                : 'bg-emerald-100 text-emerald-700'
+                            }`}>
+                              {item.isActive === false ? 'متوقفة' : 'متاحة'}
+                            </span>
+                          )}
+                        </div>
                         {item.description && <span className="mt-1 block truncate text-[11px] text-[#5F6764]">{item.description}</span>}
+                        {section.cityManagement && (
+                          <span className="mt-1 block text-[10px] text-[#7A837C]">ترتيب الظهور: {item.sortOrder || 0}</span>
+                        )}
                         {section.pricing && item.pricingType && (
                           <span className="mt-1 inline-block rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#0E3B34]">
                             {PRICING_LABELS[item.pricingType] || item.pricingType}
@@ -232,6 +314,11 @@ export default function AdminCategoriesPage() {
                         )}
                       </div>
                       <div className="flex flex-none gap-3 text-xs font-bold">
+                        {section.cityManagement && (
+                          <button onClick={() => toggleCity(item)} className={item.isActive === false ? 'text-emerald-700' : 'text-[#A56B20]'}>
+                            {item.isActive === false ? 'تفعيل' : 'إيقاف'}
+                          </button>
+                        )}
                         <button onClick={() => startEdit(item)} className="text-[#0E3B34]">تعديل</button>
                         <button onClick={() => remove(section, item.id)} className="text-red-600">حذف</button>
                       </div>

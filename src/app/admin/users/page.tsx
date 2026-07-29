@@ -60,9 +60,12 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">المستخدمون</h1>
-        <p className="text-[#5F6764] text-sm mt-1">إدارة المستخدمين والصلاحيات في المنصة</p>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-extrabold text-[#1B1B1B]">المستخدمون</h1>
+          <p className="text-[#5F6764] text-sm mt-1">إدارة المستخدمين والصلاحيات في المنصة</p>
+        </div>
+        <Link href="/api/admin/exports/users?format=xlsx" prefetch={false} className="rounded-xl bg-[#0E3B34] px-5 py-2.5 text-center text-sm font-extrabold text-white">تصدير Excel</Link>
       </div>
 
       {/* Stats */}

@@ -202,6 +202,7 @@ model Space {
   price                    Float
   pricePeriod              String      @default("hour")
   publicRef                String?     @unique
+  refSeq                   Int         @unique @default(autoincrement())
   advertisingLicenseNumber String?
   identicalUnitsCount      Int         @default(1)
   status                   SpaceStatus @default(DRAFT)

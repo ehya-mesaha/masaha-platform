@@ -1,4 +1,5 @@
 import SpaceCard from './SpaceCard'
+import { formatSpaceNumber } from '@/lib/format'
 
 interface Space {
   id: string
@@ -8,6 +9,7 @@ interface Space {
   price: number
   pricePeriod: string
   capacity?: number | null
+  refSeq: number
   type: { name: string }
   images: { url: string; order: number }[]
   availableSessions?: number
@@ -48,6 +50,7 @@ export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مسا
           pricePeriod={space.pricePeriod}
           capacity={space.capacity}
           imageUrl={space.images.sort((a, b) => a.order - b.order)[0]?.url}
+          spaceNumber={formatSpaceNumber(space.refSeq)}
           availableSessions={space.availableSessions}
           totalSessions={space.totalSessions}
           totalHours={space.totalHours}

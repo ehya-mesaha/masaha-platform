@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { StepProps, SAUDI_CITIES } from './types'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 
 function extractCoordinates(value: string) {
   let decoded = value.trim()
@@ -35,6 +36,10 @@ export default function StepLocation({ form, update, cities = [] }: StepProps) {
   const lng = parseFloat(form.longitude) || cityCenter.lng
   const mapSpan = 0.12 / Math.pow(2, zoom - 10)
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+  const cityOptions = cities.length
+    ? cities
+    : SAUDI_CITIES.map(name => ({ id: `fallback:${name}`, name }))
+  const selectedCityId = cityOptions.find(city => city.name === form.city)?.id || ''
 
   function setCoordinates(nextLat: number, nextLng: number) {
     update('latitude', nextLat.toFixed(6))
@@ -94,14 +99,17 @@ export default function StepLocation({ form, update, cities = [] }: StepProps) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-[#3F4B47] mb-1.5">المدينة <Required /></label>
-              <select
-                value={form.city}
-                onChange={e => chooseCity(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] bg-white"
-              >
-                <option value="">اختر المدينة</option>
-                {(cities.length ? cities.map(city => city.name) : SAUDI_CITIES).map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <SearchableSelect
+                value={selectedCityId}
+                onChange={id => chooseCity(cityOptions.find(city => city.id === id)?.name || '')}
+                options={cityOptions}
+                placeholder="اختر المدينة"
+                searchPlaceholder="ابحث عن مدينة..."
+                emptyText="لا توجد مدينة مطابقة"
+                buttonClassName="w-full rounded-lg border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm focus:outline-none focus:border-[#0E3B34]"
+                required
+                ariaLabel="المدينة"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#3F4B47] mb-1.5">الحي <Required /></label>

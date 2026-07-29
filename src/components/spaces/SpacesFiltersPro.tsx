@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 import type { TranslationKey } from '@/lib/i18n'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 
 type SpaceType = { id: string; name: string }
 
@@ -49,7 +50,12 @@ export default function SpacesFiltersPro({ types, cities, params }: Props) {
   const router = useRouter()
   const { locale, t } = useLanguage()
   const initialDays = useMemo(() => new Set((params.weekdays || params.days || '').split(',').filter(Boolean)), [params.days, params.weekdays])
-  const [city, setCity] = useState(params.city || '')
+  const cityOptions = useMemo(() => {
+    if (!params.city || cities.some(option => normalize(option.name) === normalize(params.city || ''))) return cities
+    return [{ id: `legacy:${params.city}`, name: params.city }, ...cities]
+  }, [cities, params.city])
+  const initialCityId = cityOptions.find(option => normalize(option.name) === normalize(params.city || ''))?.id || ''
+  const [cityId, setCityId] = useState(initialCityId)
   const [typeId, setTypeId] = useState(params.typeId || '')
   const [minPrice, setMinPrice] = useState(params.minPrice || '')
   const [maxPrice, setMaxPrice] = useState(params.maxPrice || '')
@@ -76,7 +82,8 @@ export default function SpacesFiltersPro({ types, cities, params }: Props) {
 
   function applyFilters() {
     const query = new URLSearchParams()
-    if (city.trim()) query.set('city', city.trim())
+    const selectedCity = cityOptions.find(option => option.id === cityId)
+    if (selectedCity) query.set('city', selectedCity.name)
     if (typeId) query.set('typeId', typeId)
     const normalizedMinPrice = Math.max(0, Number(minPrice) || 0)
     const normalizedMaxPrice = Math.max(0, Number(maxPrice) || 0)
@@ -134,28 +141,33 @@ export default function SpacesFiltersPro({ types, cities, params }: Props) {
 
       <div id="spaces-filter-controls" className="spaces-filter-body space-y-5 px-5 pb-2">
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('cityDistrict')}</label>
-          <input
-            list="spaces-city-options"
-            value={city}
-            onChange={e => setCity(e.target.value)}
-            placeholder={t('cityPlaceholder')}
-            autoComplete="off"
-            className="field"
+          <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{locale === 'en' ? 'City' : 'المدينة'}</label>
+          <SearchableSelect
+            value={cityId}
+            onChange={setCityId}
+            options={cityOptions}
+            placeholder={locale === 'en' ? 'Choose a city' : 'اختر المدينة'}
+            searchPlaceholder={locale === 'en' ? 'Search cities...' : 'ابحث عن مدينة...'}
+            emptyText={locale === 'en' ? 'No matching city' : 'لا توجد مدينة مطابقة'}
+            allLabel={locale === 'en' ? 'All cities' : 'جميع المدن'}
+            buttonClassName="field"
+            ariaLabel={locale === 'en' ? 'City' : 'المدينة'}
           />
-          <datalist id="spaces-city-options">
-            {cities.map(option => <option key={option.id} value={option.name} />)}
-          </datalist>
         </div>
 
         <div>
           <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">{t('spaceType')}</label>
-          <select value={typeId} onChange={e => setTypeId(e.target.value)} className="field bg-white">
-            <option value="">{t('allTypes')}</option>
-            {types.map(type => (
-              <option key={type.id} value={type.id}>{type.name}</option>
-            ))}
-          </select>
+          <SearchableSelect
+            value={typeId}
+            onChange={setTypeId}
+            options={types}
+            placeholder={t('spaceType')}
+            searchPlaceholder={locale === 'en' ? 'Search space types...' : 'ابحث عن نوع المساحة...'}
+            emptyText={locale === 'en' ? 'No matching space type' : 'لا يوجد نوع مساحة مطابق'}
+            allLabel={t('allTypes')}
+            buttonClassName="field"
+            ariaLabel={t('spaceType')}
+          />
         </div>
 
         <div>
@@ -297,4 +309,14 @@ export default function SpacesFiltersPro({ types, cities, params }: Props) {
       </div>
     </div>
   )
+}
+
+function normalize(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase('ar')
+    .normalize('NFD')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/[إأآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
 }

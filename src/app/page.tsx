@@ -4,6 +4,7 @@ import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import SpaceCard from '@/components/spaces/SpaceCard'
 import RecurringSearchForm from '@/components/spaces/RecurringSearchForm'
+import { formatSpaceNumber } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -155,7 +156,7 @@ export default async function HomePage() {
               {spaces.map(space => (
                 <SpaceCard key={space.id} id={space.id} name={space.name} city={space.city} district={space.district}
                   type={space.type.name} price={space.price} pricePeriod={space.pricePeriod} capacity={space.capacity}
-                  imageUrl={space.images[0]?.url} />
+                  imageUrl={space.images[0]?.url} spaceNumber={formatSpaceNumber(space.refSeq)} />
               ))}
             </div>
           ) : (

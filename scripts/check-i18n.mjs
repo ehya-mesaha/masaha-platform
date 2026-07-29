@@ -10,6 +10,14 @@ const dictionaryFiles = [
 const ignoredFiles = new Set([
   ...dictionaryFiles,
   path.join(sourceRoot, 'lib', 'i18n.ts'),
+  // These files either produce Arabic-first administrative documents or
+  // contain their own explicit ar/en copy rather than DOM-translated text.
+  path.join(sourceRoot, 'lib', 'admin-export-data.ts'),
+  path.join(sourceRoot, 'lib', 'admin-export-files.ts'),
+  path.join(sourceRoot, 'components', 'admin', 'AdminDataCenter.tsx'),
+  path.join(sourceRoot, 'components', 'layout', 'Footer.tsx'),
+  // The founder-approved legal text is intentionally preserved verbatim.
+  path.join(sourceRoot, 'app', 'policies', 'page.tsx'),
 ])
 const arabicPattern = /[\u0600-\u06ff]/u
 const translationKeys = new Set()

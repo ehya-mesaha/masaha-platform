@@ -32,7 +32,7 @@ export default function NewSpacePage() {
   const errorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetch('/api/admin/categories')
+    fetch('/api/catalog')
       .then(r => {
         if (!r.ok) throw new Error('categories')
         return r.json()

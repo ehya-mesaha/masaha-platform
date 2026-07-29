@@ -5,9 +5,12 @@ import { Prisma } from '@/generated/prisma'
 
 export async function GET() {
   try {
+    const user = await getCurrentUser()
+    if (!user || user.role !== 'ADMIN') return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+
     const [types, cities, amenities, ownerServices, partnerServices] = await Promise.all([
       prisma.spaceType.findMany({ orderBy: { name: 'asc' } }),
-      prisma.city.findMany({ where: { isActive: true }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
+      prisma.city.findMany({ orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
       prisma.amenity.findMany({ orderBy: { name: 'asc' } }),
       prisma.serviceCatalog.findMany({ orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
       prisma.partnerService.findMany({ orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
@@ -80,7 +83,16 @@ export async function PUT(req: NextRequest) {
 
     let item
     if (body.type === 'space-type') item = await prisma.spaceType.update({ where: { id: body.id }, data: { name } })
-    else if (body.type === 'city') item = await prisma.city.update({ where: { id: body.id }, data: { name, isActive: body.isActive !== false } })
+    else if (body.type === 'city') {
+      item = await prisma.city.update({
+        where: { id: body.id },
+        data: {
+          name,
+          isActive: body.isActive !== false,
+          sortOrder: Number(body.sortOrder) || 0,
+        },
+      })
+    }
     else if (body.type === 'amenity') item = await prisma.amenity.update({ where: { id: body.id }, data: { name, category: clean(body.category) || null } })
     else if (body.type === 'owner-service') {
       const type = pricingType(body.pricingType)

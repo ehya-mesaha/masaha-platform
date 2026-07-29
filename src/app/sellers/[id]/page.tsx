@@ -3,6 +3,7 @@ import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import SpaceCard from '@/components/spaces/SpaceCard'
 import { prisma } from '@/lib/prisma'
+import { formatSpaceNumber } from '@/lib/format'
 
 export default async function SellerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -148,6 +149,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
                       pricePeriod={space.pricePeriod}
                       capacity={space.capacity}
                       imageUrl={space.images[0]?.url}
+                      spaceNumber={formatSpaceNumber(space.refSeq)}
                     />
                   ))}
                 </div>
@@ -228,6 +230,7 @@ type SellerProfile = {
   createdAt: Date
   spaces: {
     id: string
+    refSeq: number
     name: string
     city: string
     district: string | null

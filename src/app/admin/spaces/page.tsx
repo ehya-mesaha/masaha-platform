@@ -1,16 +1,18 @@
 import { prisma } from '@/lib/prisma'
-import { SpaceStatus } from '@/generated/prisma'
+import { SpaceStatus, Prisma } from '@/generated/prisma'
 import Link from 'next/link'
 import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
+import { formatSpaceNumber } from '@/lib/format'
 
 export default async function AdminSpacesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; q?: string }>
 }) {
   const params = await searchParams
   const status = params.status
+  const query = params.q?.trim() || ''
 
   let spaces: SpaceType[] = []
   let totalCount = 0
@@ -18,9 +20,21 @@ export default async function AdminSpacesPage({
   let approvedCount = 0
 
   try {
+    const where: Prisma.SpaceWhereInput = {}
+    if (status) where.status = status as SpaceStatus
+    if (query) {
+      const digitsOnly = query.replace(/\D/g, '')
+      const parsedRef = digitsOnly ? Number(digitsOnly) : NaN
+      where.OR = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { seller: { name: { contains: query, mode: 'insensitive' } } },
+        ...(Number.isFinite(parsedRef) && digitsOnly ? [{ refSeq: parsedRef }] : []),
+      ]
+    }
+
     const [raw, total, pending, approved] = await Promise.all([
       prisma.space.findMany({
-        where: status ? { status: status as SpaceStatus } : undefined,
+        where,
         include: {
           type: true,
           seller: { select: { name: true } },
@@ -58,7 +72,10 @@ export default async function AdminSpacesPage({
             <h1 className="text-2xl font-extrabold text-white sm:text-3xl">المساحات</h1>
             <p className="mt-2 text-sm text-white/65">راجع بيانات المساحات وصورها وتواريخها واتخذ القرار الإداري من مكان واحد.</p>
           </div>
-          <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold text-white">{spaces.length} نتيجة معروضة</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold text-white">{spaces.length} نتيجة معروضة</span>
+            <Link href="/api/admin/exports/spaces?format=xlsx" prefetch={false} className="rounded-xl bg-[#D7B66D] px-4 py-2 text-xs font-extrabold text-[#092C27]">تصدير Excel</Link>
+          </div>
         </div>
       </div>
 
@@ -68,21 +85,36 @@ export default async function AdminSpacesPage({
         <StatCard label="مساحات معتمدة" value={approvedCount} tone="green" />
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {tabs.map(tab => (
-          <Link
-            key={tab.value}
-            href={tab.value ? `/admin/spaces?status=${tab.value}` : '/admin/spaces'}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              status === tab.value || (!status && tab.value === '')
-                ? 'bg-[#0E3B34] text-white'
-                : 'bg-white text-gray-600 border border-[#D8D1C7] hover:border-[#0E3B34]'
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
+      {/* Tabs + Search */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2 flex-wrap">
+          {tabs.map(tab => (
+            <Link
+              key={tab.value}
+              href={tab.value ? `/admin/spaces?status=${tab.value}${query ? `&q=${encodeURIComponent(query)}` : ''}` : `/admin/spaces${query ? `?q=${encodeURIComponent(query)}` : ''}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                status === tab.value || (!status && tab.value === '')
+                  ? 'bg-[#0E3B34] text-white'
+                  : 'bg-white text-gray-600 border border-[#D8D1C7] hover:border-[#0E3B34]'
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </div>
+        <form method="get" className="flex items-center gap-2">
+          {status && <input type="hidden" name="status" value={status} />}
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            placeholder="ابحث برقم المساحة (مثال: M-000123) أو الاسم أو المالك"
+            dir="ltr"
+            className="w-72 max-w-full rounded-lg border border-[#D8D1C7] px-3 py-2 text-sm text-right focus:outline-none focus:border-[#0E3B34]"
+          />
+          <button type="submit" className="rounded-lg bg-[#0E3B34] px-4 py-2 text-sm font-bold text-white hover:bg-[#092C27]">بحث</button>
+          {query && <Link href={status ? `/admin/spaces?status=${status}` : '/admin/spaces'} className="text-xs font-bold text-[#5F6764] hover:text-[#0E3B34]">مسح</Link>}
+        </form>
       </div>
 
       <Card padding={false}>
@@ -90,6 +122,7 @@ export default async function AdminSpacesPage({
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-[#D8D1C7]">
               <tr>
+                <th className="text-right px-5 py-3 text-gray-600 font-medium">رقم المساحة</th>
                 <th className="text-right px-5 py-3 text-gray-600 font-medium">المساحة</th>
                 <th className="text-right px-5 py-3 text-gray-600 font-medium">المالك</th>
                 <th className="text-right px-5 py-3 text-gray-600 font-medium">النوع</th>
@@ -103,11 +136,14 @@ export default async function AdminSpacesPage({
             </thead>
             <tbody className="divide-y divide-[#D8D1C7]">
               {spaces.length === 0 ? (
-                <tr><td colSpan={9} className="text-center text-gray-500 py-10">لا توجد مساحات</td></tr>
+                <tr><td colSpan={10} className="text-center text-gray-500 py-10">لا توجد مساحات</td></tr>
               ) : spaces.map((s) => {
                 const { variant, label } = getSpaceStatusBadge(s.status)
                 return (
                   <tr key={s.id} className="hover:bg-gray-50">
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <span dir="ltr" className="rounded-full bg-[#F5F1E8] px-2.5 py-1 font-mono text-xs font-bold text-[#0E3B34]">{formatSpaceNumber(s.refSeq)}</span>
+                    </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -144,6 +180,7 @@ export default async function AdminSpacesPage({
 
 type SpaceType = {
   id: string
+  refSeq: number
   name: string
   city: string
   status: string

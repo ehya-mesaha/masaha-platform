@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Badge, { getSpaceStatusBadge, getBookingStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
+import { formatSpaceNumber } from '@/lib/format'
 
 export default async function SellerSpaceDetailPage({
   params,
@@ -54,7 +55,10 @@ export default async function SellerSpaceDetailPage({
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{space.name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">{space.name}</h1>
+            <span dir="ltr" className="rounded-full bg-[#F5F1E8] px-2.5 py-1 font-mono text-xs font-bold text-[#0E3B34]">{formatSpaceNumber(space.refSeq)}</span>
+          </div>
           <p className="text-gray-500 text-sm mt-1">{space.type.name} · {space.city}</p>
           <Card>
             <h3 className="font-semibold text-gray-900 mb-3">الموقع</h3>
@@ -175,6 +179,7 @@ export default async function SellerSpaceDetailPage({
 
 type SpaceType = {
   id: string
+  refSeq: number
   name: string
   city: string
   district: string | null
