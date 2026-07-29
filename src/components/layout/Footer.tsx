@@ -14,10 +14,9 @@ const COPY = {
     privacy: 'سياسة الخصوصية',
     intellectualProperty: 'حقوق الملكية الفكرية',
     credentials: 'بيانات وتراخيص المنشأة',
-    credentialsHint: 'بيانات رسمية موثقة للشفافية والامتثال',
+    credentialsHint: 'بيانات رسمية للشفافية والامتثال',
     taxLabel: 'السجل الضريبي',
     falLabel: 'رخصة فال',
-    official: 'موثّق',
   },
   en: {
     legalTitle: 'Legal Documents',
@@ -30,7 +29,6 @@ const COPY = {
     credentialsHint: 'Official details published for transparency and compliance',
     taxLabel: 'Tax Registration',
     falLabel: 'FAL License',
-    official: 'Verified',
   },
 } as const
 
@@ -40,17 +38,11 @@ export default function Footer() {
 
   return (
     <footer className="site-footer mt-auto overflow-hidden bg-[#092C27] text-white">
-      <div className="border-b border-white/[.07] bg-[#0E3B34]">
+      <div className="border-b border-white/10">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-extrabold text-[#D7B66D]">{copy.credentials}</p>
-              <p className="mt-1 text-sm text-white/55">{copy.credentialsHint}</p>
-            </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-[11px] font-extrabold text-emerald-100">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_#6ee7b7]" />
-              {copy.official}
-            </span>
+          <div className="mb-5">
+            <p className="text-xs font-extrabold text-[#D7B66D]">{copy.credentials}</p>
+            <p className="mt-1 text-sm text-white/55">{copy.credentialsHint}</p>
           </div>
           <div className="grid gap-3 lg:grid-cols-2">
             <CredentialCard
@@ -138,16 +130,13 @@ function CredentialCard({
   imageClassName: string
 }) {
   return (
-    <div className="group flex min-h-[92px] items-center gap-4 rounded-2xl border border-white/10 bg-white/[.055] p-4 transition duration-300 hover:border-[#B99A63]/50 hover:bg-white/[.08]">
-      <span className="grid h-[66px] min-w-[90px] place-items-center overflow-hidden rounded-xl bg-white p-2 shadow-inner">
+    <div className="flex min-h-[92px] items-center gap-4 rounded-xl border border-white/10 bg-white/[.035] p-4">
+      <span className="grid h-[66px] min-w-[90px] place-items-center overflow-hidden rounded-lg bg-white p-2">
         <Image src={image} alt={alt} width={100} height={70} className={imageClassName} />
       </span>
       <span className="min-w-0">
         <span className="block text-xs font-bold text-white/55">{label}</span>
         <strong className="mt-1 block font-mono text-lg tracking-[.08em] text-white" dir="ltr">{number}</strong>
-      </span>
-      <span className="ms-auto hidden h-8 w-8 place-items-center rounded-full border border-[#B99A63]/25 text-[#D7B66D] sm:grid">
-        <CheckIcon />
       </span>
     </div>
   )
@@ -158,8 +147,4 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
     <span className="h-1 w-1 rounded-full bg-[#B99A63]/70" />
     {children}
   </Link>
-}
-
-function CheckIcon() {
-  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 12 4 4 8-8" /></svg>
 }
