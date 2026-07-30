@@ -814,7 +814,7 @@ html[dir="rtl"] .opening-progress span { transform-origin: right; }
 
 @keyframes openingPhoto {
   from { transform: scale(1.1); filter: blur(5px); }
-  to { transform: scale(1.015); filter: blur(0); }
+  to { transform: scale(1.015); filter: none; }
 }
 
 @keyframes openingGrid { to { opacity: .72; } }
@@ -1471,7 +1471,7 @@ button:active,
   to {
     opacity: 1;
     transform: none;
-    filter: saturate(1);
+    filter: none;
   }
 }
 
@@ -1562,7 +1562,7 @@ html[dir="rtl"] .route-progress.is-active span {
 .motion-ready .reveal-target.is-revealed {
   opacity: 1;
   transform: none;
-  filter: saturate(1);
+  filter: none;
   transition:
     opacity .72s var(--ease-signature),
     transform .72s var(--ease-signature),
@@ -2002,7 +2002,7 @@ html[dir="rtl"] .home-hero-premium::before {
 
 @keyframes heroCopyIn {
   from { opacity: 0; transform: translateY(22px); filter: blur(5px); }
-  to { opacity: 1; transform: none; filter: blur(0); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 
 .home-hero-content h1 {
