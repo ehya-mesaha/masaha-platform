@@ -129,16 +129,20 @@ export default function StepTerms({ form, update }: StepProps) {
         <h3 className="text-sm font-extrabold text-[#173C34]">الموافقة القانونية المطلوبة</h3>
         <p className="mt-2 text-xs leading-7 text-[#5F6764]">
           قبل نشر المساحة، اقرأ{' '}
-          <Link href={LEGAL_LINKS.platformTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+          <Link href={LEGAL_LINKS.platformTerms} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
             شروط استخدام المنصة
           </Link>
           {' '}و
-          <Link href={LEGAL_LINKS.ownerTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+          <Link href={LEGAL_LINKS.ownerTerms} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
             شروط أصحاب المساحات
           </Link>
           {' '}و
-          <Link href={LEGAL_LINKS.privacy} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+          <Link href={LEGAL_LINKS.privacy} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
             سياسة الخصوصية
+          </Link>
+          {' '}و
+          <Link href={LEGAL_LINKS.intellectualProperty} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+            سياسة الملكية الفكرية
           </Link>
           . النسخة الحالية: {LEGAL_UPDATED_AT_AR}.
         </p>

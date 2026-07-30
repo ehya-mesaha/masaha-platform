@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import PublicNavbar from '@/components/layout/PublicNavbar'
+import { LEGAL_LINKS } from '@/lib/legal'
 
 type DocType = 'NATIONAL_ID' | 'COMMERCIAL_REGISTER' | 'TITLE_DEED' | 'POWER_OF_ATTORNEY'
 
@@ -106,7 +107,18 @@ export default function SellerApplicationPage() {
           </Section>
 
           <section className="premium-card p-6">
-            <label className="flex items-start gap-3 text-sm leading-7 text-[#33423F]"><input required className="mt-2" type="checkbox" checked={form.consentAccepted} onChange={(event) => setForm({ ...form, consentAccepted: event.target.checked })} /><span>أقر بصحة البيانات والمستندات المرفقة، وبأن مقدم الطلب أو معتمد الجهة مخول نظامًا بتمثيل مالك العقار أو مالكه، وأوافق على الشروط والأحكام وسياسة الخصوصية وسياسة الملكية الفكرية، وأوافق على استخدام هذه البيانات لإعداد عقد الوساطة العقارية عبر منصة فال التابعة للهيئة العامة للعقار.</span></label>
+            <label className="flex items-start gap-3 text-sm leading-7 text-[#33423F]">
+              <input required className="mt-2" type="checkbox" checked={form.consentAccepted} onChange={(event) => setForm({ ...form, consentAccepted: event.target.checked })} />
+              <span>
+                أقر بصحة البيانات والمستندات المرفقة، وبأن مقدم الطلب أو معتمد الجهة مخول نظامًا بتمثيل مالك العقار أو مالكه، وأوافق على{' '}
+                <LegalLink href={LEGAL_LINKS.platformTerms}>الشروط والأحكام</LegalLink>
+                {' '}و
+                <LegalLink href={LEGAL_LINKS.privacy}>سياسة الخصوصية</LegalLink>
+                {' '}و
+                <LegalLink href={LEGAL_LINKS.intellectualProperty}>سياسة الملكية الفكرية</LegalLink>
+                ، وأوافق على استخدام هذه البيانات لإعداد عقد الوساطة العقارية عبر منصة فال التابعة للهيئة العامة للعقار.
+              </span>
+            </label>
             {error && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{error}</p>}
             <button disabled={loading || uploading !== null} className="mt-5 w-full rounded-xl bg-[#0E3B34] px-5 py-3 font-bold text-white disabled:opacity-60">{loading ? 'جاري إرسال الطلب...' : 'إرسال طلب الانضمام'}</button>
             <p className="mt-4 text-center text-xs text-[#5F6764]">لديك حساب؟ <Link href="/auth/login" className="font-bold text-[#0E3B34]">تسجيل الدخول</Link></p>
@@ -118,6 +130,9 @@ export default function SellerApplicationPage() {
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) { return <section className="premium-card p-6"><h2 className="mb-5 text-lg font-extrabold text-[#1B1B1B]">{title}</h2>{children}</section> }
+function LegalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return <Link href={href} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline decoration-[#B99A63] decoration-2 underline-offset-4 hover:text-[#B1872E]">{children}</Link>
+}
 function Field({ label, value, set, type = 'text', dir, required = true }: { label: string; value: string; set: (value: string) => void; type?: string; dir?: 'ltr'; required?: boolean }) {
   return <label className="block"><span className="mb-1.5 block text-sm font-bold text-[#33423F]">{label}</span><input required={required} type={type} dir={dir} value={value} onChange={(event) => set(event.target.value)} className="w-full rounded-xl border border-[#D8D1C7] px-4 py-3 outline-none focus:border-[#0E3B34]" /></label>
 }

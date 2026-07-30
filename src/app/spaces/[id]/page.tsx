@@ -932,11 +932,11 @@ export default function SpaceDetailPage() {
                   <input type="checkbox" checked={agreedToTerms} onChange={() => setAgreedToTerms(current => !current)} className="mt-0.5 h-4 w-4 accent-[#0E3B34]" />
                   <span>
                     أقر بأنني فتحت وقرأت وفهمت{' '}
-                    <Link href={LEGAL_LINKS.platformTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-2">شروط استخدام المنصة</Link>
+                    <Link href={LEGAL_LINKS.platformTerms} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-2">شروط استخدام المنصة</Link>
                     {' '}و
-                    <Link href={LEGAL_LINKS.bookingTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-2">شروط الحجز والخدمات</Link>
+                    <Link href={LEGAL_LINKS.bookingTerms} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-2">شروط الحجز والخدمات</Link>
                     {' '}و
-                    <Link href={LEGAL_LINKS.privacy} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-2">سياسة الخصوصية</Link>
+                    <Link href={LEGAL_LINKS.privacy} target="_blank" rel="noopener noreferrer" className="font-extrabold text-[#0E3B34] underline underline-offset-2">سياسة الخصوصية</Link>
                     ، ووافقت على شروط صاحب المساحة وسياسة الإلغاء والاسترداد. النسخة الحالية: {LEGAL_UPDATED_AT_AR}.
                   </span>
                 </label>
