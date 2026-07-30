@@ -139,6 +139,11 @@ export default function SpaceDetailPage() {
       .catch(() => setLoading(false))
   }, [id])
 
+  function updateBookingForm(patch: Partial<typeof EMPTY_BOOKING_FORM>) {
+    setBookingForm(current => ({ ...current, ...patch }))
+    setBookingError('')
+  }
+
   function openBooking() {
     setBookingStep(1)
     setBookingError('')
@@ -774,7 +779,7 @@ export default function SpaceDetailPage() {
                 <div>
                   <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">رقم الهوية الوطنية أو السجل التجاري</label>
                   <input value={bookingForm.requesterIdNumber}
-                    onChange={e => setBookingForm(p => ({ ...p, requesterIdNumber: e.target.value }))}
+                    onChange={e => updateBookingForm({ requesterIdNumber: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
                     placeholder="أدخل الرقم" dir="ltr" />
                 </div>
@@ -782,7 +787,7 @@ export default function SpaceDetailPage() {
                   <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">التاريخ</label>
                   <DatePickerCalendar
                     value={bookingForm.date}
-                    onChange={date => setBookingForm(p => ({ ...p, date }))}
+                    onChange={date => updateBookingForm({ date })}
                     minDate={todayValue}
                     maxDate={maxBookingDate}
                     isDateEnabled={date => !hasOpenDayRules || openDaySet.has(date.getDay())}
@@ -792,27 +797,27 @@ export default function SpaceDetailPage() {
                   <div>
                     <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت البداية</label>
                     <input type="time" value={bookingForm.startTime}
-                      onChange={e => setBookingForm(p => ({ ...p, startTime: e.target.value }))}
+                      onChange={e => updateBookingForm({ startTime: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت النهاية</label>
                     <input type="time" value={bookingForm.endTime}
-                      onChange={e => setBookingForm(p => ({ ...p, endTime: e.target.value }))}
+                      onChange={e => updateBookingForm({ endTime: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">عدد الحضور</label>
                   <input type="number" value={bookingForm.persons}
-                    onChange={e => setBookingForm(p => ({ ...p, persons: e.target.value }))}
+                    onChange={e => updateBookingForm({ persons: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
                     placeholder="اختياري" min={1} dir="ltr" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وصف الفعالية</label>
                   <textarea value={bookingForm.purpose}
-                    onChange={e => setBookingForm(p => ({ ...p, purpose: e.target.value }))}
+                    onChange={e => updateBookingForm({ purpose: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] resize-none"
                     rows={3} placeholder="اكتب نبذة عن الفعالية أو الغرض من الحجز..." />
                 </div>
