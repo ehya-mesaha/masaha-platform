@@ -14,6 +14,7 @@ import StepPricing from '@/components/spaces/create/StepPricing'
 import StepTerms from '@/components/spaces/create/StepTerms'
 import StepReview from '@/components/spaces/create/StepReview'
 import { getStepError, STEP_LABELS } from '@/components/spaces/create/validation'
+import { LEGAL_VERSION } from '@/lib/legal'
 
 export default function NewSpacePage() {
   const router = useRouter()
@@ -115,7 +116,7 @@ export default function NewSpacePage() {
       const res = await fetch('/api/spaces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, legalVersion: LEGAL_VERSION }),
       })
       const data = await res.json()
       if (!res.ok) {

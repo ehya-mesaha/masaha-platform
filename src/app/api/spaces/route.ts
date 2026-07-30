@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { getStepError } from '@/components/spaces/create/validation'
 import type { SpaceFormData } from '@/components/spaces/create/types'
 import type { Prisma } from '@/generated/prisma'
+import { LEGAL_VERSION } from '@/lib/legal'
 
 const APPROVED_OWNER_SERVICES = new Set([
   'المطبوعات',
@@ -71,6 +72,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+    if (body.legalAccepted !== true || body.legalVersion !== LEGAL_VERSION) {
+      return NextResponse.json({ error: 'يجب قراءة الوثائق القانونية والموافقة على نسختها الحالية قبل نشر المساحة.' }, { status: 400 })
+    }
     const {
       name, typeId, description, city, district, address, capacity,
       price, images, amenityIds,
@@ -141,6 +145,8 @@ export async function POST(req: NextRequest) {
         minBookingHours: minBookingHours ? Number(minBookingHours) : null,
         maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null,
         cancellationPolicy: cancellationPolicy || 'FLEXIBLE',
+        ownerTermsAcceptedAt: new Date(),
+        ownerTermsVersion: LEGAL_VERSION,
         sellerId: user.id as string,
         status: 'PENDING_REVIEW',
         images: images?.length

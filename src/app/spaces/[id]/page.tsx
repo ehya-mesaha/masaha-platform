@@ -10,6 +10,7 @@ import Spinner from '@/components/ui/Spinner'
 import DatePickerCalendar from '@/components/ui/DatePickerCalendar'
 import StartConversationButton from '@/components/chat/StartConversationButton'
 import { formatSpaceNumber } from '@/lib/format'
+import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -114,11 +115,16 @@ export default function SpaceDetailPage() {
   const [space, setSpace] = useState<Space | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeImage, setActiveImage] = useState(0)
-  const [todayValue] = useState(() => new Date().toISOString().split('T')[0])
+  const [todayValue] = useState(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  })
+
+  const EMPTY_BOOKING_FORM = { requesterIdNumber: '', date: '', startTime: '', endTime: '', persons: '', purpose: '' }
 
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingStep, setBookingStep] = useState(1)
-  const [bookingForm, setBookingForm] = useState({ requesterIdNumber: '', date: '', startTime: '', endTime: '', persons: '', purpose: '' })
+  const [bookingForm, setBookingForm] = useState(EMPTY_BOOKING_FORM)
   const [selectedServices, setSelectedServices] = useState<Record<string, ServiceSelection>>({})
   const [paymentMethod, setPaymentMethod] = useState('mada')
   const [agreedToTerms, setAgreedToTerms] = useState(false)
@@ -136,6 +142,10 @@ export default function SpaceDetailPage() {
   function openBooking() {
     setBookingStep(1)
     setBookingError('')
+    setBookingForm(EMPTY_BOOKING_FORM)
+    setSelectedServices({})
+    setPaymentMethod('mada')
+    setAgreedToTerms(false)
     setBookingOpen(true)
   }
 
@@ -229,6 +239,8 @@ export default function SpaceDetailPage() {
           persons: bookingForm.persons,
           notes: bookingForm.purpose,
           services,
+          termsAccepted: true,
+          termsVersion: LEGAL_VERSION,
         }),
       })
       const data = await res.json()
@@ -271,7 +283,11 @@ export default function SpaceDetailPage() {
     .filter(Boolean).join('، ')
 
   const maxBookingDate = space.maxAdvanceBookingDays
-    ? new Date(new Date(`${todayValue}T00:00:00`).getTime() + space.maxAdvanceBookingDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    ? (() => {
+        const [year, month, day] = todayValue.split('-').map(Number)
+        const future = new Date(year, month - 1, day + space.maxAdvanceBookingDays)
+        return `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`
+      })()
     : undefined
   const openDaySet = new Set(openDays.map(wh => wh.dayOfWeek))
   const hasOpenDayRules = openDaySet.size > 0
@@ -914,7 +930,15 @@ export default function SpaceDetailPage() {
 
                 <label className="flex cursor-pointer items-start gap-2 text-xs text-[#3F4B47]">
                   <input type="checkbox" checked={agreedToTerms} onChange={() => setAgreedToTerms(current => !current)} className="mt-0.5 h-4 w-4 accent-[#0E3B34]" />
-                  <span>أقر بأنني اطلعت على تفاصيل الحجز وأحكام وشروط إحياء مساحة، ووافقت على شروط وأحكام صاحب المساحة، وسياسة الإلغاء والاسترداد، وألتزم بجميع التعليمات المنظمة لاستخدام المساحة، وأتحمل مسؤولية أي أضرار أو مخالفات تصدر مني أو من أي من الحضور أثناء فترة الحجز.</span>
+                  <span>
+                    أقر بأنني فتحت وقرأت وفهمت{' '}
+                    <Link href={LEGAL_LINKS.platformTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-2">شروط استخدام المنصة</Link>
+                    {' '}و
+                    <Link href={LEGAL_LINKS.bookingTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-2">شروط الحجز والخدمات</Link>
+                    {' '}و
+                    <Link href={LEGAL_LINKS.privacy} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-2">سياسة الخصوصية</Link>
+                    ، ووافقت على شروط صاحب المساحة وسياسة الإلغاء والاسترداد. النسخة الحالية: {LEGAL_UPDATED_AT_AR}.
+                  </span>
                 </label>
               </div>
             )}

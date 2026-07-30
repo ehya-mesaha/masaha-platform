@@ -3999,7 +3999,7 @@ export namespace Prisma {
      * ```
      * // Shorthand for `emit: 'stdout'`
      * log: ['query', 'info', 'warn', 'error']
-     *
+     * 
      * // Emit as events only
      * log: [
      *   { emit: 'event', level: 'query' },
@@ -4007,14 +4007,14 @@ export namespace Prisma {
      *   { emit: 'event', level: 'warn' }
      *   { emit: 'event', level: 'error' }
      * ]
-     *
+     * 
      * / Emit as events and log to stdout
      * og: [
      *  { emit: 'stdout', level: 'query' },
      *  { emit: 'stdout', level: 'info' },
      *  { emit: 'stdout', level: 'warn' }
      *  { emit: 'stdout', level: 'error' }
-     *
+     * 
      * ```
      * Read more in our [docs](https://pris.ly/d/logging).
      */
@@ -4031,16 +4031,16 @@ export namespace Prisma {
     }
     /**
      * A driver adapter that PrismaClient uses to connect to your database, such as the ones provided by `@prisma/adapter-pg`, `@prisma/adapter-libsql`, `@prisma/adapter-planetscale`, etc.
-     *
+     * 
      * A driver adapter is **required** unless you connect to your database through Prisma Accelerate (in which case use `accelerateUrl` instead).
-     *
+     * 
      * Learn more: https://pris.ly/d/driver-adapters
-     *
+     * 
      * @example
      * ```ts
      * import { PrismaPg } from '@prisma/adapter-pg'
      * import { PrismaClient } from './generated/prisma/client'
-     *
+     * 
      * const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
      * const prisma = new PrismaClient({ adapter })
      * ```
@@ -4048,7 +4048,7 @@ export namespace Prisma {
     adapter?: runtime.SqlDriverAdapterFactory
     /**
      * The Prisma Accelerate connection URL. Use this option to connect to your database through Prisma Accelerate instead of using a driver adapter to connect directly.
-     *
+     * 
      * Learn more: https://pris.ly/d/accelerate
      */
     accelerateUrl?: string
@@ -11890,6 +11890,8 @@ export namespace Prisma {
     minBookingHours: number | null
     maxAdvanceBookingDays: number | null
     cancellationPolicy: $Enums.CancellationPolicy | null
+    ownerTermsAcceptedAt: Date | null
+    ownerTermsVersion: string | null
     typeId: string | null
     sellerId: string | null
     organizationId: string | null
@@ -11922,6 +11924,8 @@ export namespace Prisma {
     minBookingHours: number | null
     maxAdvanceBookingDays: number | null
     cancellationPolicy: $Enums.CancellationPolicy | null
+    ownerTermsAcceptedAt: Date | null
+    ownerTermsVersion: string | null
     typeId: string | null
     sellerId: string | null
     organizationId: string | null
@@ -11954,6 +11958,8 @@ export namespace Prisma {
     minBookingHours: number
     maxAdvanceBookingDays: number
     cancellationPolicy: number
+    ownerTermsAcceptedAt: number
+    ownerTermsVersion: number
     typeId: number
     sellerId: number
     organizationId: number
@@ -12010,6 +12016,8 @@ export namespace Prisma {
     minBookingHours?: true
     maxAdvanceBookingDays?: true
     cancellationPolicy?: true
+    ownerTermsAcceptedAt?: true
+    ownerTermsVersion?: true
     typeId?: true
     sellerId?: true
     organizationId?: true
@@ -12042,6 +12050,8 @@ export namespace Prisma {
     minBookingHours?: true
     maxAdvanceBookingDays?: true
     cancellationPolicy?: true
+    ownerTermsAcceptedAt?: true
+    ownerTermsVersion?: true
     typeId?: true
     sellerId?: true
     organizationId?: true
@@ -12074,6 +12084,8 @@ export namespace Prisma {
     minBookingHours?: true
     maxAdvanceBookingDays?: true
     cancellationPolicy?: true
+    ownerTermsAcceptedAt?: true
+    ownerTermsVersion?: true
     typeId?: true
     sellerId?: true
     organizationId?: true
@@ -12193,6 +12205,8 @@ export namespace Prisma {
     minBookingHours: number | null
     maxAdvanceBookingDays: number | null
     cancellationPolicy: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt: Date | null
+    ownerTermsVersion: string | null
     typeId: string
     sellerId: string
     organizationId: string | null
@@ -12244,6 +12258,8 @@ export namespace Prisma {
     minBookingHours?: boolean
     maxAdvanceBookingDays?: boolean
     cancellationPolicy?: boolean
+    ownerTermsAcceptedAt?: boolean
+    ownerTermsVersion?: boolean
     typeId?: boolean
     sellerId?: boolean
     organizationId?: boolean
@@ -12294,6 +12310,8 @@ export namespace Prisma {
     minBookingHours?: boolean
     maxAdvanceBookingDays?: boolean
     cancellationPolicy?: boolean
+    ownerTermsAcceptedAt?: boolean
+    ownerTermsVersion?: boolean
     typeId?: boolean
     sellerId?: boolean
     organizationId?: boolean
@@ -12329,6 +12347,8 @@ export namespace Prisma {
     minBookingHours?: boolean
     maxAdvanceBookingDays?: boolean
     cancellationPolicy?: boolean
+    ownerTermsAcceptedAt?: boolean
+    ownerTermsVersion?: boolean
     typeId?: boolean
     sellerId?: boolean
     organizationId?: boolean
@@ -12364,12 +12384,14 @@ export namespace Prisma {
     minBookingHours?: boolean
     maxAdvanceBookingDays?: boolean
     cancellationPolicy?: boolean
+    ownerTermsAcceptedAt?: boolean
+    ownerTermsVersion?: boolean
     typeId?: boolean
     sellerId?: boolean
     organizationId?: boolean
   }
 
-  export type SpaceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "city" | "district" | "address" | "capacity" | "price" | "pricePeriod" | "publicRef" | "refSeq" | "advertisingLicenseNumber" | "identicalUnitsCount" | "status" | "adminNotes" | "createdAt" | "updatedAt" | "latitude" | "longitude" | "streetName" | "buildingNumber" | "postalCode" | "landmarks" | "minBookingHours" | "maxAdvanceBookingDays" | "cancellationPolicy" | "typeId" | "sellerId" | "organizationId", ExtArgs["result"]["space"]>
+  export type SpaceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "city" | "district" | "address" | "capacity" | "price" | "pricePeriod" | "publicRef" | "refSeq" | "advertisingLicenseNumber" | "identicalUnitsCount" | "status" | "adminNotes" | "createdAt" | "updatedAt" | "latitude" | "longitude" | "streetName" | "buildingNumber" | "postalCode" | "landmarks" | "minBookingHours" | "maxAdvanceBookingDays" | "cancellationPolicy" | "ownerTermsAcceptedAt" | "ownerTermsVersion" | "typeId" | "sellerId" | "organizationId", ExtArgs["result"]["space"]>
   export type SpaceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     type?: boolean | SpaceTypeDefaultArgs<ExtArgs>
     seller?: boolean | UserDefaultArgs<ExtArgs>
@@ -12449,6 +12471,8 @@ export namespace Prisma {
       minBookingHours: number | null
       maxAdvanceBookingDays: number | null
       cancellationPolicy: $Enums.CancellationPolicy
+      ownerTermsAcceptedAt: Date | null
+      ownerTermsVersion: string | null
       typeId: string
       sellerId: string
       organizationId: string | null
@@ -12918,6 +12942,8 @@ export namespace Prisma {
     readonly minBookingHours: FieldRef<"Space", 'Int'>
     readonly maxAdvanceBookingDays: FieldRef<"Space", 'Int'>
     readonly cancellationPolicy: FieldRef<"Space", 'CancellationPolicy'>
+    readonly ownerTermsAcceptedAt: FieldRef<"Space", 'DateTime'>
+    readonly ownerTermsVersion: FieldRef<"Space", 'String'>
     readonly typeId: FieldRef<"Space", 'String'>
     readonly sellerId: FieldRef<"Space", 'String'>
     readonly organizationId: FieldRef<"Space", 'String'>
@@ -28196,6 +28222,8 @@ export namespace Prisma {
     cancelledAt: Date | null
     cancelledBy: string | null
     refundAmount: number | null
+    termsAcceptedAt: Date | null
+    termsVersion: string | null
     createdAt: Date | null
     updatedAt: Date | null
     spaceId: string | null
@@ -28222,6 +28250,8 @@ export namespace Prisma {
     cancelledAt: Date | null
     cancelledBy: string | null
     refundAmount: number | null
+    termsAcceptedAt: Date | null
+    termsVersion: string | null
     createdAt: Date | null
     updatedAt: Date | null
     spaceId: string | null
@@ -28248,6 +28278,8 @@ export namespace Prisma {
     cancelledAt: number
     cancelledBy: number
     refundAmount: number
+    termsAcceptedAt: number
+    termsVersion: number
     createdAt: number
     updatedAt: number
     spaceId: number
@@ -28296,6 +28328,8 @@ export namespace Prisma {
     cancelledAt?: true
     cancelledBy?: true
     refundAmount?: true
+    termsAcceptedAt?: true
+    termsVersion?: true
     createdAt?: true
     updatedAt?: true
     spaceId?: true
@@ -28322,6 +28356,8 @@ export namespace Prisma {
     cancelledAt?: true
     cancelledBy?: true
     refundAmount?: true
+    termsAcceptedAt?: true
+    termsVersion?: true
     createdAt?: true
     updatedAt?: true
     spaceId?: true
@@ -28348,6 +28384,8 @@ export namespace Prisma {
     cancelledAt?: true
     cancelledBy?: true
     refundAmount?: true
+    termsAcceptedAt?: true
+    termsVersion?: true
     createdAt?: true
     updatedAt?: true
     spaceId?: true
@@ -28461,6 +28499,8 @@ export namespace Prisma {
     cancelledAt: Date | null
     cancelledBy: string | null
     refundAmount: number | null
+    termsAcceptedAt: Date | null
+    termsVersion: string | null
     createdAt: Date
     updatedAt: Date
     spaceId: string
@@ -28506,6 +28546,8 @@ export namespace Prisma {
     cancelledAt?: boolean
     cancelledBy?: boolean
     refundAmount?: boolean
+    termsAcceptedAt?: boolean
+    termsVersion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     spaceId?: boolean
@@ -28539,6 +28581,8 @@ export namespace Prisma {
     cancelledAt?: boolean
     cancelledBy?: boolean
     refundAmount?: boolean
+    termsAcceptedAt?: boolean
+    termsVersion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     spaceId?: boolean
@@ -28569,6 +28613,8 @@ export namespace Prisma {
     cancelledAt?: boolean
     cancelledBy?: boolean
     refundAmount?: boolean
+    termsAcceptedAt?: boolean
+    termsVersion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     spaceId?: boolean
@@ -28599,6 +28645,8 @@ export namespace Prisma {
     cancelledAt?: boolean
     cancelledBy?: boolean
     refundAmount?: boolean
+    termsAcceptedAt?: boolean
+    termsVersion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     spaceId?: boolean
@@ -28607,7 +28655,7 @@ export namespace Prisma {
     programId?: boolean
   }
 
-  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "startTime" | "endTime" | "persons" | "notes" | "requesterIdNumber" | "status" | "sellerNote" | "totalHours" | "basePrice" | "discountAmount" | "servicesTotal" | "grandTotal" | "cancelledAt" | "cancelledBy" | "refundAmount" | "createdAt" | "updatedAt" | "spaceId" | "buyerId" | "unitId" | "programId", ExtArgs["result"]["booking"]>
+  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "startTime" | "endTime" | "persons" | "notes" | "requesterIdNumber" | "status" | "sellerNote" | "totalHours" | "basePrice" | "discountAmount" | "servicesTotal" | "grandTotal" | "cancelledAt" | "cancelledBy" | "refundAmount" | "termsAcceptedAt" | "termsVersion" | "createdAt" | "updatedAt" | "spaceId" | "buyerId" | "unitId" | "programId", ExtArgs["result"]["booking"]>
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     space?: boolean | SpaceDefaultArgs<ExtArgs>
     buyer?: boolean | UserDefaultArgs<ExtArgs>
@@ -28658,6 +28706,8 @@ export namespace Prisma {
       cancelledAt: Date | null
       cancelledBy: string | null
       refundAmount: number | null
+      termsAcceptedAt: Date | null
+      termsVersion: string | null
       createdAt: Date
       updatedAt: Date
       spaceId: string
@@ -29110,6 +29160,8 @@ export namespace Prisma {
     readonly cancelledAt: FieldRef<"Booking", 'DateTime'>
     readonly cancelledBy: FieldRef<"Booking", 'String'>
     readonly refundAmount: FieldRef<"Booking", 'Float'>
+    readonly termsAcceptedAt: FieldRef<"Booking", 'DateTime'>
+    readonly termsVersion: FieldRef<"Booking", 'String'>
     readonly createdAt: FieldRef<"Booking", 'DateTime'>
     readonly updatedAt: FieldRef<"Booking", 'DateTime'>
     readonly spaceId: FieldRef<"Booking", 'String'>
@@ -45905,6 +45957,8 @@ export namespace Prisma {
     minBookingHours: 'minBookingHours',
     maxAdvanceBookingDays: 'maxAdvanceBookingDays',
     cancellationPolicy: 'cancellationPolicy',
+    ownerTermsAcceptedAt: 'ownerTermsAcceptedAt',
+    ownerTermsVersion: 'ownerTermsVersion',
     typeId: 'typeId',
     sellerId: 'sellerId',
     organizationId: 'organizationId'
@@ -46088,6 +46142,8 @@ export namespace Prisma {
     cancelledAt: 'cancelledAt',
     cancelledBy: 'cancelledBy',
     refundAmount: 'refundAmount',
+    termsAcceptedAt: 'termsAcceptedAt',
+    termsVersion: 'termsVersion',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     spaceId: 'spaceId',
@@ -47098,6 +47154,8 @@ export namespace Prisma {
     minBookingHours?: IntNullableFilter<"Space"> | number | null
     maxAdvanceBookingDays?: IntNullableFilter<"Space"> | number | null
     cancellationPolicy?: EnumCancellationPolicyFilter<"Space"> | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: DateTimeNullableFilter<"Space"> | Date | string | null
+    ownerTermsVersion?: StringNullableFilter<"Space"> | string | null
     typeId?: StringFilter<"Space"> | string
     sellerId?: StringFilter<"Space"> | string
     organizationId?: StringNullableFilter<"Space"> | string | null
@@ -47147,6 +47205,8 @@ export namespace Prisma {
     minBookingHours?: SortOrderInput | SortOrder
     maxAdvanceBookingDays?: SortOrderInput | SortOrder
     cancellationPolicy?: SortOrder
+    ownerTermsAcceptedAt?: SortOrderInput | SortOrder
+    ownerTermsVersion?: SortOrderInput | SortOrder
     typeId?: SortOrder
     sellerId?: SortOrder
     organizationId?: SortOrderInput | SortOrder
@@ -47199,6 +47259,8 @@ export namespace Prisma {
     minBookingHours?: IntNullableFilter<"Space"> | number | null
     maxAdvanceBookingDays?: IntNullableFilter<"Space"> | number | null
     cancellationPolicy?: EnumCancellationPolicyFilter<"Space"> | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: DateTimeNullableFilter<"Space"> | Date | string | null
+    ownerTermsVersion?: StringNullableFilter<"Space"> | string | null
     typeId?: StringFilter<"Space"> | string
     sellerId?: StringFilter<"Space"> | string
     organizationId?: StringNullableFilter<"Space"> | string | null
@@ -47248,6 +47310,8 @@ export namespace Prisma {
     minBookingHours?: SortOrderInput | SortOrder
     maxAdvanceBookingDays?: SortOrderInput | SortOrder
     cancellationPolicy?: SortOrder
+    ownerTermsAcceptedAt?: SortOrderInput | SortOrder
+    ownerTermsVersion?: SortOrderInput | SortOrder
     typeId?: SortOrder
     sellerId?: SortOrder
     organizationId?: SortOrderInput | SortOrder
@@ -47288,6 +47352,8 @@ export namespace Prisma {
     minBookingHours?: IntNullableWithAggregatesFilter<"Space"> | number | null
     maxAdvanceBookingDays?: IntNullableWithAggregatesFilter<"Space"> | number | null
     cancellationPolicy?: EnumCancellationPolicyWithAggregatesFilter<"Space"> | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: DateTimeNullableWithAggregatesFilter<"Space"> | Date | string | null
+    ownerTermsVersion?: StringNullableWithAggregatesFilter<"Space"> | string | null
     typeId?: StringWithAggregatesFilter<"Space"> | string
     sellerId?: StringWithAggregatesFilter<"Space"> | string
     organizationId?: StringNullableWithAggregatesFilter<"Space"> | string | null
@@ -48147,6 +48213,8 @@ export namespace Prisma {
     cancelledAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     cancelledBy?: StringNullableFilter<"Booking"> | string | null
     refundAmount?: FloatNullableFilter<"Booking"> | number | null
+    termsAcceptedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    termsVersion?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     spaceId?: StringFilter<"Booking"> | string
@@ -48179,6 +48247,8 @@ export namespace Prisma {
     cancelledAt?: SortOrderInput | SortOrder
     cancelledBy?: SortOrderInput | SortOrder
     refundAmount?: SortOrderInput | SortOrder
+    termsAcceptedAt?: SortOrderInput | SortOrder
+    termsVersion?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     spaceId?: SortOrder
@@ -48214,6 +48284,8 @@ export namespace Prisma {
     cancelledAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     cancelledBy?: StringNullableFilter<"Booking"> | string | null
     refundAmount?: FloatNullableFilter<"Booking"> | number | null
+    termsAcceptedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    termsVersion?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     spaceId?: StringFilter<"Booking"> | string
@@ -48246,6 +48318,8 @@ export namespace Prisma {
     cancelledAt?: SortOrderInput | SortOrder
     cancelledBy?: SortOrderInput | SortOrder
     refundAmount?: SortOrderInput | SortOrder
+    termsAcceptedAt?: SortOrderInput | SortOrder
+    termsVersion?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     spaceId?: SortOrder
@@ -48280,6 +48354,8 @@ export namespace Prisma {
     cancelledAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     cancelledBy?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     refundAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    termsAcceptedAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
+    termsVersion?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     spaceId?: StringWithAggregatesFilter<"Booking"> | string
@@ -49884,6 +49960,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -49930,6 +50008,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -49975,6 +50055,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -50021,6 +50103,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50067,6 +50151,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -50098,6 +50184,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SpaceUncheckedUpdateManyInput = {
@@ -50127,6 +50215,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50989,6 +51079,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
@@ -51017,6 +51109,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -51045,6 +51139,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
@@ -51073,6 +51169,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -51101,6 +51199,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -51127,6 +51227,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51149,6 +51251,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -53098,6 +53202,8 @@ export namespace Prisma {
     minBookingHours?: SortOrder
     maxAdvanceBookingDays?: SortOrder
     cancellationPolicy?: SortOrder
+    ownerTermsAcceptedAt?: SortOrder
+    ownerTermsVersion?: SortOrder
     typeId?: SortOrder
     sellerId?: SortOrder
     organizationId?: SortOrder
@@ -53141,6 +53247,8 @@ export namespace Prisma {
     minBookingHours?: SortOrder
     maxAdvanceBookingDays?: SortOrder
     cancellationPolicy?: SortOrder
+    ownerTermsAcceptedAt?: SortOrder
+    ownerTermsVersion?: SortOrder
     typeId?: SortOrder
     sellerId?: SortOrder
     organizationId?: SortOrder
@@ -53173,6 +53281,8 @@ export namespace Prisma {
     minBookingHours?: SortOrder
     maxAdvanceBookingDays?: SortOrder
     cancellationPolicy?: SortOrder
+    ownerTermsAcceptedAt?: SortOrder
+    ownerTermsVersion?: SortOrder
     typeId?: SortOrder
     sellerId?: SortOrder
     organizationId?: SortOrder
@@ -53832,6 +53942,8 @@ export namespace Prisma {
     cancelledAt?: SortOrder
     cancelledBy?: SortOrder
     refundAmount?: SortOrder
+    termsAcceptedAt?: SortOrder
+    termsVersion?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     spaceId?: SortOrder
@@ -53868,6 +53980,8 @@ export namespace Prisma {
     cancelledAt?: SortOrder
     cancelledBy?: SortOrder
     refundAmount?: SortOrder
+    termsAcceptedAt?: SortOrder
+    termsVersion?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     spaceId?: SortOrder
@@ -53894,6 +54008,8 @@ export namespace Prisma {
     cancelledAt?: SortOrder
     cancelledBy?: SortOrder
     refundAmount?: SortOrder
+    termsAcceptedAt?: SortOrder
+    termsVersion?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     spaceId?: SortOrder
@@ -58016,6 +58132,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
     images?: SpaceImageCreateNestedManyWithoutSpaceInput
@@ -58061,6 +58179,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     organizationId?: string | null
     images?: SpaceImageUncheckedCreateNestedManyWithoutSpaceInput
@@ -58107,6 +58227,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
@@ -58134,6 +58256,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -58674,6 +58798,8 @@ export namespace Prisma {
     minBookingHours?: IntNullableFilter<"Space"> | number | null
     maxAdvanceBookingDays?: IntNullableFilter<"Space"> | number | null
     cancellationPolicy?: EnumCancellationPolicyFilter<"Space"> | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: DateTimeNullableFilter<"Space"> | Date | string | null
+    ownerTermsVersion?: StringNullableFilter<"Space"> | string | null
     typeId?: StringFilter<"Space"> | string
     sellerId?: StringFilter<"Space"> | string
     organizationId?: StringNullableFilter<"Space"> | string | null
@@ -58716,6 +58842,8 @@ export namespace Prisma {
     cancelledAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     cancelledBy?: StringNullableFilter<"Booking"> | string | null
     refundAmount?: FloatNullableFilter<"Booking"> | number | null
+    termsAcceptedAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    termsVersion?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     spaceId?: StringFilter<"Booking"> | string
@@ -59469,6 +59597,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
     images?: SpaceImageCreateNestedManyWithoutSpaceInput
@@ -59514,6 +59644,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     sellerId: string
     organizationId?: string | null
     images?: SpaceImageUncheckedCreateNestedManyWithoutSpaceInput
@@ -59825,6 +59957,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     buyer: UserCreateNestedOneWithoutBookingsInput
@@ -59852,6 +59986,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     buyerId: string
@@ -60693,6 +60829,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     images?: SpaceImageCreateNestedManyWithoutSpaceInput
@@ -60738,6 +60876,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     images?: SpaceImageUncheckedCreateNestedManyWithoutSpaceInput
@@ -61017,6 +61157,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -61062,6 +61204,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -61122,6 +61266,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -61167,6 +61313,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -61212,6 +61360,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -61257,6 +61407,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -61336,6 +61488,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -61381,6 +61535,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -61451,6 +61607,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -61496,6 +61654,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -61556,6 +61716,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -61601,6 +61763,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -61646,6 +61810,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -61691,6 +61857,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -61732,6 +61900,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
@@ -61759,6 +61929,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -61879,6 +62051,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -61924,6 +62098,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62017,6 +62193,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -62062,6 +62240,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -62122,6 +62302,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -62167,6 +62349,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62212,6 +62396,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -62257,6 +62443,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -62342,6 +62530,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -62387,6 +62577,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62463,6 +62655,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -62508,6 +62702,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -62593,6 +62789,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -62638,6 +62836,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62714,6 +62914,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -62759,6 +62961,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -62819,6 +63023,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -62864,6 +63070,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62959,6 +63167,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -63004,6 +63214,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -63125,6 +63337,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -63170,6 +63384,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63283,6 +63499,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -63328,6 +63546,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -63388,6 +63608,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -63433,6 +63655,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63478,6 +63702,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -63523,6 +63749,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -63763,6 +63991,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -63808,6 +64038,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -64036,6 +64268,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
@@ -64063,6 +64297,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -64135,6 +64371,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
@@ -64162,6 +64400,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -64224,6 +64464,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
@@ -64251,6 +64493,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -64380,6 +64624,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -64425,6 +64671,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -64558,6 +64806,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -64603,6 +64853,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65966,6 +66218,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -66011,6 +66265,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -66316,6 +66572,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -66361,6 +66619,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -66630,6 +66890,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     type: SpaceTypeCreateNestedOneWithoutSpacesInput
     seller: UserCreateNestedOneWithoutSpacesInput
     organization?: SchoolOrganizationCreateNestedOneWithoutSpacesInput
@@ -66675,6 +66937,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
     organizationId?: string | null
@@ -66783,6 +67047,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     space: SpaceCreateNestedOneWithoutBookingsInput
@@ -66810,6 +67076,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -66861,6 +67129,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
@@ -66906,6 +67176,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -67026,6 +67298,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
@@ -67053,6 +67327,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -67089,6 +67365,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     organizationId?: string | null
   }
@@ -67111,6 +67389,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -67287,6 +67567,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
     images?: SpaceImageUpdateManyWithoutSpaceNestedInput
@@ -67332,6 +67614,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     images?: SpaceImageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -67377,6 +67661,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -67399,6 +67685,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
@@ -67426,6 +67714,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -67453,6 +67743,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -67924,6 +68216,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     sellerId: string
     organizationId?: string | null
   }
@@ -67971,6 +68265,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     organization?: SchoolOrganizationUpdateOneWithoutSpacesNestedInput
     images?: SpaceImageUpdateManyWithoutSpaceNestedInput
@@ -68016,6 +68312,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     images?: SpaceImageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -68061,6 +68359,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     sellerId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -68160,6 +68460,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     buyerId: string
@@ -68311,6 +68613,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     buyer?: UserUpdateOneRequiredWithoutBookingsNestedInput
@@ -68338,6 +68642,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     buyerId?: StringFieldUpdateOperationsInput | string
@@ -68365,6 +68671,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     buyerId?: StringFieldUpdateOperationsInput | string
@@ -68704,6 +69012,8 @@ export namespace Prisma {
     minBookingHours?: number | null
     maxAdvanceBookingDays?: number | null
     cancellationPolicy?: $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: Date | string | null
+    ownerTermsVersion?: string | null
     typeId: string
     sellerId: string
   }
@@ -68755,6 +69065,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     type?: SpaceTypeUpdateOneRequiredWithoutSpacesNestedInput
     seller?: UserUpdateOneRequiredWithoutSpacesNestedInput
     images?: SpaceImageUpdateManyWithoutSpaceNestedInput
@@ -68800,6 +69112,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     images?: SpaceImageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -68845,6 +69159,8 @@ export namespace Prisma {
     minBookingHours?: NullableIntFieldUpdateOperationsInput | number | null
     maxAdvanceBookingDays?: NullableIntFieldUpdateOperationsInput | number | null
     cancellationPolicy?: EnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy
+    ownerTermsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerTermsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     typeId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
   }
@@ -68867,6 +69183,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -68914,6 +69232,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
@@ -68941,6 +69261,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -68968,6 +69290,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -69177,6 +69501,8 @@ export namespace Prisma {
     cancelledAt?: Date | string | null
     cancelledBy?: string | null
     refundAmount?: number | null
+    termsAcceptedAt?: Date | string | null
+    termsVersion?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     spaceId: string
@@ -69202,6 +69528,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     space?: SpaceUpdateOneRequiredWithoutBookingsNestedInput
@@ -69229,6 +69557,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string
@@ -69256,6 +69586,8 @@ export namespace Prisma {
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     refundAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    termsAcceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    termsVersion?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     spaceId?: StringFieldUpdateOperationsInput | string

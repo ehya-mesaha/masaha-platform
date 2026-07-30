@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { signToken } from '@/lib/auth'
+import { SESSION_COOKIE_NAME, sessionCookieOptions, signToken } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,13 +37,7 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     })
 
-    res.cookies.set('masaha_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    })
+    res.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions())
 
     return res
   } catch (err) {

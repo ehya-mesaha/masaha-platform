@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { signToken } from '@/lib/auth'
+import { SESSION_COOKIE_NAME, sessionCookieOptions, signToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,13 +28,7 @@ export async function POST(request: NextRequest) {
     })
     const token = await signToken({ id: user.id, email: user.email, role: user.role, name: user.name, status: user.status })
     const response = NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } }, { status: 201 })
-    response.cookies.set('masaha_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    })
+    response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions())
     return response
   } catch (error) {
     console.error('Registration failed', error)

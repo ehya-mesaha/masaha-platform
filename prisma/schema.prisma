@@ -220,6 +220,8 @@ model Space {
   minBookingHours       Int?
   maxAdvanceBookingDays Int?
   cancellationPolicy    CancellationPolicy @default(FLEXIBLE)
+  ownerTermsAcceptedAt  DateTime?
+  ownerTermsVersion     String?
 
   typeId         String
   type           SpaceType           @relation(fields: [typeId], references: [id])
@@ -428,6 +430,8 @@ model Booking {
   cancelledAt    DateTime?
   cancelledBy    String?
   refundAmount   Float?
+  termsAcceptedAt DateTime?
+  termsVersion    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 

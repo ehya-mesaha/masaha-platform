@@ -3,6 +3,7 @@ import { Prisma } from '@/generated/prisma'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { durationHours, generateProgramSessions, getSpaceAvailability, toSession } from '@/lib/availability'
+import { LEGAL_VERSION } from '@/lib/legal'
 
 type SelectedService = {
   configId: string
@@ -71,6 +72,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+    if (body.termsAccepted !== true || body.termsVersion !== LEGAL_VERSION) {
+      return NextResponse.json({ error: 'يجب قراءة الوثائق القانونية والموافقة على نسختها الحالية قبل إتمام الحجز.' }, { status: 400 })
+    }
     const spaceId = typeof body.spaceId === 'string' ? body.spaceId : ''
     const persons = body.persons ? Number(body.persons) : null
     const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : null
@@ -213,6 +217,8 @@ export async function POST(req: NextRequest) {
             notes,
             requesterIdNumber,
             status: 'CONFIRMED',
+            termsAcceptedAt: new Date(),
+            termsVersion: LEGAL_VERSION,
             totalHours: sessionHours,
             basePrice: sessionBasePrice,
             discountAmount: sessionDiscount,

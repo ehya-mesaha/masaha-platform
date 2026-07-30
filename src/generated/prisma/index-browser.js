@@ -202,6 +202,8 @@ exports.Prisma.SpaceScalarFieldEnum = {
   minBookingHours: 'minBookingHours',
   maxAdvanceBookingDays: 'maxAdvanceBookingDays',
   cancellationPolicy: 'cancellationPolicy',
+  ownerTermsAcceptedAt: 'ownerTermsAcceptedAt',
+  ownerTermsVersion: 'ownerTermsVersion',
   typeId: 'typeId',
   sellerId: 'sellerId',
   organizationId: 'organizationId'
@@ -343,6 +345,8 @@ exports.Prisma.BookingScalarFieldEnum = {
   cancelledAt: 'cancelledAt',
   cancelledBy: 'cancelledBy',
   refundAmount: 'refundAmount',
+  termsAcceptedAt: 'termsAcceptedAt',
+  termsVersion: 'termsVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   spaceId: 'spaceId',

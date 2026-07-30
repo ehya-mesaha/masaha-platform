@@ -101,6 +101,7 @@ export default function StepReview({ form, types, amenities }: StepProps) {
         {/* Terms */}
         <Section title="الشروط">
           <Row label="سياسة الإلغاء" value={policyLabel[form.cancellationPolicy] || '—'} />
+          <Row label="الموافقة على وثائق المنصة" value={form.legalAccepted ? 'تمت الموافقة' : 'لم تتم'} />
           {activeRules.length > 0 && (
             <div className="mt-2">
               <span className="text-[11px] font-bold text-[#5F6764]">القواعد:</span>

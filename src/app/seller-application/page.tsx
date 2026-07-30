@@ -7,12 +7,14 @@ import PublicNavbar from '@/components/layout/PublicNavbar'
 
 type DocType = 'NATIONAL_ID' | 'COMMERCIAL_REGISTER' | 'TITLE_DEED' | 'POWER_OF_ATTORNEY'
 
+const REQUIRED_DOC_TYPES: DocType[] = ['NATIONAL_ID', 'COMMERCIAL_REGISTER', 'TITLE_DEED']
+
 export default function SellerApplicationPage() {
   const router = useRouter()
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '', schoolName: '', branchName: '',
     commercialRegisterNo: '', nationalIdNumber: '', multipleOwners: false, powerOfAttorneyNumber: '',
-    brokerageContractNo: '', consentAccepted: false,
+    consentAccepted: false,
   })
   const [documents, setDocuments] = useState<{ type: DocType; fileUrl: string }[]>([])
   const [uploading, setUploading] = useState<DocType | null>(null)
@@ -39,6 +41,10 @@ export default function SellerApplicationPage() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
+    if (REQUIRED_DOC_TYPES.some((type) => !documents.some((document) => document.type === type))) {
+      setError('يرجى إرفاق جميع المستندات المطلوبة: الهوية الوطنية، السجل التجاري، وصك الملكية أو ما يثبت الحق.')
+      return
+    }
     setLoading(true)
     setError('')
     const response = await fetch('/api/seller-applications', {
@@ -81,7 +87,6 @@ export default function SellerApplicationPage() {
               <Field label="اسم الفرع (اختياري)" value={form.branchName} set={(value) => setForm({ ...form, branchName: value })} />
               <Field label="رقم السجل التجاري" value={form.commercialRegisterNo} set={(value) => setForm({ ...form, commercialRegisterNo: value })} dir="ltr" />
               <Field label="رقم الهوية الوطنية" value={form.nationalIdNumber} set={(value) => setForm({ ...form, nationalIdNumber: value })} dir="ltr" />
-              <Field label="رقم عقد الوساطة (اختياري)" value={form.brokerageContractNo} set={(value) => setForm({ ...form, brokerageContractNo: value })} dir="ltr" required={false} />
             </div>
             <label className="mt-4 flex items-center gap-3 rounded-xl bg-[#F5F1E8] p-4 text-sm font-bold text-[#33423F]">
               <input type="checkbox" checked={form.multipleOwners} onChange={(event) => setForm({ ...form, multipleOwners: event.target.checked })} />
@@ -93,9 +98,9 @@ export default function SellerApplicationPage() {
           <Section title="3. المستندات">
             <p className="mb-4 text-sm text-[#5F6764]">PDF أو صورة واضحة. تحفظ المستندات للمراجعة الإدارية فقط.</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Upload label="الهوية الوطنية (اختياري)" type="NATIONAL_ID" required={false} uploaded={documents.some((item) => item.type === 'NATIONAL_ID')} uploading={uploading} onFile={upload} />
-              <Upload label="السجل التجاري (اختياري)" type="COMMERCIAL_REGISTER" required={false} uploaded={documents.some((item) => item.type === 'COMMERCIAL_REGISTER')} uploading={uploading} onFile={upload} />
-              <Upload label="صك الملكية أو ما يثبت الحق (اختياري)" type="TITLE_DEED" required={false} uploaded={documents.some((item) => item.type === 'TITLE_DEED')} uploading={uploading} onFile={upload} />
+              <Upload label="الهوية الوطنية" type="NATIONAL_ID" required uploaded={documents.some((item) => item.type === 'NATIONAL_ID')} uploading={uploading} onFile={upload} />
+              <Upload label="السجل التجاري" type="COMMERCIAL_REGISTER" required uploaded={documents.some((item) => item.type === 'COMMERCIAL_REGISTER')} uploading={uploading} onFile={upload} />
+              <Upload label="صك الملكية أو ما يثبت الحق" type="TITLE_DEED" required uploaded={documents.some((item) => item.type === 'TITLE_DEED')} uploading={uploading} onFile={upload} />
               {form.multipleOwners && <Upload label="الوكالة الشرعية (اختياري)" type="POWER_OF_ATTORNEY" required={false} uploaded={documents.some((item) => item.type === 'POWER_OF_ATTORNEY')} uploading={uploading} onFile={upload} />}
             </div>
           </Section>

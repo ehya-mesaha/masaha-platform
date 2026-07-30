@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
+import LegalEnglishGuide from '@/components/legal/LegalEnglishGuide'
 import legalDocuments from '@/data/legal-documents.json'
 
 export const metadata: Metadata = {
@@ -78,6 +79,8 @@ export default function PoliciesPage() {
             </div>
           </div>
         </section>
+
+        <LegalEnglishGuide />
 
         <section className="border-b border-[#DED5C7] bg-white">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

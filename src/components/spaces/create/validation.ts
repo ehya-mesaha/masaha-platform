@@ -78,6 +78,7 @@ export function getStepError(step: number, form: SpaceFormData): string {
   if (step === 8) {
     if (!VALID_POLICIES.has(form.cancellationPolicy)) return 'اختر سياسة إلغاء.'
     if (!form.rules.some(rule => rule.isDefault && rule.rule.trim())) return 'فعّل قاعدة استخدام واحدة على الأقل.'
+    if (form.legalAccepted !== true) return 'اقرأ الوثائق القانونية ووافق عليها قبل متابعة نشر المساحة.'
   }
 
   if (step === 9) {

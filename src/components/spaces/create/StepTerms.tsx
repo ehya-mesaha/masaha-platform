@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { StepProps, RuleItem } from './types'
+import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR } from '@/lib/legal'
 
 const POLICIES = [
   {
@@ -121,6 +123,34 @@ export default function StepTerms({ form, update }: StepProps) {
             + إضافة
           </button>
         </div>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-[#D8C18F] bg-[#FFF9EA] p-5">
+        <h3 className="text-sm font-extrabold text-[#173C34]">الموافقة القانونية المطلوبة</h3>
+        <p className="mt-2 text-xs leading-7 text-[#5F6764]">
+          قبل نشر المساحة، اقرأ{' '}
+          <Link href={LEGAL_LINKS.platformTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+            شروط استخدام المنصة
+          </Link>
+          {' '}و
+          <Link href={LEGAL_LINKS.ownerTerms} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+            شروط أصحاب المساحات
+          </Link>
+          {' '}و
+          <Link href={LEGAL_LINKS.privacy} target="_blank" className="font-extrabold text-[#0E3B34] underline underline-offset-4">
+            سياسة الخصوصية
+          </Link>
+          . النسخة الحالية: {LEGAL_UPDATED_AT_AR}.
+        </p>
+        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-white p-4 text-sm font-bold text-[#33423F]">
+          <input
+            type="checkbox"
+            checked={form.legalAccepted}
+            onChange={event => update('legalAccepted', event.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#0E3B34]"
+          />
+          <span>أقر بأنني فتحت الوثائق القانونية المذكورة وقرأتها وفهمتها، وأوافق على الالتزام بها عند عرض المساحة وتنفيذ الحجوزات.</span>
+        </label>
       </div>
     </div>
   )

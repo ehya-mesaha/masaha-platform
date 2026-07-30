@@ -31,6 +31,7 @@ export type SpaceFormData = {
   // Terms
   cancellationPolicy: string
   rules: RuleItem[]
+  legalAccepted: boolean
 }
 
 export type PrintMatrixConfig = {
@@ -142,5 +143,6 @@ export function getInitialForm(): SpaceFormData {
     ],
     cancellationPolicy: 'FLEXIBLE',
     rules: DEFAULT_RULES.map(r => ({ rule: r, isDefault: true })),
+    legalAccepted: false,
   }
 }

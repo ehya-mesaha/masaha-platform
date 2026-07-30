@@ -15,7 +15,7 @@ const COPY = {
     intellectualProperty: 'حقوق الملكية الفكرية',
     credentials: 'بيانات وتراخيص المنشأة',
     credentialsHint: 'بيانات رسمية للشفافية والامتثال',
-    taxLabel: 'السجل الضريبي',
+    taxLabel: 'السجل التجاري',
     falLabel: 'رخصة فال',
   },
   en: {
@@ -27,7 +27,7 @@ const COPY = {
     intellectualProperty: 'Intellectual Property',
     credentials: 'Business Credentials & Licenses',
     credentialsHint: 'Official details published for transparency and compliance',
-    taxLabel: 'Tax Registration',
+    taxLabel: 'Commercial Registration',
     falLabel: 'FAL License',
   },
 } as const
@@ -47,7 +47,7 @@ export default function Footer() {
           <div className="grid gap-3 lg:grid-cols-2">
             <CredentialCard
               image="/legal/saudi-registry.avif"
-              alt={locale === 'ar' ? 'الشعار الرسمي للسجل الضريبي' : 'Official tax registration emblem'}
+              alt={locale === 'ar' ? 'الشعار الرسمي للسجل التجاري' : 'Official commercial registration emblem'}
               label={copy.taxLabel}
               number="7054732743"
               imageClassName="h-[58px] w-[58px] object-contain"
