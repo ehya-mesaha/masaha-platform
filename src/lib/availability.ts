@@ -108,11 +108,16 @@ export async function getSpaceAvailability(db: Database, spaceId: string, sessio
 
   const overlaps = (start: Date, end: Date, session: RequestedSession) => start < session.endAt && end > session.startAt
   const allocations: Array<{ session: RequestedSession; unitId: string }> = []
+  // A space with no working-hour rows at all has no configured schedule, so it isn't
+  // restricted by day/hour (matches the buyer-facing calendar, which enables every day
+  // when there are no working-hour rules) - only a space that DID configure hours should
+  // reject sessions outside them.
+  const hasWorkingHourRules = space.workingHours.length > 0
 
   for (const session of sessions) {
     const day = new Date(`${session.date}T12:00:00${RIYADH_OFFSET}`).getUTCDay()
     const hours = space.workingHours.find(item => item.dayOfWeek === day && item.isOpen)
-    if (!hours || session.startTime < hours.openTime || session.endTime > hours.closeTime) continue
+    if (hasWorkingHourRules && (!hours || session.startTime < hours.openTime || session.endTime > hours.closeTime)) continue
 
     const availableUnit = space.units.find(unit => {
       const bookingConflict = space.bookings.some(item => item.unitId === unit.id && overlaps(item.startTime, item.endTime, session))

@@ -36,3 +36,10 @@ export function formatTime(value: string | Date) {
 export function formatTimeRange(start: string | Date, end: string | Date) {
   return `${formatTime(start)} - ${formatTime(end)}`
 }
+
+export function formatTime12(value: string) {
+  const [hours, minutes] = value.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12
+  return `${hour12}:${String(minutes).padStart(2, '0')} ${period}`
+}

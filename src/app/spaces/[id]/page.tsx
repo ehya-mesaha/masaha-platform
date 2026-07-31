@@ -9,7 +9,7 @@ import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
 import DatePickerCalendar from '@/components/ui/DatePickerCalendar'
 import StartConversationButton from '@/components/chat/StartConversationButton'
-import { formatSpaceNumber } from '@/lib/format'
+import { formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
@@ -473,7 +473,7 @@ export default function SpaceDetailPage() {
                       <div key={i} className={`flex items-center justify-between p-3 rounded-xl text-sm ${wh ? 'bg-[#F5F1E8]' : 'bg-gray-50'}`}>
                         <span className={`font-medium ${wh ? 'text-[#1B1B1B]' : 'text-[#5F6764]'}`}>{name}</span>
                         {wh ? (
-                          <span className="text-[#0E3B34] font-medium" dir="ltr">{wh.openTime} - {wh.closeTime}</span>
+                          <span className="text-[#0E3B34] font-medium" dir="ltr">{formatTime12(wh.openTime)} - {formatTime12(wh.closeTime)}</span>
                         ) : (
                           <span className="text-[#5F6764] text-xs">مغلق</span>
                         )}
