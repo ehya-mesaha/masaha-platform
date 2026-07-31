@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { Suspense, useState, useEffect, useMemo, useRef } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import PublicNavbar from '@/components/layout/PublicNavbar'
 import Footer from '@/components/layout/Footer'
 import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
-import DatePickerCalendar from '@/components/ui/DatePickerCalendar'
 import StartConversationButton from '@/components/chat/StartConversationButton'
 import { formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
+import { generateWeekdayDates, parseDateValue } from '@/lib/sessionDates'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -116,8 +116,17 @@ function serviceLineTotal(service: Service, selection: ServiceSelection, persons
 const STEP_TITLES = ['بيانات الحجز', 'اختيار الخدمات', 'مراجعة الطلب', 'الدفع والإتمام']
 
 export default function SpaceDetailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spinner size="lg" /></div>}>
+      <SpaceDetailPageInner />
+    </Suspense>
+  )
+}
+
+function SpaceDetailPageInner() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [space, setSpace] = useState<Space | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeImage, setActiveImage] = useState(0)
@@ -126,11 +135,17 @@ export default function SpaceDetailPage() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   })
 
-  const EMPTY_BOOKING_FORM = { requesterIdNumber: '', dates: [] as string[], startTime: '', endTime: '', persons: '', purpose: '' }
+  const EMPTY_BOOKING_FORM = { requesterIdNumber: '', startTime: '', endTime: '', persons: '', purpose: '' }
 
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingStep, setBookingStep] = useState(1)
   const [bookingForm, setBookingForm] = useState(EMPTY_BOOKING_FORM)
+  const [bookingMode, setBookingMode] = useState<'single' | 'program'>('single')
+  const [singleDate, setSingleDate] = useState('')
+  const [programStart, setProgramStart] = useState('')
+  const [programEnd, setProgramEnd] = useState('')
+  const [programWeekdays, setProgramWeekdays] = useState<number[]>([])
+  const [datesFromSearch, setDatesFromSearch] = useState(false)
   const [selectedServicesByDate, setSelectedServicesByDate] = useState<Record<string, Record<string, ServiceSelection>>>({})
   const [expandedServiceDate, setExpandedServiceDate] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState('mada')
@@ -140,6 +155,11 @@ export default function SpaceDetailPage() {
   const [bookingSuccess, setBookingSuccess] = useState(false)
   const [availabilityCheck, setAvailabilityCheck] = useState<AvailabilityCheck | null>(null)
   const advancingRef = useRef(false)
+
+  const bookingDates = useMemo(() => {
+    if (bookingMode === 'single') return singleDate ? [singleDate] : []
+    return generateWeekdayDates(programStart, programEnd, programWeekdays)
+  }, [bookingMode, singleDate, programStart, programEnd, programWeekdays])
 
   useEffect(() => {
     fetch(`/api/spaces/${id}`)
@@ -153,23 +173,31 @@ export default function SpaceDetailPage() {
     setBookingError('')
   }
 
-  function toggleDate(date: string) {
-    setBookingForm(current => ({
-      ...current,
-      dates: current.dates.includes(date) ? current.dates.filter(d => d !== date) : [...current.dates, date].sort(),
-    }))
-    setAvailabilityCheck(null)
-    setBookingError('')
-  }
-
   function openBooking() {
     const firstOpenDay = space?.workingHours.find(item => item.isOpen)
+    const spMode = searchParams.get('mode')
+    const spDate = searchParams.get('date')
+    const spStartDate = searchParams.get('startDate')
+    const spEndDate = searchParams.get('endDate')
+    const spWeekdays = searchParams.get('weekdays')
+    const spStartTime = searchParams.get('startTime')
+    const spEndTime = searchParams.get('endTime')
+
+    const hasProgramParams = spMode === 'program' && Boolean(spStartDate) && Boolean(spEndDate) && Boolean(spWeekdays)
+    const hasSingleParams = Boolean(spDate)
+
     setBookingStep(1)
     setBookingError('')
+    setBookingMode(hasProgramParams ? 'program' : 'single')
+    setSingleDate(hasProgramParams ? '' : spDate || '')
+    setProgramStart(hasProgramParams ? spStartDate || '' : '')
+    setProgramEnd(hasProgramParams ? spEndDate || '' : '')
+    setProgramWeekdays(hasProgramParams ? (spWeekdays || '').split(',').map(Number).filter(n => Number.isInteger(n)) : [])
+    setDatesFromSearch(hasProgramParams || hasSingleParams)
     setBookingForm({
       ...EMPTY_BOOKING_FORM,
-      startTime: firstOpenDay?.openTime || '09:00',
-      endTime: firstOpenDay?.closeTime || '12:00',
+      startTime: spStartTime || firstOpenDay?.openTime || '09:00',
+      endTime: spEndTime || firstOpenDay?.closeTime || '12:00',
     })
     setAvailabilityCheck(null)
     setSelectedServicesByDate({})
@@ -219,17 +247,17 @@ export default function SpaceDetailPage() {
       basePrice: 0, discountPercent: 0, discountAmount: 0, servicesTotal: 0, grandTotal: 0, totalHours: 0,
       perDate: [] as { date: string; serviceLines: { name: string; total: number }[]; dateServicesTotal: number }[],
     }
-    if (!space || bookingForm.dates.length === 0) return emptyResult
+    if (!space || bookingDates.length === 0) return emptyResult
 
-    const totalHours = hours * bookingForm.dates.length
+    const totalHours = hours * bookingDates.length
     const basePrice = space.price * totalHours
     const tier = [...space.pricingTiers].sort((a, b) => b.minHours - a.minHours).find(t => totalHours >= t.minHours)
     const tierDiscount = tier?.discountPercent ?? 0
-    const recurringDiscount = bookingForm.dates.length > 1 ? 5 : 0
+    const recurringDiscount = bookingDates.length > 1 ? 5 : 0
     const discountPercent = Math.max(tierDiscount, recurringDiscount)
     const discountAmount = basePrice * discountPercent / 100
 
-    const perDate = [...bookingForm.dates].sort().map(date => {
+    const perDate = [...bookingDates].sort().map(date => {
       const dateSelections = selectedServicesByDate[date] || {}
       const serviceLines = space.services
         .filter(service => dateSelections[service.id]?.enabled)
@@ -240,12 +268,19 @@ export default function SpaceDetailPage() {
     const servicesTotal = perDate.reduce((sum, d) => sum + d.dateServicesTotal, 0)
     const grandTotal = basePrice - discountAmount + servicesTotal
     return { basePrice, discountPercent, discountAmount, servicesTotal, grandTotal, totalHours, perDate }
-  }, [space, hours, persons, bookingForm.dates, selectedServicesByDate])
+  }, [space, hours, persons, bookingDates, selectedServicesByDate])
 
   function validateStep(step: number): string {
     if (step === 1) {
       if (!bookingForm.requesterIdNumber.trim()) return 'أدخل رقم الهوية الوطنية أو السجل التجاري'
-      if (bookingForm.dates.length === 0) return 'اختر تاريخًا واحدًا على الأقل من التقويم'
+      if (bookingMode === 'single' && !singleDate) return 'اختر تاريخ الحجز'
+      if (bookingMode === 'program' && (!programStart || !programEnd)) return 'اختر تاريخ بداية ونهاية البرنامج'
+      if (bookingMode === 'program' && programEnd < programStart) return 'يجب أن يكون تاريخ النهاية بعد تاريخ البداية'
+      if (bookingMode === 'program' && programWeekdays.length === 0) return 'اختر يومًا واحدًا على الأقل للبرنامج'
+      if (bookingMode === 'single' && singleDate && hasOpenDayRules && !openDaySet.has(parseDateValue(singleDate).getDay())) {
+        return 'المساحة مغلقة في هذا اليوم، اختر تاريخًا آخر'
+      }
+      if (bookingDates.length === 0) return 'لم يتم العثور على مواعيد ضمن المعايير المحددة'
       if (!bookingForm.startTime || !bookingForm.endTime) return 'حدد وقت البداية والنهاية'
       if (hours <= 0) return 'يجب أن يكون وقت النهاية بعد وقت البداية'
     }
@@ -254,18 +289,18 @@ export default function SpaceDetailPage() {
   }
 
   async function verifyAvailability(showError = true) {
-    if (bookingForm.dates.length === 0 || !bookingForm.startTime || !bookingForm.endTime || hours <= 0) return false
+    if (bookingDates.length === 0 || !bookingForm.startTime || !bookingForm.endTime || hours <= 0) return false
     setAvailabilityCheck(current => ({
       status: 'checking',
       availableSessions: current?.availableSessions || 0,
-      totalSessions: bookingForm.dates.length,
+      totalSessions: bookingDates.length,
       dates: current?.dates || {},
     }))
     try {
       const response = await fetch(`/api/spaces/${id}/availability`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dates: bookingForm.dates, startTime: bookingForm.startTime, endTime: bookingForm.endTime }),
+        body: JSON.stringify({ dates: bookingDates, startTime: bookingForm.startTime, endTime: bookingForm.endTime }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'تعذر التحقق من الموعد')
@@ -284,7 +319,7 @@ export default function SpaceDetailPage() {
       }
       return Boolean(data.fullyAvailable)
     } catch {
-      setAvailabilityCheck({ status: 'error', availableSessions: 0, totalSessions: bookingForm.dates.length, dates: {} })
+      setAvailabilityCheck({ status: 'error', availableSessions: 0, totalSessions: bookingDates.length, dates: {} })
       if (showError) setBookingError('تعذر التحقق من التوفر الآن. حاول مرة أخرى.')
       return false
     }
@@ -316,7 +351,7 @@ export default function SpaceDetailPage() {
     setBookingLoading(true)
     try {
       const servicesByDate: Record<string, { configId: string; quantity: number; matrix: PrintMatrixConfig }[]> = {}
-      for (const date of bookingForm.dates) {
+      for (const date of bookingDates) {
         const dateSelections = selectedServicesByDate[date] || {}
         servicesByDate[date] = Object.entries(dateSelections)
           .filter(([, selection]) => selection.enabled)
@@ -330,7 +365,7 @@ export default function SpaceDetailPage() {
           spaceId: id,
           requesterIdNumber: bookingForm.requesterIdNumber,
           mode: 'dates',
-          dates: bookingForm.dates,
+          dates: bookingDates,
           startTime: bookingForm.startTime,
           endTime: bookingForm.endTime,
           persons: bookingForm.persons,
@@ -894,25 +929,75 @@ export default function SpaceDetailPage() {
                     placeholder="أدخل الرقم" dir="ltr" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">التواريخ</label>
-                  <p className="mb-2 text-[11px] text-[#8B9389]">يمكنك اختيار أكثر من تاريخ لنفس الحجز، وسيتم تطبيق خصم 5% تلقائيًا عند اختيار أكثر من يوم.</p>
-                  <DatePickerCalendar
-                    multiple
-                    value={bookingForm.dates}
-                    onChange={dates => { setBookingForm(current => ({ ...current, dates })); setAvailabilityCheck(null); setBookingError('') }}
-                    minDate={todayValue}
-                    maxDate={maxBookingDate}
-                    isDateEnabled={date => !hasOpenDayRules || openDaySet.has(date.getDay())}
-                    dateStatuses={availabilityCheck?.dates}
-                  />
-                  {bookingForm.dates.length > 0 && (
-                    <div className="mt-2.5 flex flex-wrap gap-2">
-                      {[...bookingForm.dates].sort().map(date => (
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <label className="block text-xs font-bold text-[#3F4B47]">المواعيد</label>
+                    {datesFromSearch && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        مستوردة من بحثك
+                      </span>
+                    )}
+                  </div>
+                  <div className="mb-3 flex gap-1.5 rounded-xl border border-[#D8D1C7] bg-[#FAF8F3] p-1">
+                    <button type="button" onClick={() => { setBookingMode('single'); setAvailabilityCheck(null); setBookingError('') }}
+                      className={`flex-1 rounded-lg px-3 py-2 text-xs font-extrabold transition ${bookingMode === 'single' ? 'bg-[#0E3B34] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}>
+                      حجز مرة واحدة
+                    </button>
+                    <button type="button" onClick={() => { setBookingMode('program'); setAvailabilityCheck(null); setBookingError('') }}
+                      className={`flex-1 rounded-lg px-3 py-2 text-xs font-extrabold transition ${bookingMode === 'program' ? 'bg-[#0E3B34] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}>
+                      برنامج متكرر
+                    </button>
+                  </div>
+
+                  {bookingMode === 'single' ? (
+                    <input type="date" value={singleDate} min={todayValue} max={maxBookingDate}
+                      onChange={e => { setSingleDate(e.target.value); setAvailabilityCheck(null); setBookingError('') }}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <input type="date" value={programStart} min={todayValue} max={maxBookingDate}
+                          onChange={e => { setProgramStart(e.target.value); setAvailabilityCheck(null); setBookingError('') }}
+                          className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" aria-label="من تاريخ" />
+                        <input type="date" value={programEnd} min={programStart || todayValue} max={maxBookingDate}
+                          onChange={e => { setProgramEnd(e.target.value); setAvailabilityCheck(null); setBookingError('') }}
+                          className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" aria-label="إلى تاريخ" />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {DAY_NAMES.map((name, dayIndex) => {
+                          const closed = hasOpenDayRules && !openDaySet.has(dayIndex)
+                          return (
+                            <button key={name} type="button" disabled={closed}
+                              onClick={() => {
+                                setProgramWeekdays(current => current.includes(dayIndex) ? current.filter(d => d !== dayIndex) : [...current, dayIndex])
+                                setAvailabilityCheck(null)
+                                setBookingError('')
+                              }}
+                              className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+                                programWeekdays.includes(dayIndex)
+                                  ? 'border-[#0E3B34] bg-[#0E3B34] text-white'
+                                  : closed
+                                    ? 'cursor-not-allowed border-[#E8E1D3] bg-[#F5F1E8] text-[#B5B0A2]'
+                                    : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'
+                              }`}>
+                              {name}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingDates.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                      {[...bookingDates].sort().map(date => (
                         <span key={date} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold text-white ${availabilityCheck?.dates[date] === 'unavailable' ? 'border-red-600 bg-red-600' : 'border-[#0E3B34] bg-[#0E3B34]'}`}>
                           <span dir="ltr">{date}</span>
-                          <button type="button" onClick={() => toggleDate(date)} aria-label="إزالة التاريخ" className="leading-none text-white/70 transition-colors hover:text-white">×</button>
                         </span>
                       ))}
+                      {bookingMode === 'program' && bookingDates.length > 1 && (
+                        <span className="text-[11px] font-bold text-[#8B9389]">خصم 5% يُطبّق تلقائيًا لأكثر من يوم</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -930,7 +1015,7 @@ export default function SpaceDetailPage() {
                       className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
                   </div>
                 </div>
-                {bookingForm.dates.length > 0 && bookingForm.startTime && bookingForm.endTime && hours > 0 && (
+                {bookingDates.length > 0 && bookingForm.startTime && bookingForm.endTime && hours > 0 && (
                   <button
                     type="button"
                     onClick={() => void verifyAvailability()}
@@ -984,7 +1069,7 @@ export default function SpaceDetailPage() {
                   <div className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">
                     لا توجد خدمات إضافية متاحة لهذه المساحة.
                   </div>
-                ) : [...bookingForm.dates].sort().map((date, index) => {
+                ) : [...bookingDates].sort().map((date, index) => {
                   const isOpen = expandedServiceDate ? expandedServiceDate === date : index === 0
                   const dateInfo = pricing.perDate.find(d => d.date === date)
                   const dateSelections = selectedServicesByDate[date] || {}
@@ -1060,13 +1145,13 @@ export default function SpaceDetailPage() {
             {bookingStep === 3 && (
               <div className="space-y-4">
                 <div className="rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 text-sm">
-                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">عدد الأيام</span><span className="font-bold text-[#1B1B1B]">{bookingForm.dates.length.toLocaleString('en-US')}</span></p>
+                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">عدد الأيام</span><span className="font-bold text-[#1B1B1B]">{bookingDates.length.toLocaleString('en-US')}</span></p>
                   <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">الوقت</span><span className="font-bold text-[#1B1B1B]" dir="ltr">{bookingForm.startTime} - {bookingForm.endTime}</span></p>
                   <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">إجمالي الساعات</span><span className="font-bold text-[#1B1B1B]">{pricing.totalHours.toLocaleString('en-US')}</span></p>
                   {bookingForm.persons && <p className="flex justify-between"><span className="text-[#5F6764]">عدد الحضور</span><span className="font-bold text-[#1B1B1B]">{bookingForm.persons}</span></p>}
                 </div>
 
-                {bookingForm.dates.length > 1 && (
+                {bookingDates.length > 1 && (
                   <p className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-3 text-xs text-[#5F6764]">
                     قد تختلف القاعة المخصصة من يوم لآخر حسب التوفر.
                   </p>

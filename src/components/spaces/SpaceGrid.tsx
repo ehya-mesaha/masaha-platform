@@ -23,9 +23,10 @@ interface Space {
 interface SpaceGridProps {
   spaces: Space[]
   emptyMessage?: string
+  bookingQuery?: string
 }
 
-export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مساحات متاحة' }: SpaceGridProps) {
+export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مساحات متاحة', bookingQuery }: SpaceGridProps) {
   if (spaces.length === 0) {
     return (
       <div className="premium-card animate-in text-center py-16 text-gray-500">
@@ -57,6 +58,7 @@ export default function SpaceGrid({ spaces, emptyMessage = 'لا توجد مسا
           baseTotal={space.baseTotal}
           discountAmount={space.discountAmount}
           finalTotal={space.finalTotal}
+          bookingQuery={bookingQuery}
         />
       ))}
     </div>

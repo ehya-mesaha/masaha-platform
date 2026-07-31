@@ -17,6 +17,7 @@ interface SpaceCardProps {
   baseTotal?: number
   discountAmount?: number
   finalTotal?: number
+  bookingQuery?: string
 }
 
 export default function SpaceCard({
@@ -35,13 +36,15 @@ export default function SpaceCard({
   baseTotal,
   discountAmount,
   finalTotal,
+  bookingQuery,
 }: SpaceCardProps) {
   const priceLabel = 'ساعة'
   const hasProgram = typeof totalSessions === 'number' && totalSessions > 0
   const fullyAvailable = hasProgram && availableSessions === totalSessions
+  const href = bookingQuery ? `/spaces/${id}?${bookingQuery}` : `/spaces/${id}`
 
   return (
-    <Link href={`/spaces/${id}`} className="space-card group block overflow-hidden rounded-[14px] border border-[#E4DED1] bg-white shadow-[0_22px_60px_-45px_rgba(9, 44, 39,.68)] transition-all duration-300 hover:-translate-y-1 hover:border-[#B99A63]/55 hover:shadow-[0_32px_80px_-48px_rgba(9, 44, 39,.76)]">
+    <Link href={href} className="space-card group block overflow-hidden rounded-[14px] border border-[#E4DED1] bg-white shadow-[0_22px_60px_-45px_rgba(9, 44, 39,.68)] transition-all duration-300 hover:-translate-y-1 hover:border-[#B99A63]/55 hover:shadow-[0_32px_80px_-48px_rgba(9, 44, 39,.76)]">
       {/* Image */}
       <div className="space-card-media relative h-56 overflow-hidden bg-gradient-to-br from-[#F5F1E8] to-[#D8D1C7]">
         {imageUrl ? (

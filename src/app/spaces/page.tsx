@@ -108,7 +108,7 @@ export default async function SpacesPage({
               </div>
             </div>
 
-            <SpaceGrid spaces={spaces} />
+            <SpaceGrid spaces={spaces} bookingQuery={buildBookingQuery(params)} />
           </main>
         </div>
       </div>
@@ -221,6 +221,19 @@ async function mapWithConcurrency<T, R>(items: T[], limit: number, mapper: (item
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return <div className="flex items-center justify-between gap-3"><span className="text-[#5F6764]">{label}</span><strong className="text-[#0E3B34]">{value}</strong></div>
+}
+
+function buildBookingQuery(params: SearchParams) {
+  const query = new URLSearchParams()
+  if (params.mode) query.set('mode', params.mode)
+  if (params.date) query.set('date', params.date)
+  if (params.startDate) query.set('startDate', params.startDate)
+  if (params.endDate) query.set('endDate', params.endDate)
+  if (params.weekdays) query.set('weekdays', params.weekdays)
+  if (params.startTime) query.set('startTime', params.startTime)
+  if (params.endTime) query.set('endTime', params.endTime)
+  const queryString = query.toString()
+  return queryString || undefined
 }
 
 function safeProgramSessions(params: SearchParams) {

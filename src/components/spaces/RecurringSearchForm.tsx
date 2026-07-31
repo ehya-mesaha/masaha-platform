@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 import SearchableSelect from '@/components/ui/SearchableSelect'
+import { generateWeekdayDates } from '@/lib/sessionDates'
 
 const DAYS = [
   { value: 0, ar: 'الأحد', en: 'Sun' },
@@ -21,18 +22,7 @@ function minutes(value: string) {
 }
 
 function countSessions(startDate: string, endDate: string, weekdays: number[]) {
-  if (!startDate || !endDate || weekdays.length === 0) return 0
-  const start = new Date(`${startDate}T12:00:00`)
-  const end = new Date(`${endDate}T12:00:00`)
-  if (end < start) return 0
-
-  let count = 0
-  const cursor = new Date(start)
-  while (cursor <= end) {
-    if (weekdays.includes(cursor.getDay())) count += 1
-    cursor.setDate(cursor.getDate() + 1)
-  }
-  return count
+  return generateWeekdayDates(startDate, endDate, weekdays).length
 }
 
 type SearchOption = { id: string; name: string }
