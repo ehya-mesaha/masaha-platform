@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 import SearchableSelect from '@/components/ui/SearchableSelect'
-import { generateWeekdayDates } from '@/lib/sessionDates'
+import { generateWeekdayDates, weekdaysInRange } from '@/lib/sessionDates'
 
 const DAYS = [
   { value: 0, ar: 'الأحد', en: 'Sun' },
@@ -52,7 +52,12 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
     }
   }, [endDate, mode, sessionEnd, sessionStart, startDate, weekdays])
 
+  const hasDateRange = Boolean(startDate && endDate)
+  const availableWeekdays = useMemo(() => weekdaysInRange(startDate, endDate), [startDate, endDate])
+  const isRestrictedRange = hasDateRange && availableWeekdays.size < 7
+
   function toggleDay(day: number) {
+    if (hasDateRange && !availableWeekdays.has(day)) return
     setError('')
     setWeekdays(current => current.includes(day) ? current.filter(item => item !== day) : [...current, day])
   }
@@ -84,6 +89,12 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
     }
     if (mode === 'program' && weekdays.length === 0) {
       setError(isEnglish ? 'Choose at least one weekday for the program.' : 'اختر يومًا واحدًا على الأقل للبرنامج.')
+      return
+    }
+    if (mode === 'program' && generateWeekdayDates(startDate, endDate, weekdays).length === 0) {
+      setError(isEnglish
+        ? 'None of the chosen days fall within this date range. Adjust the days or the dates.'
+        : 'الأيام المختارة لا تقع ضمن هذا النطاق الزمني. عدّل الأيام أو التواريخ.')
       return
     }
     if (minutes(sessionEnd) <= minutes(sessionStart)) {
@@ -188,18 +199,36 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
 
       {mode === 'program' && (
         <div className="border-t border-[#EEE8DC] px-4 py-4 sm:px-5">
-          <p className="mb-3 text-xs font-extrabold text-[#4D5A51]">{isEnglish ? 'Required weekdays' : 'الأيام المطلوبة'}</p>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-extrabold text-[#4D5A51]">{isEnglish ? 'Required weekdays' : 'الأيام المطلوبة'}</p>
+            {isRestrictedRange && (
+              <p className="text-[11px] font-bold text-[#9A7424]">
+                {isEnglish ? 'Only days within your chosen dates can be selected.' : 'يمكن اختيار الأيام الواقعة ضمن التواريخ المحددة فقط.'}
+              </p>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
-            {DAYS.map(day => (
-              <button
-                type="button"
-                key={day.value}
-                onClick={() => toggleDay(day.value)}
-                className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${weekdays.includes(day.value) ? 'border-[#0E3B34] bg-[#0E3B34] text-white' : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'}`}
-              >
-                {isEnglish ? day.en : day.ar}
-              </button>
-            ))}
+            {DAYS.map(day => {
+              const disabled = hasDateRange && !availableWeekdays.has(day.value)
+              return (
+                <button
+                  type="button"
+                  key={day.value}
+                  disabled={disabled}
+                  onClick={() => toggleDay(day.value)}
+                  title={disabled ? (isEnglish ? 'This day falls outside the chosen date range' : 'هذا اليوم لا يقع ضمن التواريخ المحددة') : undefined}
+                  className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+                    weekdays.includes(day.value) && !disabled
+                      ? 'border-[#0E3B34] bg-[#0E3B34] text-white'
+                      : disabled
+                        ? 'cursor-not-allowed border-[#E8E1D3] bg-[#F5F1E8] text-[#B5B0A2] opacity-60'
+                        : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'
+                  }`}
+                >
+                  {isEnglish ? day.en : day.ar}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}

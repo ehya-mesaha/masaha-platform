@@ -10,7 +10,7 @@ import Spinner from '@/components/ui/Spinner'
 import StartConversationButton from '@/components/chat/StartConversationButton'
 import { formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
-import { generateWeekdayDates, parseDateValue } from '@/lib/sessionDates'
+import { generateWeekdayDates, parseDateValue, weekdaysInRange } from '@/lib/sessionDates'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -156,10 +156,19 @@ function SpaceDetailPageInner() {
   const [availabilityCheck, setAvailabilityCheck] = useState<AvailabilityCheck | null>(null)
   const advancingRef = useRef(false)
 
+  const openDays = useMemo(
+    () => (space?.workingHours || []).filter(wh => wh.isOpen).sort((a, b) => a.dayOfWeek - b.dayOfWeek),
+    [space],
+  )
+  const openDaySet = useMemo(() => new Set(openDays.map(wh => wh.dayOfWeek)), [openDays])
+  const hasOpenDayRules = openDaySet.size > 0
+
   const bookingDates = useMemo(() => {
     if (bookingMode === 'single') return singleDate ? [singleDate] : []
-    return generateWeekdayDates(programStart, programEnd, programWeekdays)
-  }, [bookingMode, singleDate, programStart, programEnd, programWeekdays])
+    const allowedByRange = weekdaysInRange(programStart, programEnd)
+    const effectiveWeekdays = programWeekdays.filter(day => allowedByRange.has(day) && (!hasOpenDayRules || openDaySet.has(day)))
+    return generateWeekdayDates(programStart, programEnd, effectiveWeekdays)
+  }, [bookingMode, singleDate, programStart, programEnd, programWeekdays, hasOpenDayRules, openDaySet])
 
   useEffect(() => {
     fetch(`/api/spaces/${id}`)
@@ -280,7 +289,7 @@ function SpaceDetailPageInner() {
       if (bookingMode === 'single' && singleDate && hasOpenDayRules && !openDaySet.has(parseDateValue(singleDate).getDay())) {
         return 'المساحة مغلقة في هذا اليوم، اختر تاريخًا آخر'
       }
-      if (bookingDates.length === 0) return 'لم يتم العثور على مواعيد ضمن المعايير المحددة'
+      if (bookingDates.length === 0) return 'لا توجد جلسات مطابقة للأيام المختارة ضمن هذا النطاق الزمني. عدّل الأيام أو التواريخ.'
       if (!bookingForm.startTime || !bookingForm.endTime) return 'حدد وقت البداية والنهاية'
       if (hours <= 0) return 'يجب أن يكون وقت النهاية بعد وقت البداية'
     }
@@ -414,7 +423,6 @@ function SpaceDetailPageInner() {
 
   const priceLabel = 'ساعة'
   const sortedImages = [...space.images].sort((a, b) => a.order - b.order)
-  const openDays = (space.workingHours || []).filter(wh => wh.isOpen).sort((a, b) => a.dayOfWeek - b.dayOfWeek)
   const policy = POLICY_LABEL[space.cancellationPolicy] || POLICY_LABEL.FLEXIBLE
 
   const fullAddress = [space.streetName, space.buildingNumber ? `مبنى ${space.buildingNumber}` : null, space.district, space.city]
@@ -427,8 +435,6 @@ function SpaceDetailPageInner() {
         return `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`
       })()
     : undefined
-  const openDaySet = new Set(openDays.map(wh => wh.dayOfWeek))
-  const hasOpenDayRules = openDaySet.size > 0
   const mapHref = space.latitude && space.longitude
     ? `https://www.google.com/maps/search/?api=1&query=${space.latitude},${space.longitude}`
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || space.city)}`
@@ -963,28 +969,45 @@ function SpaceDetailPageInner() {
                           onChange={e => { setProgramEnd(e.target.value); setAvailabilityCheck(null); setBookingError('') }}
                           className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" aria-label="إلى تاريخ" />
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {DAY_NAMES.map((name, dayIndex) => {
-                          const closed = hasOpenDayRules && !openDaySet.has(dayIndex)
-                          return (
-                            <button key={name} type="button" disabled={closed}
-                              onClick={() => {
-                                setProgramWeekdays(current => current.includes(dayIndex) ? current.filter(d => d !== dayIndex) : [...current, dayIndex])
-                                setAvailabilityCheck(null)
-                                setBookingError('')
-                              }}
-                              className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${
-                                programWeekdays.includes(dayIndex)
-                                  ? 'border-[#0E3B34] bg-[#0E3B34] text-white'
-                                  : closed
-                                    ? 'cursor-not-allowed border-[#E8E1D3] bg-[#F5F1E8] text-[#B5B0A2]'
-                                    : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'
-                              }`}>
-                              {name}
-                            </button>
-                          )
-                        })}
-                      </div>
+                      {(() => {
+                        const inRange = weekdaysInRange(programStart, programEnd)
+                        const isRestrictedRange = Boolean(programStart && programEnd) && inRange.size < 7
+                        return (
+                          <>
+                            {isRestrictedRange && (
+                              <p className="text-[11px] font-bold text-[#9A7424]">
+                                يمكن اختيار الأيام الواقعة ضمن التواريخ المحددة فقط.
+                              </p>
+                            )}
+                            <div className="flex flex-wrap gap-2">
+                              {DAY_NAMES.map((name, dayIndex) => {
+                                const closedBySpace = hasOpenDayRules && !openDaySet.has(dayIndex)
+                                const outOfRange = Boolean(programStart && programEnd) && !inRange.has(dayIndex)
+                                const disabled = closedBySpace || outOfRange
+                                const reason = closedBySpace ? 'المساحة مغلقة في هذا اليوم' : outOfRange ? 'هذا اليوم لا يقع ضمن التواريخ المحددة' : undefined
+                                const selected = programWeekdays.includes(dayIndex) && !disabled
+                                return (
+                                  <button key={name} type="button" disabled={disabled} title={reason}
+                                    onClick={() => {
+                                      setProgramWeekdays(current => current.includes(dayIndex) ? current.filter(d => d !== dayIndex) : [...current, dayIndex])
+                                      setAvailabilityCheck(null)
+                                      setBookingError('')
+                                    }}
+                                    className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+                                      selected
+                                        ? 'border-[#0E3B34] bg-[#0E3B34] text-white'
+                                        : disabled
+                                          ? 'cursor-not-allowed border-[#E8E1D3] bg-[#F5F1E8] text-[#B5B0A2] opacity-60'
+                                          : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'
+                                    }`}>
+                                    {name}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   )}
 

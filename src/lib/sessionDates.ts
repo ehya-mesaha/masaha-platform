@@ -27,3 +27,26 @@ export function toDateValue(date: Date): string {
 export function parseDateValue(value: string): Date {
   return new Date(`${value}T12:00:00`)
 }
+
+const ALL_WEEKDAYS = new Set([0, 1, 2, 3, 4, 5, 6])
+
+// Which weekdays (0=Sun..6=Sat) actually occur within [startDate, endDate].
+// A range of 7+ days always covers every weekday; shorter ranges only cover
+// whichever specific weekdays fall inside them.
+export function weekdaysInRange(startDate: string, endDate: string): Set<number> {
+  if (!startDate || !endDate) return new Set(ALL_WEEKDAYS)
+  const start = parseDateValue(startDate)
+  const end = parseDateValue(endDate)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return new Set()
+
+  const spanDays = Math.round((end.getTime() - start.getTime()) / 86_400_000)
+  if (spanDays >= 6) return new Set(ALL_WEEKDAYS)
+
+  const days = new Set<number>()
+  const cursor = new Date(start)
+  while (cursor <= end) {
+    days.add(cursor.getDay())
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return days
+}
