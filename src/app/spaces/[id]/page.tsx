@@ -120,12 +120,13 @@ export default function SpaceDetailPage() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   })
 
-  const EMPTY_BOOKING_FORM = { requesterIdNumber: '', date: '', startTime: '', endTime: '', persons: '', purpose: '' }
+  const EMPTY_BOOKING_FORM = { requesterIdNumber: '', dates: [] as string[], startTime: '', endTime: '', persons: '', purpose: '' }
 
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingStep, setBookingStep] = useState(1)
   const [bookingForm, setBookingForm] = useState(EMPTY_BOOKING_FORM)
-  const [selectedServices, setSelectedServices] = useState<Record<string, ServiceSelection>>({})
+  const [selectedServicesByDate, setSelectedServicesByDate] = useState<Record<string, Record<string, ServiceSelection>>>({})
+  const [expandedServiceDate, setExpandedServiceDate] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState('mada')
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
@@ -144,11 +145,20 @@ export default function SpaceDetailPage() {
     setBookingError('')
   }
 
+  function toggleDate(date: string) {
+    setBookingForm(current => ({
+      ...current,
+      dates: current.dates.includes(date) ? current.dates.filter(d => d !== date) : [...current.dates, date].sort(),
+    }))
+    setBookingError('')
+  }
+
   function openBooking() {
     setBookingStep(1)
     setBookingError('')
     setBookingForm(EMPTY_BOOKING_FORM)
-    setSelectedServices({})
+    setSelectedServicesByDate({})
+    setExpandedServiceDate(null)
     setPaymentMethod('mada')
     setAgreedToTerms(false)
     setBookingOpen(true)
@@ -160,24 +170,28 @@ export default function SpaceDetailPage() {
     setBookingError('')
   }
 
-  function toggleService(serviceId: string) {
-    setSelectedServices(current => {
-      const existing = current[serviceId] || { enabled: false, quantity: 1, matrix: {} }
-      return { ...current, [serviceId]: { ...existing, enabled: !existing.enabled } }
+  function updateDateServices(date: string, updater: (current: Record<string, ServiceSelection>) => Record<string, ServiceSelection>) {
+    setSelectedServicesByDate(current => ({ ...current, [date]: updater(current[date] || {}) }))
+  }
+
+  function toggleService(date: string, serviceId: string) {
+    updateDateServices(date, services => {
+      const existing = services[serviceId] || { enabled: false, quantity: 1, matrix: {} }
+      return { ...services, [serviceId]: { ...existing, enabled: !existing.enabled } }
     })
   }
 
-  function updateServiceQuantity(serviceId: string, quantity: number) {
-    setSelectedServices(current => ({
-      ...current,
-      [serviceId]: { ...(current[serviceId] || { enabled: true, quantity: 1, matrix: {} }), quantity: Math.max(1, quantity) },
+  function updateServiceQuantity(date: string, serviceId: string, quantity: number) {
+    updateDateServices(date, services => ({
+      ...services,
+      [serviceId]: { ...(services[serviceId] || { enabled: true, quantity: 1, matrix: {} }), quantity: Math.max(1, quantity) },
     }))
   }
 
-  function updateServiceMatrix(serviceId: string, key: keyof PrintMatrixConfig, value: number) {
-    setSelectedServices(current => {
-      const existing = current[serviceId] || { enabled: true, quantity: 1, matrix: {} }
-      return { ...current, [serviceId]: { ...existing, matrix: { ...existing.matrix, [key]: Math.max(0, value) } } }
+  function updateServiceMatrix(date: string, serviceId: string, key: keyof PrintMatrixConfig, value: number) {
+    updateDateServices(date, services => {
+      const existing = services[serviceId] || { enabled: true, quantity: 1, matrix: {} }
+      return { ...services, [serviceId]: { ...existing, matrix: { ...existing.matrix, [key]: Math.max(0, value) } } }
     })
   }
 
@@ -185,24 +199,37 @@ export default function SpaceDetailPage() {
   const persons = Number(bookingForm.persons) || 0
 
   const pricing = useMemo(() => {
-    if (!space) return { basePrice: 0, discountPercent: 0, discountAmount: 0, servicesTotal: 0, grandTotal: 0, serviceLines: [] as { name: string; total: number }[] }
-    const basePrice = space.price * hours
-    const tier = [...space.pricingTiers].sort((a, b) => b.minHours - a.minHours).find(t => hours >= t.minHours)
-    const discountPercent = tier?.discountPercent ?? 0
+    const emptyResult = {
+      basePrice: 0, discountPercent: 0, discountAmount: 0, servicesTotal: 0, grandTotal: 0, totalHours: 0,
+      perDate: [] as { date: string; serviceLines: { name: string; total: number }[]; dateServicesTotal: number }[],
+    }
+    if (!space || bookingForm.dates.length === 0) return emptyResult
+
+    const totalHours = hours * bookingForm.dates.length
+    const basePrice = space.price * totalHours
+    const tier = [...space.pricingTiers].sort((a, b) => b.minHours - a.minHours).find(t => totalHours >= t.minHours)
+    const tierDiscount = tier?.discountPercent ?? 0
+    const recurringDiscount = bookingForm.dates.length > 1 ? 5 : 0
+    const discountPercent = Math.max(tierDiscount, recurringDiscount)
     const discountAmount = basePrice * discountPercent / 100
-    const serviceLines = space.services
-      .filter(service => selectedServices[service.id]?.enabled)
-      .map(service => ({ name: service.name, total: serviceLineTotal(service, selectedServices[service.id], persons, hours) }))
-      .filter(line => line.total > 0)
-    const servicesTotal = serviceLines.reduce((sum, line) => sum + line.total, 0)
+
+    const perDate = [...bookingForm.dates].sort().map(date => {
+      const dateSelections = selectedServicesByDate[date] || {}
+      const serviceLines = space.services
+        .filter(service => dateSelections[service.id]?.enabled)
+        .map(service => ({ name: service.name, total: serviceLineTotal(service, dateSelections[service.id], persons, hours) }))
+        .filter(line => line.total > 0)
+      return { date, serviceLines, dateServicesTotal: serviceLines.reduce((sum, line) => sum + line.total, 0) }
+    })
+    const servicesTotal = perDate.reduce((sum, d) => sum + d.dateServicesTotal, 0)
     const grandTotal = basePrice - discountAmount + servicesTotal
-    return { basePrice, discountPercent, discountAmount, servicesTotal, grandTotal, serviceLines }
-  }, [space, hours, persons, selectedServices])
+    return { basePrice, discountPercent, discountAmount, servicesTotal, grandTotal, totalHours, perDate }
+  }, [space, hours, persons, bookingForm.dates, selectedServicesByDate])
 
   function validateStep(step: number): string {
     if (step === 1) {
       if (!bookingForm.requesterIdNumber.trim()) return 'أدخل رقم الهوية الوطنية أو السجل التجاري'
-      if (!bookingForm.date) return 'اختر تاريخ الحجز من التقويم'
+      if (bookingForm.dates.length === 0) return 'اختر تاريخًا واحدًا على الأقل من التقويم'
       if (!bookingForm.startTime || !bookingForm.endTime) return 'حدد وقت البداية والنهاية'
       if (hours <= 0) return 'يجب أن يكون وقت النهاية بعد وقت البداية'
     }
@@ -228,9 +255,13 @@ export default function SpaceDetailPage() {
     setBookingError('')
     setBookingLoading(true)
     try {
-      const services = Object.entries(selectedServices)
-        .filter(([, selection]) => selection.enabled)
-        .map(([configId, selection]) => ({ configId, quantity: selection.quantity, matrix: selection.matrix }))
+      const servicesByDate: Record<string, { configId: string; quantity: number; matrix: PrintMatrixConfig }[]> = {}
+      for (const date of bookingForm.dates) {
+        const dateSelections = selectedServicesByDate[date] || {}
+        servicesByDate[date] = Object.entries(dateSelections)
+          .filter(([, selection]) => selection.enabled)
+          .map(([configId, selection]) => ({ configId, quantity: selection.quantity, matrix: selection.matrix }))
+      }
 
       const res = await fetch('/api/bookings', {
         method: 'POST',
@@ -238,12 +269,13 @@ export default function SpaceDetailPage() {
         body: JSON.stringify({
           spaceId: id,
           requesterIdNumber: bookingForm.requesterIdNumber,
-          date: bookingForm.date,
+          mode: 'dates',
+          dates: bookingForm.dates,
           startTime: bookingForm.startTime,
           endTime: bookingForm.endTime,
           persons: bookingForm.persons,
           notes: bookingForm.purpose,
-          services,
+          servicesByDate,
           termsAccepted: true,
           termsVersion: LEGAL_VERSION,
         }),
@@ -784,14 +816,26 @@ export default function SpaceDetailPage() {
                     placeholder="أدخل الرقم" dir="ltr" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">التاريخ</label>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">التواريخ</label>
+                  <p className="mb-2 text-[11px] text-[#8B9389]">يمكنك اختيار أكثر من تاريخ لنفس الحجز، وسيتم تطبيق خصم 5% تلقائيًا عند اختيار أكثر من يوم.</p>
                   <DatePickerCalendar
-                    value={bookingForm.date}
-                    onChange={date => updateBookingForm({ date })}
+                    multiple
+                    value={bookingForm.dates}
+                    onChange={dates => { setBookingForm(current => ({ ...current, dates })); setBookingError('') }}
                     minDate={todayValue}
                     maxDate={maxBookingDate}
                     isDateEnabled={date => !hasOpenDayRules || openDaySet.has(date.getDay())}
                   />
+                  {bookingForm.dates.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {[...bookingForm.dates].sort().map(date => (
+                        <span key={date} className="inline-flex items-center gap-1.5 rounded-full border border-[#0E3B34] bg-[#0E3B34] px-3 py-1.5 text-xs font-bold text-white">
+                          <span dir="ltr">{date}</span>
+                          <button type="button" onClick={() => toggleDate(date)} aria-label="إزالة التاريخ" className="leading-none text-white/70 transition-colors hover:text-white">×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -824,54 +868,77 @@ export default function SpaceDetailPage() {
               </div>
             )}
 
-            {/* Step 2: Services */}
+            {/* Step 2: Services (per selected date) */}
             {bookingStep === 2 && (
               <div className="space-y-3">
                 {space.services.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">
                     لا توجد خدمات إضافية متاحة لهذه المساحة.
                   </div>
-                ) : space.services.map(service => {
-                  const selection = selectedServices[service.id] || { enabled: false, quantity: 1, matrix: {} }
+                ) : [...bookingForm.dates].sort().map((date, index) => {
+                  const isOpen = expandedServiceDate ? expandedServiceDate === date : index === 0
+                  const dateInfo = pricing.perDate.find(d => d.date === date)
+                  const dateSelections = selectedServicesByDate[date] || {}
                   return (
-                    <div key={service.id} className={`rounded-xl border p-3 transition ${selection.enabled ? 'border-[#0E3B34]/30 bg-[#F5F1E8]' : 'border-[#D8D1C7] bg-white'}`}>
-                      <label className="flex cursor-pointer items-center justify-between gap-3">
-                        <span className="flex items-center gap-2">
-                          <input type="checkbox" checked={selection.enabled} onChange={() => toggleService(service.id)} className="h-4 w-4 accent-[#0E3B34]" />
-                          <span className="text-sm font-medium text-[#1B1B1B]">{service.name}</span>
+                    <div key={date} className="overflow-hidden rounded-xl border border-[#D8D1C7]">
+                      <button type="button" onClick={() => setExpandedServiceDate(isOpen ? null : date)}
+                        className="flex w-full items-center justify-between bg-[#F5F1E8] p-3">
+                        <span className="text-sm font-bold text-[#1B1B1B]" dir="ltr">{date}</span>
+                        <span className="flex items-center gap-2 text-xs font-semibold text-[#5F6764]">
+                          {dateInfo && dateInfo.serviceLines.length > 0 && `${dateInfo.serviceLines.length.toLocaleString('en-US')} خدمة · ${dateInfo.dateServicesTotal.toLocaleString('en-US')} ر.س`}
+                          <svg className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                          </svg>
                         </span>
-                        {service.pricingType !== 'PRINT_MATRIX' && (
-                          <span className="text-xs font-bold text-[#0E3B34]">{service.price.toLocaleString('en-US')} ر.س · {pricingTypeLabel(service.pricingType)}</span>
-                        )}
-                      </label>
-                      {service.description && <p className="mt-1 text-xs text-[#5F6764]">{service.description}</p>}
-
-                      {selection.enabled && service.pricingType === 'PRINT_MATRIX' && (
-                        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#D8D1C7] pt-3">
-                          {PRINT_MATRIX_FIELDS.map(([key, label]) => {
-                            const unitPrice = Number(service.config?.[key]) || 0
-                            if (unitPrice <= 0) return null
+                      </button>
+                      {isOpen && (
+                        <div className="space-y-2 border-t border-[#D8D1C7] p-3">
+                          {space.services.map(service => {
+                            const selection = dateSelections[service.id] || { enabled: false, quantity: 1, matrix: {} }
                             return (
-                              <label key={key} className="block">
-                                <span className="mb-1 block text-[10px] text-[#5F6764]">{label} · {unitPrice.toLocaleString('en-US')} ر.س / 10 صفحات</span>
-                                <input type="number" min="0" value={selection.matrix[key] ?? ''}
-                                  onChange={e => updateServiceMatrix(service.id, key, Number(e.target.value) || 0)}
-                                  className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr"
-                                  placeholder="عدد الأطقم (10 صفحات)" />
-                              </label>
+                              <div key={service.id} className={`rounded-xl border p-3 transition ${selection.enabled ? 'border-[#0E3B34]/30 bg-[#F5F1E8]' : 'border-[#D8D1C7] bg-white'}`}>
+                                <label className="flex cursor-pointer items-center justify-between gap-3">
+                                  <span className="flex items-center gap-2">
+                                    <input type="checkbox" checked={selection.enabled} onChange={() => toggleService(date, service.id)} className="h-4 w-4 accent-[#0E3B34]" />
+                                    <span className="text-sm font-medium text-[#1B1B1B]">{service.name}</span>
+                                  </span>
+                                  {service.pricingType !== 'PRINT_MATRIX' && (
+                                    <span className="text-xs font-bold text-[#0E3B34]">{service.price.toLocaleString('en-US')} ر.س · {pricingTypeLabel(service.pricingType)}</span>
+                                  )}
+                                </label>
+                                {service.description && <p className="mt-1 text-xs text-[#5F6764]">{service.description}</p>}
+
+                                {selection.enabled && service.pricingType === 'PRINT_MATRIX' && (
+                                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#D8D1C7] pt-3">
+                                    {PRINT_MATRIX_FIELDS.map(([key, label]) => {
+                                      const unitPrice = Number(service.config?.[key]) || 0
+                                      if (unitPrice <= 0) return null
+                                      return (
+                                        <label key={key} className="block">
+                                          <span className="mb-1 block text-[10px] text-[#5F6764]">{label} · {unitPrice.toLocaleString('en-US')} ر.س / 10 صفحات</span>
+                                          <input type="number" min="0" value={selection.matrix[key] ?? ''}
+                                            onChange={e => updateServiceMatrix(date, service.id, key, Number(e.target.value) || 0)}
+                                            className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr"
+                                            placeholder="عدد الأطقم (10 صفحات)" />
+                                        </label>
+                                      )
+                                    })}
+                                  </div>
+                                )}
+
+                                {selection.enabled && service.pricingType !== 'PRINT_MATRIX' && service.pricingType !== 'PER_PERSON' && service.pricingType !== 'PER_BOOKING' && (
+                                  <div className="mt-3 border-t border-[#D8D1C7] pt-3">
+                                    <label className="block max-w-32">
+                                      <span className="mb-1 block text-[10px] text-[#5F6764]">{service.pricingType === 'PER_HOUR' ? 'العدد (لكل ساعة)' : 'الكمية'}</span>
+                                      <input type="number" min="1" value={selection.quantity}
+                                        onChange={e => updateServiceQuantity(date, service.id, Number(e.target.value) || 1)}
+                                        className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr" />
+                                    </label>
+                                  </div>
+                                )}
+                              </div>
                             )
                           })}
-                        </div>
-                      )}
-
-                      {selection.enabled && service.pricingType !== 'PRINT_MATRIX' && service.pricingType !== 'PER_PERSON' && service.pricingType !== 'PER_BOOKING' && (
-                        <div className="mt-3 border-t border-[#D8D1C7] pt-3">
-                          <label className="block max-w-32">
-                            <span className="mb-1 block text-[10px] text-[#5F6764]">{service.pricingType === 'PER_HOUR' ? 'العدد (لكل ساعة)' : 'الكمية'}</span>
-                            <input type="number" min="1" value={selection.quantity}
-                              onChange={e => updateServiceQuantity(service.id, Number(e.target.value) || 1)}
-                              className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr" />
-                          </label>
                         </div>
                       )}
                     </div>
@@ -884,20 +951,42 @@ export default function SpaceDetailPage() {
             {bookingStep === 3 && (
               <div className="space-y-4">
                 <div className="rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 text-sm">
-                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">التاريخ</span><span className="font-bold text-[#1B1B1B]" dir="ltr">{bookingForm.date}</span></p>
+                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">عدد الأيام</span><span className="font-bold text-[#1B1B1B]">{bookingForm.dates.length.toLocaleString('en-US')}</span></p>
                   <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">الوقت</span><span className="font-bold text-[#1B1B1B]" dir="ltr">{bookingForm.startTime} - {bookingForm.endTime}</span></p>
-                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">عدد الساعات</span><span className="font-bold text-[#1B1B1B]">{hours.toLocaleString('en-US')}</span></p>
+                  <p className="mb-1 flex justify-between"><span className="text-[#5F6764]">إجمالي الساعات</span><span className="font-bold text-[#1B1B1B]">{pricing.totalHours.toLocaleString('en-US')}</span></p>
                   {bookingForm.persons && <p className="flex justify-between"><span className="text-[#5F6764]">عدد الحضور</span><span className="font-bold text-[#1B1B1B]">{bookingForm.persons}</span></p>}
                 </div>
 
-                <div className="rounded-xl border border-[#D8D1C7] p-4 text-sm">
-                  <p className="mb-2 flex justify-between"><span className="text-[#5F6764]">السعر الأساسي</span><span className="font-bold text-[#1B1B1B]">{pricing.basePrice.toLocaleString('en-US')} ر.س</span></p>
-                  {pricing.discountAmount > 0 && (
-                    <p className="mb-2 flex justify-between text-green-700"><span>خصم المدة ({pricing.discountPercent.toLocaleString('en-US')}%)</span><span className="font-bold">-{pricing.discountAmount.toLocaleString('en-US')} ر.س</span></p>
-                  )}
-                  {pricing.serviceLines.map(line => (
-                    <p key={line.name} className="mb-2 flex justify-between text-[#3F4B47]"><span>{line.name}</span><span className="font-bold">{line.total.toLocaleString('en-US')} ر.س</span></p>
+                {bookingForm.dates.length > 1 && (
+                  <p className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-3 text-xs text-[#5F6764]">
+                    قد تختلف القاعة المخصصة من يوم لآخر حسب التوفر.
+                  </p>
+                )}
+
+                <div className="space-y-2">
+                  {pricing.perDate.map(({ date, serviceLines }) => (
+                    <div key={date} className="rounded-xl border border-[#D8D1C7] p-3 text-sm">
+                      <p className="mb-1.5 font-bold text-[#1B1B1B]" dir="ltr">{date}</p>
+                      <p className="flex justify-between text-xs text-[#5F6764]">
+                        <span>سعر المساحة ({hours.toLocaleString('en-US')} ساعة)</span>
+                        <span className="font-bold text-[#3F4B47]">{(space.price * hours).toLocaleString('en-US')} ر.س</span>
+                      </p>
+                      {serviceLines.map(line => (
+                        <p key={line.name} className="flex justify-between ps-3 text-xs text-[#5F6764]">
+                          <span>+ {line.name}</span>
+                          <span className="font-bold text-[#3F4B47]">{line.total.toLocaleString('en-US')} ر.س</span>
+                        </p>
+                      ))}
+                    </div>
                   ))}
+                </div>
+
+                <div className="rounded-xl border border-[#D8D1C7] p-4 text-sm">
+                  <p className="mb-2 flex justify-between"><span className="text-[#5F6764]">السعر الأساسي (كل الأيام)</span><span className="font-bold text-[#1B1B1B]">{pricing.basePrice.toLocaleString('en-US')} ر.س</span></p>
+                  {pricing.discountAmount > 0 && (
+                    <p className="mb-2 flex justify-between text-green-700"><span>خصم ({pricing.discountPercent.toLocaleString('en-US')}%)</span><span className="font-bold">-{pricing.discountAmount.toLocaleString('en-US')} ر.س</span></p>
+                  )}
+                  <p className="mb-2 flex justify-between text-[#3F4B47]"><span>إجمالي الخدمات</span><span className="font-bold">{pricing.servicesTotal.toLocaleString('en-US')} ر.س</span></p>
                   <div className="mt-2 flex justify-between border-t border-[#D8D1C7] pt-2 text-base">
                     <span className="font-bold text-[#1B1B1B]">الإجمالي</span>
                     <span className="font-extrabold text-[#0E3B34]">{pricing.grandTotal.toLocaleString('en-US')} ر.س</span>

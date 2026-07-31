@@ -21,6 +21,13 @@ export function toSession(date: string, startTime: string, endTime: string): Req
   return { date, startTime, endTime, startAt, endAt }
 }
 
+export function sessionsFromDates(dates: string[], startTime: string, endTime: string): RequestedSession[] {
+  const unique = Array.from(new Set(dates)).sort()
+  if (unique.length === 0) throw new Error('NO_DATES')
+  if (unique.length > 60) throw new Error('TOO_MANY_SESSIONS')
+  return unique.map(date => toSession(date, startTime, endTime))
+}
+
 export function generateProgramSessions(input: {
   startDate: string
   endDate: string

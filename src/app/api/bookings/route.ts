@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@/generated/prisma'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
-import { durationHours, generateProgramSessions, getSpaceAvailability, toSession } from '@/lib/availability'
+import { durationHours, generateProgramSessions, getSpaceAvailability, sessionsFromDates, toSession } from '@/lib/availability'
 import { LEGAL_VERSION } from '@/lib/legal'
 
 type SelectedService = {
@@ -80,21 +80,24 @@ export async function POST(req: NextRequest) {
     const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : null
     const requesterIdNumber = typeof body.requesterIdNumber === 'string' ? body.requesterIdNumber.trim().slice(0, 100) : ''
     const selectedServices: SelectedService[] = Array.isArray(body.services) ? body.services : []
+    const servicesByDate: Record<string, SelectedService[]> = body.servicesByDate && typeof body.servicesByDate === 'object' ? body.servicesByDate : {}
     if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber) {
       return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
     }
 
     let sessions
     try {
-      sessions = body.mode === 'program'
-        ? generateProgramSessions({
-            startDate: body.startDate,
-            endDate: body.endDate,
-            weekdays: Array.isArray(body.weekdays) ? body.weekdays.map(Number) : [],
-            startTime: body.startTime,
-            endTime: body.endTime,
-          })
-        : [toSession(body.date, body.startTime, body.endTime)]
+      sessions = body.mode === 'dates'
+        ? sessionsFromDates(Array.isArray(body.dates) ? body.dates.filter((date: unknown) => typeof date === 'string') : [], body.startTime, body.endTime)
+        : body.mode === 'program'
+          ? generateProgramSessions({
+              startDate: body.startDate,
+              endDate: body.endDate,
+              weekdays: Array.isArray(body.weekdays) ? body.weekdays.map(Number) : [],
+              startTime: body.startTime,
+              endTime: body.endTime,
+            })
+          : [toSession(body.date, body.startTime, body.endTime)]
     } catch {
       return NextResponse.json({ error: 'التواريخ أو أوقات الجلسات غير صحيحة' }, { status: 400 })
     }
@@ -146,41 +149,55 @@ export async function POST(req: NextRequest) {
       const discountAmount = roundMoney(basePrice * discountPercent / 100)
 
       const allowedConfigs = new Map(space.serviceConfigs.map(config => [config.id, config]))
-      const serviceLines = selectedServices.flatMap(selection => {
-        const config = allowedConfigs.get(selection.configId)
-        if (!config) return []
 
-        if (config.catalog.pricingType === 'PRINT_MATRIX') {
-          const matrixConfig = (config.config as Record<string, unknown> | null) ?? (config.catalog.defaultConfig as Record<string, unknown> | null) ?? {}
-          const requested = selection.matrix || {}
-          return (['bwSingle', 'bwDouble', 'colorSingle', 'colorDouble'] as const).flatMap(key => {
-            const quantity = Math.max(0, Math.min(999, Number(requested[key]) || 0))
-            const unitPrice = Number(matrixConfig[key]) || 0
-            if (quantity <= 0 || unitPrice <= 0) return []
-            return [{
-              configId: config.id,
-              name: `${config.catalog.name} - ${PRINT_MATRIX_LABELS[key]}`,
-              quantity,
-              unitPrice,
-              lineTotal: roundMoney(unitPrice * quantity),
-            }]
-          })
-        }
+      // discountPercent is computed off scalar totalHours (volume-based), not off any
+      // weekday-pattern assumption, so it already generalizes correctly to an arbitrary
+      // set of dates - no special-casing needed for mode === 'dates'.
+      function buildServiceLines(selections: SelectedService[], hours: number) {
+        return selections.flatMap(selection => {
+          const config = allowedConfigs.get(selection.configId)
+          if (!config) return []
 
-        const quantity = Math.max(1, Math.min(999, Number(selection.quantity) || 1))
-        const unitPrice = config.price ?? config.catalog.defaultPrice ?? 0
-        let effectiveQuantity = quantity
-        if (config.catalog.pricingType === 'PER_PERSON') effectiveQuantity = Math.max(1, persons ?? quantity)
-        if (config.catalog.pricingType === 'PER_HOUR') effectiveQuantity = quantity * totalHours
-        return [{
-          configId: config.id,
-          name: config.catalog.name,
-          quantity: Math.ceil(effectiveQuantity),
-          unitPrice,
-          lineTotal: roundMoney(unitPrice * effectiveQuantity),
-        }]
+          if (config.catalog.pricingType === 'PRINT_MATRIX') {
+            const matrixConfig = (config.config as Record<string, unknown> | null) ?? (config.catalog.defaultConfig as Record<string, unknown> | null) ?? {}
+            const requested = selection.matrix || {}
+            return (['bwSingle', 'bwDouble', 'colorSingle', 'colorDouble'] as const).flatMap(key => {
+              const quantity = Math.max(0, Math.min(999, Number(requested[key]) || 0))
+              const unitPrice = Number(matrixConfig[key]) || 0
+              if (quantity <= 0 || unitPrice <= 0) return []
+              return [{
+                configId: config.id,
+                name: `${config.catalog.name} - ${PRINT_MATRIX_LABELS[key]}`,
+                quantity,
+                unitPrice,
+                lineTotal: roundMoney(unitPrice * quantity),
+              }]
+            })
+          }
+
+          const quantity = Math.max(1, Math.min(999, Number(selection.quantity) || 1))
+          const unitPrice = config.price ?? config.catalog.defaultPrice ?? 0
+          let effectiveQuantity = quantity
+          if (config.catalog.pricingType === 'PER_PERSON') effectiveQuantity = Math.max(1, persons ?? quantity)
+          if (config.catalog.pricingType === 'PER_HOUR') effectiveQuantity = quantity * hours
+          return [{
+            configId: config.id,
+            name: config.catalog.name,
+            quantity: Math.ceil(effectiveQuantity),
+            unitPrice,
+            lineTotal: roundMoney(unitPrice * effectiveQuantity),
+          }]
+        })
+      }
+
+      const sessionServiceLines = availability.allocations.map((allocation, index) => {
+        const sessionHours = durationHours(allocation.session.startAt, allocation.session.endAt)
+        const selections = body.mode === 'dates'
+          ? (servicesByDate[allocation.session.date] || [])
+          : (index === 0 ? selectedServices : [])
+        return buildServiceLines(selections, sessionHours)
       })
-      const servicesTotal = roundMoney(serviceLines.reduce((sum, line) => sum + line.lineTotal, 0))
+      const servicesTotal = roundMoney(sessionServiceLines.reduce((sum, lines) => sum + lines.reduce((lineSum, line) => lineSum + line.lineTotal, 0), 0))
       const grandTotal = roundMoney(basePrice - discountAmount + servicesTotal)
 
       const program = sessions.length > 1
@@ -203,7 +220,8 @@ export async function POST(req: NextRequest) {
         const sessionHours = durationHours(allocation.session.startAt, allocation.session.endAt)
         const sessionBasePrice = roundMoney(space.price * sessionHours)
         const sessionDiscount = roundMoney(sessionBasePrice * discountPercent / 100)
-        const allocatedServicesTotal = index === 0 ? servicesTotal : 0
+        const lines = sessionServiceLines[index]
+        const allocatedServicesTotal = roundMoney(lines.reduce((sum, line) => sum + line.lineTotal, 0))
         const booking = await tx.booking.create({
           data: {
             spaceId,
@@ -224,8 +242,8 @@ export async function POST(req: NextRequest) {
             discountAmount: sessionDiscount,
             servicesTotal: allocatedServicesTotal,
             grandTotal: roundMoney(sessionBasePrice - sessionDiscount + allocatedServicesTotal),
-            services: index === 0 && serviceLines.length
-              ? { create: serviceLines }
+            services: lines.length
+              ? { create: lines }
               : undefined,
           },
           include: { unit: true, space: { include: { type: true } }, services: true },
@@ -243,7 +261,14 @@ export async function POST(req: NextRequest) {
       })
 
       return { bookings, program, pricing: { totalHours, basePrice, discountPercent, discountAmount, servicesTotal, grandTotal } }
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      // Raised above Prisma's defaults (maxWait 2s, timeout 5s): this transaction does several
+      // sequential round trips per session (space lookup, availability check, one booking.create
+      // per date, notification), which can exceed the defaults under normal latency to the DB region.
+      maxWait: 10000,
+      timeout: 20000,
+    })
 
     return NextResponse.json(result, { status: 201 })
   } catch (error) {

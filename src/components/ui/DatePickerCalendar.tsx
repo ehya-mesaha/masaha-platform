@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from 'react'
 
-type DatePickerCalendarProps = {
-  value: string
-  onChange: (value: string) => void
+type BaseProps = {
   minDate?: string
   maxDate?: string
   isDateEnabled?: (date: Date) => boolean
 }
+type SingleProps = BaseProps & { multiple?: false; value: string; onChange: (value: string) => void }
+type MultiProps = BaseProps & { multiple: true; value: string[]; onChange: (dates: string[]) => void }
+type DatePickerCalendarProps = SingleProps | MultiProps
 
 const DAY_LABELS = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت']
 const MONTH_FORMATTER = new Intl.DateTimeFormat('ar-SA-u-nu-latn', { month: 'long', year: 'numeric' })
@@ -30,18 +31,24 @@ function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-export default function DatePickerCalendar({
-  value,
-  onChange,
-  minDate,
-  maxDate,
-  isDateEnabled,
-}: DatePickerCalendarProps) {
+export default function DatePickerCalendar(props: DatePickerCalendarProps) {
+  const { minDate, maxDate, isDateEnabled } = props
   const today = startOfDay(new Date())
   const min = minDate ? toDate(minDate) : today
   const max = maxDate ? toDate(maxDate) : null
-  const selectedDate = value ? toDate(value) : null
-  const [visibleMonth, setVisibleMonth] = useState(() => selectedDate || min)
+  const selectedValues = props.multiple ? props.value : (props.value ? [props.value] : [])
+  const selected = new Set(selectedValues)
+  const earliestSelected = [...selectedValues].sort()[0]
+  const [visibleMonth, setVisibleMonth] = useState(() => (earliestSelected ? toDate(earliestSelected) : min))
+
+  function handleSelect(dateValue: string) {
+    if (props.multiple) {
+      const next = selected.has(dateValue) ? props.value.filter(date => date !== dateValue) : [...props.value, dateValue].sort()
+      props.onChange(next)
+    } else {
+      props.onChange(dateValue)
+    }
+  }
 
   const days = useMemo(() => {
     const first = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1)
@@ -102,17 +109,17 @@ export default function DatePickerCalendar({
         {days.map(date => {
           const dateValue = toValue(date)
           const inMonth = date.getMonth() === visibleMonth.getMonth()
-          const selected = value === dateValue
+          const isSelected = selected.has(dateValue)
           const disabled = isDisabled(date)
 
           return (
             <button
               key={dateValue}
               type="button"
-              onClick={() => !disabled && onChange(dateValue)}
+              onClick={() => !disabled && handleSelect(dateValue)}
               disabled={disabled}
               className={`aspect-square rounded-xl text-sm font-bold transition-colors ${
-                selected
+                isSelected
                   ? 'bg-[#0E3B34] text-white shadow-sm'
                   : disabled
                     ? 'text-[#C9C2B3] bg-[#F5F1E8]/40 cursor-not-allowed'
