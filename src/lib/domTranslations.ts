@@ -953,6 +953,11 @@ const exactTranslations: Record<string, string> = {
 }
 
 const phraseTranslations: Array<[RegExp, string]> = [
+  [/^(\d+|[٠-٩]+)\s+بانتظار تقييمك$/u, '$1 awaiting your review'],
+  [/^(\d+|[٠-٩]+)\s+حجوزات حتى الآن$/u, '$1 bookings so far'],
+  [/^(\d+|[٠-٩]+)\s+من\s+(\d+|[٠-٩]+)\s+مواعيد متاحة$/u, '$1 of $2 times available'],
+  [/^الحد الأدنى للحجز\s+(\d+|[٠-٩]+)\s+ساعة\.?$/u, 'Minimum booking duration is $1 hours.'],
+  [/^يمكن الحجز حتى\s+(\d+|[٠-٩]+)\s+يومًا مقدمًا$/u, 'Bookings can be made up to $1 days in advance'],
   [/^(\d+|[٠-٩]+)\s*ر\.س$/u, '$1 SAR'],
   [/^([\d,]+|[٠-٩,]+)\s*(?:حجز|حجوزات)$/u, '$1 bookings'],
   [/^الوحدة\s*([\d,]+|[٠-٩,]+)$/u, 'Unit $1'],

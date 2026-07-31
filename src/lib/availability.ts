@@ -108,11 +108,10 @@ export async function getSpaceAvailability(db: Database, spaceId: string, sessio
 
   const overlaps = (start: Date, end: Date, session: RequestedSession) => start < session.endAt && end > session.startAt
   const allocations: Array<{ session: RequestedSession; unitId: string }> = []
-  // A space with no working-hour rows at all has no configured schedule, so it isn't
-  // restricted by day/hour (matches the buyer-facing calendar, which enables every day
-  // when there are no working-hour rules) - only a space that DID configure hours should
-  // reject sessions outside them.
-  const hasWorkingHourRules = space.workingHours.length > 0
+  // Legacy listings may have seven generated rows with every day disabled. They mean
+  // "schedule not configured", just like having no rows at all. Only enforce a weekly
+  // schedule once the seller has opened at least one day.
+  const hasWorkingHourRules = space.workingHours.some(item => item.isOpen)
 
   for (const session of sessions) {
     const day = new Date(`${session.date}T12:00:00${RIYADH_OFFSET}`).getUTCDay()

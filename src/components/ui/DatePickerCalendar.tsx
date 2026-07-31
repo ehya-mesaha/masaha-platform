@@ -6,6 +6,7 @@ type BaseProps = {
   minDate?: string
   maxDate?: string
   isDateEnabled?: (date: Date) => boolean
+  dateStatuses?: Record<string, 'available' | 'unavailable'>
 }
 type SingleProps = BaseProps & { multiple?: false; value: string; onChange: (value: string) => void }
 type MultiProps = BaseProps & { multiple: true; value: string[]; onChange: (dates: string[]) => void }
@@ -32,7 +33,7 @@ function startOfDay(date: Date) {
 }
 
 export default function DatePickerCalendar(props: DatePickerCalendarProps) {
-  const { minDate, maxDate, isDateEnabled } = props
+  const { minDate, maxDate, isDateEnabled, dateStatuses = {} } = props
   const today = startOfDay(new Date())
   const min = minDate ? toDate(minDate) : today
   const max = maxDate ? toDate(maxDate) : null
@@ -76,7 +77,7 @@ export default function DatePickerCalendar(props: DatePickerCalendarProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-[#D8D1C7] bg-white p-3 shadow-sm">
+    <div className="booking-calendar rounded-lg border border-[#D8D1C7] bg-white p-3 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
@@ -111,6 +112,7 @@ export default function DatePickerCalendar(props: DatePickerCalendarProps) {
           const inMonth = date.getMonth() === visibleMonth.getMonth()
           const isSelected = selected.has(dateValue)
           const disabled = isDisabled(date)
+          const status = dateStatuses[dateValue]
 
           return (
             <button
@@ -118,9 +120,12 @@ export default function DatePickerCalendar(props: DatePickerCalendarProps) {
               type="button"
               onClick={() => !disabled && handleSelect(dateValue)}
               disabled={disabled}
-              className={`aspect-square rounded-xl text-sm font-bold transition-colors ${
+              aria-label={`${dateValue}${status === 'available' ? '، متاح' : status === 'unavailable' ? '، غير متاح' : ''}`}
+              className={`relative aspect-square rounded-lg text-sm font-bold transition-all ${
                 isSelected
-                  ? 'bg-[#0E3B34] text-white shadow-sm'
+                  ? status === 'unavailable'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'bg-[#0E3B34] text-white shadow-sm'
                   : disabled
                     ? 'text-[#C9C2B3] bg-[#F5F1E8]/40 cursor-not-allowed'
                     : inMonth
@@ -129,10 +134,19 @@ export default function DatePickerCalendar(props: DatePickerCalendarProps) {
               }`}
             >
               {DAY_FORMATTER.format(date.getDate())}
+              {status && (
+                <span className={`absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${status === 'available' ? 'bg-[#B99A63]' : 'bg-red-300'} ${isSelected ? 'ring-1 ring-white/70' : ''}`} />
+              )}
             </button>
           )
         })}
       </div>
+      {Object.keys(dateStatuses).length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-[#EEE8DC] pt-3 text-[10px] font-bold text-[#5F6764]">
+          <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#0E3B34]" /> متاح ومؤكد</span>
+          <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-red-500" /> غير متاح</span>
+        </div>
+      )}
     </div>
   )
 }

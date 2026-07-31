@@ -125,6 +125,19 @@ export async function POST(req: NextRequest) {
       if (persons && space.capacity && persons > space.capacity) {
         throw new BookingError('عدد الأشخاص أكبر من السعة المتاحة للمساحة', 400)
       }
+      const now = new Date()
+      if (sessions.some(session => session.startAt <= now)) {
+        throw new BookingError('اختر موعدًا مستقبليًا لم يبدأ بعد', 400)
+      }
+      if (space.minBookingHours && sessions.some(session => durationHours(session.startAt, session.endAt) < space.minBookingHours!)) {
+        throw new BookingError(`الحد الأدنى للحجز ${space.minBookingHours} ساعة`, 400)
+      }
+      if (space.maxAdvanceBookingDays) {
+        const latestAllowed = new Date(now.getTime() + space.maxAdvanceBookingDays * 86_400_000)
+        if (sessions.some(session => session.startAt > latestAllowed)) {
+          throw new BookingError(`يمكن الحجز حتى ${space.maxAdvanceBookingDays} يومًا مقدمًا`, 400)
+        }
+      }
 
       if (space.units.length === 0) {
         await tx.spaceUnit.createMany({

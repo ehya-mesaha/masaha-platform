@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import PublicNavbar from '@/components/layout/PublicNavbar'
@@ -94,6 +94,12 @@ function parseHours(start: string, end: string) {
 }
 
 type ServiceSelection = { enabled: boolean; quantity: number; matrix: PrintMatrixConfig }
+type AvailabilityCheck = {
+  status: 'checking' | 'available' | 'unavailable' | 'error'
+  availableSessions: number
+  totalSessions: number
+  dates: Record<string, 'available' | 'unavailable'>
+}
 
 function serviceLineTotal(service: Service, selection: ServiceSelection, persons: number, hours: number) {
   if (!selection.enabled) return 0
@@ -132,6 +138,8 @@ export default function SpaceDetailPage() {
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState(false)
+  const [availabilityCheck, setAvailabilityCheck] = useState<AvailabilityCheck | null>(null)
+  const advancingRef = useRef(false)
 
   useEffect(() => {
     fetch(`/api/spaces/${id}`)
@@ -150,13 +158,20 @@ export default function SpaceDetailPage() {
       ...current,
       dates: current.dates.includes(date) ? current.dates.filter(d => d !== date) : [...current.dates, date].sort(),
     }))
+    setAvailabilityCheck(null)
     setBookingError('')
   }
 
   function openBooking() {
+    const firstOpenDay = space?.workingHours.find(item => item.isOpen)
     setBookingStep(1)
     setBookingError('')
-    setBookingForm(EMPTY_BOOKING_FORM)
+    setBookingForm({
+      ...EMPTY_BOOKING_FORM,
+      startTime: firstOpenDay?.openTime || '09:00',
+      endTime: firstOpenDay?.closeTime || '12:00',
+    })
+    setAvailabilityCheck(null)
     setSelectedServicesByDate({})
     setExpandedServiceDate(null)
     setPaymentMethod('mada')
@@ -168,6 +183,7 @@ export default function SpaceDetailPage() {
     setBookingOpen(false)
     setBookingSuccess(false)
     setBookingError('')
+    setAvailabilityCheck(null)
   }
 
   function updateDateServices(date: string, updater: (current: Record<string, ServiceSelection>) => Record<string, ServiceSelection>) {
@@ -237,11 +253,55 @@ export default function SpaceDetailPage() {
     return ''
   }
 
-  function goNext() {
+  async function verifyAvailability(showError = true) {
+    if (bookingForm.dates.length === 0 || !bookingForm.startTime || !bookingForm.endTime || hours <= 0) return false
+    setAvailabilityCheck(current => ({
+      status: 'checking',
+      availableSessions: current?.availableSessions || 0,
+      totalSessions: bookingForm.dates.length,
+      dates: current?.dates || {},
+    }))
+    try {
+      const response = await fetch(`/api/spaces/${id}/availability`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dates: bookingForm.dates, startTime: bookingForm.startTime, endTime: bookingForm.endTime }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'تعذر التحقق من الموعد')
+      const dates = Object.fromEntries(
+        (data.dates as { date: string; available: boolean }[]).map(item => [item.date, item.available ? 'available' : 'unavailable']),
+      ) as Record<string, 'available' | 'unavailable'>
+      const nextCheck: AvailabilityCheck = {
+        status: data.fullyAvailable ? 'available' : 'unavailable',
+        availableSessions: data.availableSessions,
+        totalSessions: data.totalSessions,
+        dates,
+      }
+      setAvailabilityCheck(nextCheck)
+      if (!data.fullyAvailable && showError) {
+        setBookingError('بعض المواعيد المحددة غير متاحة. اختر الأيام المعلّمة بالأخضر أو غيّر الوقت.')
+      }
+      return Boolean(data.fullyAvailable)
+    } catch {
+      setAvailabilityCheck({ status: 'error', availableSessions: 0, totalSessions: bookingForm.dates.length, dates: {} })
+      if (showError) setBookingError('تعذر التحقق من التوفر الآن. حاول مرة أخرى.')
+      return false
+    }
+  }
+
+  async function goNext() {
+    if (advancingRef.current) return
     const error = validateStep(bookingStep)
     if (error) { setBookingError(error); return }
-    setBookingError('')
-    setBookingStep(current => Math.min(4, current + 1))
+    advancingRef.current = true
+    try {
+      if (bookingStep === 1 && availabilityCheck?.status !== 'available' && !(await verifyAvailability())) return
+      setBookingError('')
+      setBookingStep(current => Math.min(4, current + 1))
+    } finally {
+      advancingRef.current = false
+    }
   }
 
   function goPrev() {
@@ -283,6 +343,12 @@ export default function SpaceDetailPage() {
       const data = await res.json()
       if (!res.ok) {
         if (res.status === 401) { router.push('/auth/login'); return }
+        if (res.status === 409) {
+          setBookingStep(1)
+          setBookingError('تغيّر توفر الموعد قبل التأكيد. اختر موعدًا آخر وسنتحقق منه فورًا.')
+          void verifyAvailability(false)
+          return
+        }
         setBookingError(data.error || 'حدث خطأ')
         return
       }
@@ -349,7 +415,7 @@ export default function SpaceDetailPage() {
           <div className="lg:col-span-2 space-y-4">
             {/* Image Gallery */}
             <div className="mb-4">
-              <div className="space-detail-gallery">
+              <div className={`space-detail-gallery ${sortedImages.length <= 1 ? 'is-single' : sortedImages.length === 2 ? 'is-double' : ''}`}>
                 {sortedImages.length > 0 ? (
                   <button type="button" className="space-detail-gallery-main" aria-label="الصورة الرئيسية">
                     <img src={sortedImages[activeImage]?.url} alt={space.name} />
@@ -366,20 +432,15 @@ export default function SpaceDetailPage() {
                     </svg>
                   </div>
                 )}
-                {[1, 2].map(offset => {
-                  const index = sortedImages.length > offset ? offset : -1
-                  const image = index >= 0 ? sortedImages[index] : null
-                  return image ? (
-                    <button key={`${image.id}-${offset}`} type="button" onClick={() => setActiveImage(index)} aria-label={`عرض الصورة ${index + 1}`}>
+                {sortedImages.slice(1, 3).map((image, secondaryIndex) => {
+                  const index = secondaryIndex + 1
+                  return (
+                    <button key={`${image.id}-${index}`} type="button" onClick={() => setActiveImage(index)} aria-label={`عرض الصورة ${index + 1}`}>
                       <img src={image.url} alt="" />
-                      {offset === 2 && sortedImages.length > 2 && (
+                      {secondaryIndex === 1 && sortedImages.length > 3 && (
                         <span className="absolute inset-0 grid place-items-center bg-[#092C27]/35 text-sm font-bold text-white backdrop-blur-[1px] transition-colors hover:bg-[#092C27]/25">عرض الصور</span>
                       )}
                     </button>
-                  ) : (
-                    <div key={offset} className="grid place-items-center bg-[#EDE8DE] text-[#0E3B34]/20">
-                      <svg className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M6 20V7l6-3 6 3v13M9 10h2m2 0h2m-6 4h2m2 0h2" /></svg>
-                    </div>
                   )
                 })}
               </div>
@@ -457,20 +518,29 @@ export default function SpaceDetailPage() {
               </div>
             </section>
 
-            {/* Working Hours */}
-            {openDays.length > 0 && (
-              <div className="space-detail-section">
-                <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4 flex items-center gap-2">
+            {/* Availability */}
+            <div className="space-detail-section">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="mb-1 text-[11px] font-extrabold text-[#B99A63]">التوفر الأسبوعي</p>
+                    <h3 className="font-display flex items-center gap-2 text-base font-extrabold text-[#1B1B1B]">
                   <svg className="w-4 h-4 text-[#B99A63]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  أيام وساعات العمل
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      الأيام والأوقات المتاحة
+                    </h3>
+                    <p className="mt-1 text-xs text-[#5F6764]">اختر التاريخ والوقت داخل الحجز لنؤكد التوفر الفعلي قبل الدفع.</p>
+                  </div>
+                  <button type="button" onClick={openBooking} className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#0E3B34] px-4 py-2 text-xs font-extrabold text-[#0E3B34] transition-all hover:-translate-y-0.5 hover:bg-[#0E3B34] hover:text-white">
+                    تحقق من موعدك
+                  </button>
+                </div>
+                {openDays.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {DAY_NAMES.map((name, i) => {
                     const wh = openDays.find(d => d.dayOfWeek === i)
                     return (
-                      <div key={i} className={`flex items-center justify-between p-3 rounded-xl text-sm ${wh ? 'bg-[#F5F1E8]' : 'bg-gray-50'}`}>
+                      <div key={i} className={`flex items-center justify-between rounded-lg border p-3 text-sm ${wh ? 'border-[#D8D1C7] bg-[#F5F1E8]' : 'border-transparent bg-gray-50'}`}>
                         <span className={`font-medium ${wh ? 'text-[#1B1B1B]' : 'text-[#5F6764]'}`}>{name}</span>
                         {wh ? (
                           <span className="text-[#0E3B34] font-medium" dir="ltr">{formatTime12(wh.openTime)} - {formatTime12(wh.closeTime)}</span>
@@ -480,9 +550,17 @@ export default function SpaceDetailPage() {
                       </div>
                     )
                   })}
-                </div>
+                  </div>
+                ) : (
+                  <div className="availability-flexible-note flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                    <span className="grid h-10 w-10 flex-none place-items-center rounded-full bg-white text-lg font-black text-emerald-700">✓</span>
+                    <div>
+                      <p className="text-sm font-extrabold text-emerald-900">مواعيد مرنة طوال الأسبوع</p>
+                      <p className="mt-0.5 text-xs leading-5 text-emerald-700">لا توجد ساعات ثابتة لهذه المساحة. أدخل موعدك وسيتحقق النظام من القاعة المتاحة فورًا.</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
 
             {/* Amenities */}
             {space.amenities.length > 0 && (
@@ -821,15 +899,16 @@ export default function SpaceDetailPage() {
                   <DatePickerCalendar
                     multiple
                     value={bookingForm.dates}
-                    onChange={dates => { setBookingForm(current => ({ ...current, dates })); setBookingError('') }}
+                    onChange={dates => { setBookingForm(current => ({ ...current, dates })); setAvailabilityCheck(null); setBookingError('') }}
                     minDate={todayValue}
                     maxDate={maxBookingDate}
                     isDateEnabled={date => !hasOpenDayRules || openDaySet.has(date.getDay())}
+                    dateStatuses={availabilityCheck?.dates}
                   />
                   {bookingForm.dates.length > 0 && (
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       {[...bookingForm.dates].sort().map(date => (
-                        <span key={date} className="inline-flex items-center gap-1.5 rounded-full border border-[#0E3B34] bg-[#0E3B34] px-3 py-1.5 text-xs font-bold text-white">
+                        <span key={date} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold text-white ${availabilityCheck?.dates[date] === 'unavailable' ? 'border-red-600 bg-red-600' : 'border-[#0E3B34] bg-[#0E3B34]'}`}>
                           <span dir="ltr">{date}</span>
                           <button type="button" onClick={() => toggleDate(date)} aria-label="إزالة التاريخ" className="leading-none text-white/70 transition-colors hover:text-white">×</button>
                         </span>
@@ -841,16 +920,46 @@ export default function SpaceDetailPage() {
                   <div>
                     <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت البداية</label>
                     <input type="time" value={bookingForm.startTime}
-                      onChange={e => updateBookingForm({ startTime: e.target.value })}
+                      onChange={e => { updateBookingForm({ startTime: e.target.value }); setAvailabilityCheck(null) }}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وقت النهاية</label>
                     <input type="time" value={bookingForm.endTime}
-                      onChange={e => updateBookingForm({ endTime: e.target.value })}
+                      onChange={e => { updateBookingForm({ endTime: e.target.value }); setAvailabilityCheck(null) }}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]" dir="ltr" />
                   </div>
                 </div>
+                {bookingForm.dates.length > 0 && bookingForm.startTime && bookingForm.endTime && hours > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void verifyAvailability()}
+                    disabled={availabilityCheck?.status === 'checking'}
+                    className={`availability-check w-full rounded-lg border px-4 py-3 text-start transition-all ${
+                      availabilityCheck?.status === 'available'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                        : availabilityCheck?.status === 'unavailable'
+                          ? 'border-red-200 bg-red-50 text-red-700'
+                          : 'border-[#D8D1C7] bg-[#FAF8F3] text-[#3F4B47] hover:border-[#B99A63]'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span>
+                        <strong className="block text-sm">
+                          {availabilityCheck?.status === 'checking' && 'جاري التحقق من التوفر...'}
+                          {availabilityCheck?.status === 'available' && 'الموعد متاح للحجز'}
+                          {availabilityCheck?.status === 'unavailable' && `${availabilityCheck.availableSessions} من ${availabilityCheck.totalSessions} مواعيد متاحة`}
+                          {availabilityCheck?.status === 'error' && 'تعذر التحقق، اضغط للمحاولة مجددًا'}
+                          {!availabilityCheck && 'تحقق من توفر الموعد'}
+                        </strong>
+                        <span className="mt-0.5 block text-[11px] opacity-75">نؤكد توفر القاعة قبل انتقالك للخدمات والدفع.</span>
+                      </span>
+                      <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-white/70 text-base">
+                        {availabilityCheck?.status === 'available' ? '✓' : availabilityCheck?.status === 'unavailable' ? '!' : '↻'}
+                      </span>
+                    </span>
+                  </button>
+                )}
                 <div>
                   <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">عدد الحضور</label>
                   <input type="number" value={bookingForm.persons}
@@ -1046,9 +1155,9 @@ export default function SpaceDetailPage() {
                 </button>
               )}
               {bookingStep < 4 ? (
-                <button type="button" onClick={goNext}
-                  className="flex-1 rounded-xl bg-[#0E3B34] py-3 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors">
-                  التالي
+                <button type="button" onClick={() => void goNext()} disabled={availabilityCheck?.status === 'checking'}
+                  className="flex-1 rounded-xl bg-[#0E3B34] py-3 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors disabled:cursor-wait disabled:opacity-60">
+                  {bookingStep === 1 && availabilityCheck?.status === 'checking' ? 'جاري التحقق...' : 'التالي'}
                 </button>
               ) : (
                 <button type="button" onClick={handleConfirmBooking} disabled={bookingLoading}
