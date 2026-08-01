@@ -36,9 +36,23 @@ function getInitialLocale(fallback: Locale): Locale {
 }
 
 export default function LanguageProvider({ children, initialLocale = 'ar' }: { children: React.ReactNode; initialLocale?: Locale }) {
-  const [locale, setLocaleState] = useState<Locale>(() => getInitialLocale(initialLocale))
+  // Always start from the server-rendered locale so the client's first render
+  // matches the server's HTML exactly — reading cookie/localStorage here (even
+  // as a lazy initializer) runs during hydration and can disagree with what
+  // the server saw, which throws a hydration mismatch on the very first paint.
+  const [locale, setLocaleState] = useState<Locale>(initialLocale)
 
   const dir = getDirection(locale)
+
+  // Once hydrated, reconcile with any stored preference the server couldn't see
+  // (cookie/localStorage are only readable client-side, so this can't happen
+  // during render without risking the mismatch this whole effect exists to avoid).
+  useEffect(() => {
+    const preferred = getInitialLocale(initialLocale)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (preferred !== locale) setLocaleState(preferred)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     document.documentElement.lang = locale
