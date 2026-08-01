@@ -40,3 +40,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   })
   return NextResponse.json(updated)
 }
+
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const admin = await getCurrentUser()
+  if (!admin || admin.role !== 'ADMIN') return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+  const { id } = await params
+  const before = await prisma.sellerApplication.findUnique({ where: { id } })
+  if (!before) return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 })
+  await prisma.$transaction(async (tx) => {
+    await tx.sellerApplication.delete({ where: { id } })
+    await tx.adminAuditLog.create({ data: { actorId: String(admin.id), action: 'DELETE_SELLER_APPLICATION', entityType: 'SellerApplication', entityId: id, before: JSON.parse(JSON.stringify(before)) } })
+  })
+  return NextResponse.json({ success: true })
+}

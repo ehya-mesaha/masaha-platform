@@ -48,7 +48,7 @@ export default async function ContactMessagesPage() {
                 </div>
                 <div className="flex flex-col items-start gap-3 sm:items-end">
                   <time className="text-xs font-bold text-[#7A847D]">{formatDate(message.createdAt)}</time>
-                  <ContactMessageAction id={message.id} initialIsRead={message.isRead} />
+                  <ContactMessageAction id={message.id} initialIsRead={message.isRead} senderName={message.name} />
                 </div>
               </div>
               <p className="mt-4 whitespace-pre-wrap rounded-xl bg-[#FAF8F3] p-4 text-sm leading-7 text-[#33423F]">{message.message}</p>

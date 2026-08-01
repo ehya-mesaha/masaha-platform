@@ -170,6 +170,7 @@ export default async function AdminSpaceNeedsPage({
                       id={request.id}
                       initialStatus={request.status}
                       initialNote={request.adminNote}
+                      city={request.city}
                     />
                   </aside>
                 </div>

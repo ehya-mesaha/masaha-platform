@@ -35,3 +35,34 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'حدث خطأ أثناء تحديث الطلب' }, { status: 500 })
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await getCurrentUser()
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+    }
+
+    const { id } = await params
+    const before = await prisma.spaceNeedRequest.findUnique({ where: { id } })
+    if (!before) return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 })
+
+    await prisma.$transaction(async (tx) => {
+      await tx.spaceNeedRequest.delete({ where: { id } })
+      await tx.adminAuditLog.create({
+        data: {
+          actorId: String(user.id),
+          action: 'DELETE_SPACE_NEED',
+          entityType: 'SpaceNeedRequest',
+          entityId: id,
+          before: JSON.parse(JSON.stringify(before)),
+        },
+      })
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: 'حدث خطأ أثناء حذف الطلب' }, { status: 500 })
+  }
+}

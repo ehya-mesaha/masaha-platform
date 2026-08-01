@@ -93,6 +93,7 @@ export default async function ServiceRequestsPage() {
                 initialStatus={request.status}
                 initialQuotedTotal={request.quotedTotal}
                 initialAdminNotes={request.adminNotes}
+                publicRef={request.publicRef}
               />
             </article>
           ))

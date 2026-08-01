@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import { formatSpaceNumber } from '@/lib/format'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -423,6 +424,19 @@ export default function AdminSpaceDetailPage() {
             >
               تعطيل
             </button>
+          </Card>
+
+          <Card>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-1">منطقة الخطر</h3>
+            <p className="text-[#5F6764] text-xs mb-4">حذف المساحة نهائيًا مع كل حجوزاتها وتقييماتها وصورها.</p>
+            <AdminDeleteButton
+              endpoint={`/api/admin/spaces/${space.id}`}
+              label="حذف المساحة نهائيًا"
+              className="w-full rounded-xl border border-red-200 bg-red-50 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100"
+              confirmMessage={`سيتم حذف مساحة "${space.name}" نهائيًا مع كل حجوزاتها وتقييماتها وصورها. لا يمكن التراجع عن هذا الإجراء.`}
+              typedConfirmationValue={space.name}
+              redirectTo="/admin/spaces"
+            />
           </Card>
         </div>
       </div>

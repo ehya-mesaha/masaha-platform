@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 type Props = {
   id: string
   initialStatus: string
   initialNote?: string | null
+  city: string
 }
 
 const STATUSES = [
@@ -16,7 +18,7 @@ const STATUSES = [
   { value: 'CLOSED', label: 'مغلق' },
 ]
 
-export default function AdminSpaceNeedActions({ id, initialStatus, initialNote }: Props) {
+export default function AdminSpaceNeedActions({ id, initialStatus, initialNote, city }: Props) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
   const [adminNote, setAdminNote] = useState(initialNote || '')
@@ -68,6 +70,12 @@ export default function AdminSpaceNeedActions({ id, initialStatus, initialNote }
       >
         {loading ? 'جاري الحفظ...' : 'حفظ التحديث'}
       </button>
+      <AdminDeleteButton
+        endpoint={`/api/space-needs/${id}`}
+        label="حذف الطلب نهائيًا"
+        className="w-full rounded-xl border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100"
+        confirmMessage={`سيتم حذف طلب احتياج المساحة في "${city}" نهائيًا.`}
+      />
     </div>
   )
 }

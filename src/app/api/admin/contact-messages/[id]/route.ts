@@ -1,6 +1,35 @@
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const admin = await getCurrentUser()
+  if (!admin || admin.role !== 'ADMIN') {
+    return Response.json({ error: 'غير مصرح.' }, { status: 403 })
+  }
+
+  const { id } = await params
+  const before = await prisma.contactMessage.findUnique({ where: { id } })
+  if (!before) return Response.json({ error: 'الرسالة غير موجودة.' }, { status: 404 })
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.contactMessage.delete({ where: { id } })
+    await transaction.adminAuditLog.create({
+      data: {
+        action: 'DELETE_CONTACT_MESSAGE',
+        entityType: 'ContactMessage',
+        entityId: id,
+        before: JSON.parse(JSON.stringify(before)),
+        actorId: admin.id as string,
+      },
+    })
+  })
+
+  return Response.json({ success: true })
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

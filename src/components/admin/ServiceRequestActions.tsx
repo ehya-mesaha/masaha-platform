@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 const statuses = [
   ['DRAFT', 'مسودة'],
@@ -17,11 +18,13 @@ export default function ServiceRequestActions({
   initialStatus,
   initialQuotedTotal,
   initialAdminNotes,
+  publicRef,
 }: {
   id: string
   initialStatus: string
   initialQuotedTotal: number | null
   initialAdminNotes: string | null
+  publicRef: string
 }) {
   const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
@@ -69,6 +72,11 @@ export default function ServiceRequestActions({
       <button type="button" disabled={saving} onClick={save} className="rounded-xl bg-[#0E3B34] px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#155449] disabled:opacity-50">
         {saving ? 'جارٍ الحفظ…' : 'حفظ'}
       </button>
+      <AdminDeleteButton
+        endpoint={`/api/admin/service-requests/${id}`}
+        label="حذف نهائيًا"
+        confirmMessage={`سيتم حذف طلب الخدمة "${publicRef}" نهائيًا.`}
+      />
       {message && <p className="text-xs font-bold text-[#0E3B34] sm:col-span-2 lg:col-span-4">{message}</p>}
     </div>
   )

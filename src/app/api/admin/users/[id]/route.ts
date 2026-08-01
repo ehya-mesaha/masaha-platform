@@ -77,3 +77,56 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const admin = await getCurrentUser()
+    if (!admin || admin.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+    }
+
+    const { id } = await params
+    if (id === admin.id) {
+      return NextResponse.json({ error: 'لا يمكنك حذف حسابك الخاص' }, { status: 400 })
+    }
+
+    const before = await prisma.user.findUnique({ where: { id } })
+    if (!before) return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 })
+
+    if (before.role === 'ADMIN') {
+      const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } })
+      if (adminCount <= 1) {
+        return NextResponse.json({ error: 'لا يمكن حذف آخر حساب مدير في المنصة' }, { status: 400 })
+      }
+    }
+
+    const hasAuditTrail = await prisma.adminAuditLog.findFirst({ where: { actorId: id } })
+    if (hasAuditTrail) {
+      return NextResponse.json({
+        error: 'لا يمكن حذف هذا الحساب لأنه نفّذ إجراءات إدارية محفوظة في سجل التدقيق. علّق الحساب بدلاً من ذلك لإيقاف وصوله.',
+      }, { status: 409 })
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Spaces/bookings reference the user with no cascade — clear them first (in dependency order).
+      await tx.booking.deleteMany({ where: { OR: [{ buyerId: id }, { space: { sellerId: id } }] } })
+      await tx.space.deleteMany({ where: { sellerId: id } })
+      await tx.conversationMessage.deleteMany({ where: { senderId: id } })
+      await tx.user.delete({ where: { id } })
+      await tx.adminAuditLog.create({
+        data: {
+          actorId: String(admin.id),
+          action: 'DELETE_USER',
+          entityType: 'User',
+          entityId: id,
+          before: JSON.parse(JSON.stringify(before)),
+        },
+      })
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: 'تعذر حذف المستخدم' }, { status: 500 })
+  }
+}

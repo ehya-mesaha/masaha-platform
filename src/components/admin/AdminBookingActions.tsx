@@ -2,17 +2,34 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
-export default function AdminBookingActions({ id, currentStatus, initialNote }: { id: string; currentStatus: string; initialNote: string | null }) {
+export default function AdminBookingActions({ id, currentStatus, initialNote, spaceName, buyerName }: { id: string; currentStatus: string; initialNote: string | null; spaceName: string; buyerName: string }) {
   const router = useRouter()
   const [status, setStatus] = useState('COMPLETED')
   const [adminNote, setAdminNote] = useState(initialNote || '')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
+  const deleteSection = (
+    <div className="mt-5 border-t border-[#E4DDD2] pt-5">
+      <p className="mb-3 text-xs font-bold text-[#4F5B56]">حذف نهائي</p>
+      <AdminDeleteButton
+        endpoint={`/api/admin/bookings/${id}`}
+        label="حذف الحجز نهائيًا"
+        className="w-full rounded-xl border border-red-200 bg-red-50 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100"
+        confirmMessage={`سيتم حذف حجز "${buyerName}" في "${spaceName}" نهائيًا مع أي تقييم مرتبط به. لا يمكن التراجع عن هذا الإجراء.`}
+        redirectTo="/admin/bookings"
+      />
+    </div>
+  )
+
   if (currentStatus !== 'CONFIRMED') {
-    return <div className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm leading-7 text-[#5F6764]">
-      هذا الحجز مغلق تشغيلياً. تظل بياناته متاحة للمراجعة والتصدير ولا يمكن إعادة فتحه من هذه الصفحة.
+    return <div>
+      <div className="rounded-2xl border border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm leading-7 text-[#5F6764]">
+        هذا الحجز مغلق تشغيلياً. تظل بياناته متاحة للمراجعة والتصدير ولا يمكن إعادة فتحه من هذه الصفحة.
+      </div>
+      {deleteSection}
     </div>
   }
 
@@ -53,5 +70,6 @@ export default function AdminBookingActions({ id, currentStatus, initialNote }: 
       {saving ? 'جارٍ الحفظ…' : 'حفظ القرار وإشعار المستخدم'}
     </button>
     {message && <p className="text-xs font-bold text-[#0E3B34]">{message}</p>}
+    {deleteSection}
   </div>
 }

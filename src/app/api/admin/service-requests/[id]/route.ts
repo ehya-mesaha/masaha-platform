@@ -64,3 +64,32 @@ export async function PATCH(
 
   return Response.json({ request: updated })
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const admin = await getCurrentUser()
+  if (!admin || admin.role !== 'ADMIN') {
+    return Response.json({ error: 'غير مصرح.' }, { status: 403 })
+  }
+
+  const { id } = await params
+  const before = await prisma.partnerServiceRequest.findUnique({ where: { id } })
+  if (!before) return Response.json({ error: 'الطلب غير موجود.' }, { status: 404 })
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.partnerServiceRequest.delete({ where: { id } })
+    await transaction.adminAuditLog.create({
+      data: {
+        action: 'DELETE_SERVICE_REQUEST',
+        entityType: 'PartnerServiceRequest',
+        entityId: id,
+        before: JSON.parse(JSON.stringify(before)),
+        actorId: admin.id as string,
+      },
+    })
+  })
+
+  return Response.json({ success: true })
+}

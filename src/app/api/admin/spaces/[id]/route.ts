@@ -72,3 +72,33 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: 'تعذر تحديث المساحة' }, { status: 500 })
   }
 }
+
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const admin = await getCurrentUser()
+    if (!admin || admin.role !== 'ADMIN') return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
+    const { id } = await params
+    const before = await prisma.space.findUnique({ where: { id } })
+    if (!before) return NextResponse.json({ error: 'المساحة غير موجودة' }, { status: 404 })
+
+    await prisma.$transaction(async (tx) => {
+      // Bookings (and their services/reviews) reference the space with no cascade — clear them first.
+      await tx.booking.deleteMany({ where: { spaceId: id } })
+      await tx.space.delete({ where: { id } })
+      await tx.adminAuditLog.create({
+        data: {
+          actorId: String(admin.id),
+          action: 'DELETE_SPACE',
+          entityType: 'Space',
+          entityId: id,
+          before: JSON.parse(JSON.stringify(before)),
+        },
+      })
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Admin space delete failed', error)
+    return NextResponse.json({ error: 'تعذر حذف المساحة' }, { status: 500 })
+  }
+}

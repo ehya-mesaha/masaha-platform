@@ -117,7 +117,7 @@ export default async function AdminBookingDetailsPage({
           </section>
           <section className="premium-card p-5">
             <h2 className="mb-4 text-base font-extrabold text-[#17221E]">إدارة حالة الحجز</h2>
-            <AdminBookingActions id={booking.id} currentStatus={booking.status} initialNote={booking.sellerNote} />
+            <AdminBookingActions id={booking.id} currentStatus={booking.status} initialNote={booking.sellerNote} spaceName={booking.space.name} buyerName={booking.buyer.name} />
           </section>
           {booking.cancelledAt && (
             <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">

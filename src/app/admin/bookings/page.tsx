@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Badge, { getBookingStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import { formatDate, formatTimeRange } from '@/lib/format'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 export default async function AdminBookingsPage() {
   const bookings = await prisma.booking.findMany({
@@ -59,7 +60,17 @@ export default async function AdminBookingsPage() {
                       <p className="time-value mt-1 text-xs">{formatTimeRange(booking.startTime, booking.endTime)}</p>
                     </td>
                     <td className="px-5 py-4"><Badge variant={badge.variant}>{badge.label}</Badge></td>
-                    <td className="px-5 py-4"><Link href={`/admin/bookings/${booking.id}`} className="text-xs font-extrabold text-[#0E3B34] hover:text-[#9A762D]">عرض وإدارة</Link></td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <Link href={`/admin/bookings/${booking.id}`} className="text-xs font-extrabold text-[#0E3B34] hover:text-[#9A762D]">عرض وإدارة</Link>
+                        <AdminDeleteButton
+                          endpoint={`/api/admin/bookings/${booking.id}`}
+                          label="حذف"
+                          className="text-xs font-bold text-red-600 hover:text-red-800"
+                          confirmMessage={`سيتم حذف حجز "${booking.buyer.name}" في "${booking.space.name}" نهائيًا مع أي تقييم مرتبط به. لا يمكن التراجع عن هذا الإجراء.`}
+                        />
+                      </div>
+                    </td>
                   </tr>
                 )
               })}

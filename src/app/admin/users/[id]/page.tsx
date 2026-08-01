@@ -6,6 +6,7 @@ import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 type UserDoc = { id: string; type: string; fileUrl: string; uploadedAt: string }
 type User = {
@@ -144,19 +145,29 @@ export default function AdminUserDetailPage() {
             </div>
           </div>
         </div>
-        {!isPending && (
-          <button
-            onClick={() => updateUser({ status: user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' })}
-            disabled={actionLoading}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-              user.status === 'ACTIVE'
-                ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
-                : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-            } disabled:opacity-50`}
-          >
-            {user.status === 'ACTIVE' ? 'تعليق الحساب' : 'تفعيل الحساب'}
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {!isPending && (
+            <button
+              onClick={() => updateUser({ status: user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' })}
+              disabled={actionLoading}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                user.status === 'ACTIVE'
+                  ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                  : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+              } disabled:opacity-50`}
+            >
+              {user.status === 'ACTIVE' ? 'تعليق الحساب' : 'تفعيل الحساب'}
+            </button>
+          )}
+          <AdminDeleteButton
+            endpoint={`/api/admin/users/${user.id}`}
+            label="حذف الحساب نهائيًا"
+            className="rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100"
+            confirmMessage={`سيتم حذف حساب "${user.name}" نهائيًا مع كل مساحاته وحجوزاته ورسائله المرتبطة. لا يمكن التراجع عن هذا الإجراء.`}
+            typedConfirmationValue={user.email}
+            redirectTo="/admin/users"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

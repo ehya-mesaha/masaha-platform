@@ -2,11 +2,14 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
+import { getCurrentUser } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
   const { filter } = await searchParams
+  const currentAdmin = await getCurrentUser()
   let users: UserType[] = []
   let pendingCount = 0
 
@@ -166,15 +169,26 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                     {new Date(u.createdAt).toLocaleDateString('en-US')}
                   </td>
                   <td className="px-6 py-4">
-                    <Link
-                      href={`/admin/users/${u.id}`}
-                      className="text-[#0E3B34] font-semibold hover:text-[#B99A63] text-xs transition-colors flex items-center gap-1"
-                    >
-                      عرض
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/admin/users/${u.id}`}
+                        className="text-[#0E3B34] font-semibold hover:text-[#B99A63] text-xs transition-colors flex items-center gap-1"
+                      >
+                        عرض
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                      <AdminDeleteButton
+                        endpoint={`/api/admin/users/${u.id}`}
+                        label="حذف"
+                        className="text-xs font-bold text-red-600 hover:text-red-800"
+                        disabled={currentAdmin?.id === u.id}
+                        disabledReason="لا يمكنك حذف حسابك الخاص"
+                        confirmMessage={`سيتم حذف حساب "${u.name}" نهائيًا مع كل مساحاته وحجوزاته ورسائله المرتبطة. لا يمكن التراجع عن هذا الإجراء.`}
+                        typedConfirmationValue={u.email}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}

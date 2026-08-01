@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import { formatSpaceNumber } from '@/lib/format'
+import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 export default async function AdminSpacesPage({
   searchParams,
@@ -163,9 +164,18 @@ export default async function AdminSpacesPage({
                     <td className="px-5 py-4"><span className="rounded-full bg-[#F5F1E8] px-2.5 py-1 text-xs font-bold text-[#0E3B34]">{s._count.bookings}</span></td>
                     <td className="px-5 py-4"><Badge variant={variant}>{label}</Badge></td>
                     <td className="px-5 py-4">
-                      <Link href={`/admin/spaces/${s.id}`} className="text-[#0E3B34] font-medium hover:underline text-xs">
-                        مراجعة
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        <Link href={`/admin/spaces/${s.id}`} className="text-[#0E3B34] font-medium hover:underline text-xs">
+                          مراجعة
+                        </Link>
+                        <AdminDeleteButton
+                          endpoint={`/api/admin/spaces/${s.id}`}
+                          label="حذف"
+                          className="text-xs font-bold text-red-600 hover:text-red-800"
+                          confirmMessage={`سيتم حذف مساحة "${s.name}" نهائيًا مع كل حجوزاتها (${s._count.bookings}) وتقييماتها وصورها. لا يمكن التراجع عن هذا الإجراء.`}
+                          typedConfirmationValue={s.name}
+                        />
+                      </div>
                     </td>
                   </tr>
                 )

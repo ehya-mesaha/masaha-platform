@@ -66,3 +66,32 @@ export async function PATCH(
 
   return Response.json({ booking: updated })
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const admin = await getCurrentUser()
+  if (!admin || admin.role !== 'ADMIN') {
+    return Response.json({ error: 'غير مصرح.' }, { status: 403 })
+  }
+
+  const { id } = await params
+  const before = await prisma.booking.findUnique({ where: { id } })
+  if (!before) return Response.json({ error: 'الحجز غير موجود.' }, { status: 404 })
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.booking.delete({ where: { id } })
+    await transaction.adminAuditLog.create({
+      data: {
+        action: 'DELETE_BOOKING',
+        entityType: 'Booking',
+        entityId: id,
+        before: JSON.parse(JSON.stringify(before)),
+        actorId: admin.id as string,
+      },
+    })
+  })
+
+  return Response.json({ success: true })
+}

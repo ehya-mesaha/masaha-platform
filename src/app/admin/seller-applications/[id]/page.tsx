@@ -18,7 +18,7 @@ export default async function SellerApplicationDetail({ params }: { params: Prom
         <section className="premium-card p-6"><h2 className="mb-4 font-extrabold text-[#1B1B1B]">بيانات الجهة والمسؤول</h2><div className="grid gap-4 text-sm sm:grid-cols-2"><Data label="اسم المسؤول" value={application.user.name} /><Data label="البريد" value={application.user.email} ltr /><Data label="الجوال" value={application.user.phone || '—'} ltr /><Data label="اسم الفرع" value={application.branchName || 'الفرع الرئيسي'} /><Data label="رقم السجل التجاري" value={application.commercialRegisterNo} ltr /><Data label="تعدد الملاك" value={application.multipleOwners ? 'نعم' : 'لا'} /><Data label="رقم الوكالة" value={application.powerOfAttorneyNumber || '—'} ltr /><Data label="رقم عقد الوساطة" value={application.brokerageContractNo || 'لم يُسجل بعد'} ltr /></div></section>
         <section className="premium-card p-6"><h2 className="mb-4 font-extrabold text-[#1B1B1B]">المستندات</h2><div className="grid gap-3 sm:grid-cols-2">{application.user.documents.map((document) => <a key={document.id} href={document.fileUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl border border-[#D8D1C7] p-4 text-sm font-bold text-[#0E3B34]"><span>{documentLabel[document.type]}</span><span>فتح الملف</span></a>)}</div></section>
       </div>
-      <ApplicationActions id={id} initialNotes={application.adminNotes} />
+      <ApplicationActions id={id} initialNotes={application.adminNotes} schoolName={application.schoolName} />
     </div>
   </div>
 }
