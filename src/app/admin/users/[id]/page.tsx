@@ -48,6 +48,8 @@ export default function AdminUserDetailPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [pendingRole, setPendingRole] = useState<'BUYER' | 'SELLER' | 'ADMIN' | null>(null)
+  const [roleConfirmText, setRoleConfirmText] = useState('')
 
   useEffect(() => {
     fetch(`/api/admin/users/${id}`)
@@ -55,14 +57,14 @@ export default function AdminUserDetailPage() {
       .then(data => { setUser(data.user); setLoading(false) })
   }, [id])
 
-  async function updateUser(patch: { status?: string; role?: string }) {
+  async function updateUser(patch: { status?: string; role?: string }, options?: { confirmAdminRole?: boolean }) {
     setActionLoading(true)
     setMessage(null)
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
+        body: JSON.stringify({ ...patch, ...options }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -74,6 +76,31 @@ export default function AdminUserDetailPage() {
     } finally {
       setActionLoading(false)
     }
+  }
+
+  function openRoleConfirm(role: 'BUYER' | 'SELLER' | 'ADMIN') {
+    setMessage(null)
+    setRoleConfirmText('')
+    setPendingRole(role)
+  }
+
+  async function confirmRoleChange() {
+    if (!pendingRole) return
+    await updateUser({ role: pendingRole }, { confirmAdminRole: pendingRole === 'ADMIN' })
+    setPendingRole(null)
+  }
+
+  function roleChangeWarning(currentRole: string, targetRole: string, name: string) {
+    if (targetRole === 'ADMIN') {
+      return `أنت على وشك منح "${name}" صلاحيات مدير النظام الكاملة، بما يشمل إدارة كل المستخدمين والمساحات والحجوزات، والقدرة على تعديل أو حذف أي بيانات على المنصة.`
+    }
+    if (currentRole === 'ADMIN') {
+      return `أنت على وشك سحب صلاحيات مدير النظام من "${name}". سيفقد كل صلاحيات الإدارة فورًا.`
+    }
+    if (targetRole === 'SELLER') {
+      return `سيصبح "${name}" صاحب مساحة، ويكتسب صلاحية إضافة وإدارة مساحاته وحجوزاته.`
+    }
+    return `سيصبح "${name}" مستأجرًا عاديًا${currentRole === 'SELLER' ? '، وستبقى مساحاته الحالية قائمة دون إمكانية إدارتها من حسابه حتى تُعاد ترقيته' : ''}.`
   }
 
   if (loading) return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>
@@ -233,7 +260,7 @@ export default function AdminUserDetailPage() {
               {(['BUYER', 'SELLER', 'ADMIN'] as const).map(r => (
                 <button
                   key={r}
-                  onClick={() => updateUser({ role: r })}
+                  onClick={() => openRoleConfirm(r)}
                   disabled={actionLoading || user.role === r}
                   className={`w-full flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-all border ${
                     user.role === r
@@ -260,6 +287,62 @@ export default function AdminUserDetailPage() {
           </Card>
         </div>
       </div>
+
+      {pendingRole && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          onClick={() => !actionLoading && setPendingRole(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <span className="grid h-10 w-10 flex-none place-items-center rounded-full bg-amber-50 text-amber-600">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </span>
+              <h3 className="text-base font-extrabold text-[#1B1B1B]">تأكيد تغيير الصلاحية</h3>
+            </div>
+
+            <p className="text-sm leading-6 text-[#3F4B47]">{roleChangeWarning(user.role, pendingRole, user.name)}</p>
+
+            {pendingRole === 'ADMIN' && (
+              <div className="mt-4">
+                <label className="mb-1.5 block text-xs font-bold text-[#3F4B47]">
+                  للتأكيد، اكتب <span className="font-mono text-red-700">مدير النظام</span>
+                </label>
+                <input
+                  value={roleConfirmText}
+                  onChange={(event) => setRoleConfirmText(event.target.value)}
+                  autoFocus
+                  className="w-full rounded-xl border border-[#D8D1C7] px-3 py-2.5 text-sm focus:outline-none focus:border-red-400"
+                />
+              </div>
+            )}
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingRole(null)}
+                disabled={actionLoading}
+                className="flex-1 rounded-xl border border-[#D8D1C7] py-2.5 text-sm font-bold text-[#3F4B47] transition-colors hover:bg-[#F5F1E8] disabled:opacity-50"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={confirmRoleChange}
+                disabled={actionLoading || (pendingRole === 'ADMIN' && roleConfirmText.trim() !== 'مدير النظام')}
+                className="flex-1 rounded-xl bg-[#0E3B34] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#092C27] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {actionLoading ? 'جاري التحديث...' : 'تأكيد التغيير'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
