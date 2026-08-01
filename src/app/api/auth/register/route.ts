@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { SESSION_COOKIE_NAME, sessionCookieOptions, signToken } from '@/lib/auth'
+import { signEmailVerificationToken } from '@/lib/auth'
+import { sendConfirmationEmail } from '@/lib/email'
+import { getSiteUrl } from '@/lib/site'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,10 +28,16 @@ export async function POST(request: NextRequest) {
         status: 'ACTIVE',
       },
     })
-    const token = await signToken({ id: user.id, email: user.email, role: user.role, name: user.name, status: user.status })
-    const response = NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } }, { status: 201 })
-    response.cookies.set(SESSION_COOKIE_NAME, token, sessionCookieOptions())
-    return response
+
+    const verificationToken = await signEmailVerificationToken(user.id)
+    const confirmUrl = `${getSiteUrl()}/api/auth/confirm-email?token=${verificationToken}`
+    try {
+      await sendConfirmationEmail({ to: user.email, name: user.name, confirmUrl })
+    } catch (error) {
+      console.error('Failed to send confirmation email', error)
+    }
+
+    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } }, { status: 201 })
   } catch (error) {
     console.error('Registration failed', error)
     return NextResponse.json({ error: 'حدث خطأ غير متوقع' }, { status: 500 })

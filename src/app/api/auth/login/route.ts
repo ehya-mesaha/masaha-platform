@@ -25,6 +25,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'طلب الانضمام قيد المراجعة. سيتم إشعارك عند التفعيل' }, { status: 403 })
     }
 
+    if (!user.emailVerifiedAt) {
+      return NextResponse.json({ error: 'يرجى تأكيد بريدك الإلكتروني أولاً. تحقق من صندوق الوارد', code: 'EMAIL_NOT_VERIFIED' }, { status: 403 })
+    }
+
     const token = await signToken({
       id: user.id,
       email: user.email,

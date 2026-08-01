@@ -39,3 +39,21 @@ export type TokenPayload = {
   name: string
   status: 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'
 }
+
+const EMAIL_VERIFICATION_PURPOSE = 'verify-email'
+
+export async function signEmailVerificationToken(userId: string) {
+  return new SignJWT({ purpose: EMAIL_VERIFICATION_PURPOSE, userId })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('48h')
+    .sign(getJwtSecret())
+}
+
+export async function verifyEmailVerificationToken(token: string): Promise<string> {
+  const { payload } = await jwtVerify(token, getJwtSecret(), { algorithms: ['HS256'] })
+  if (payload.purpose !== EMAIL_VERIFICATION_PURPOSE || typeof payload.userId !== 'string') {
+    throw new Error('Invalid verification token')
+  }
+  return payload.userId
+}

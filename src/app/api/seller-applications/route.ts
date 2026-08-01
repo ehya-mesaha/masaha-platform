@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { signEmailVerificationToken } from '@/lib/auth'
+import { sendConfirmationEmail } from '@/lib/email'
+import { getSiteUrl } from '@/lib/site'
 
 type DocumentInput = { type: 'NATIONAL_ID' | 'COMMERCIAL_REGISTER' | 'TITLE_DEED' | 'POWER_OF_ATTORNEY'; fileUrl: string }
 
@@ -46,6 +49,15 @@ export async function POST(request: NextRequest) {
         },
       })
     })
+
+    const verificationToken = await signEmailVerificationToken(application.userId)
+    const confirmUrl = `${getSiteUrl()}/api/auth/confirm-email?token=${verificationToken}`
+    try {
+      await sendConfirmationEmail({ to: email, name: String(body.name).trim(), confirmUrl })
+    } catch (error) {
+      console.error('Failed to send confirmation email', error)
+    }
+
     return NextResponse.json({ id: application.id, status: application.status }, { status: 201 })
   } catch (error) {
     console.error('Seller application failed', error)

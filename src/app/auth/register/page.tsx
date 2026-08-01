@@ -26,8 +26,7 @@ export default function RegisterPage() {
       setLoading(false)
       return
     }
-    router.push('/buyer/bookings')
-    router.refresh()
+    router.push(`/auth/check-email?email=${encodeURIComponent(form.email)}`)
   }
 
   return (
