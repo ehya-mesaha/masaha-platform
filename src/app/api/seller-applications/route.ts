@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { signEmailVerificationToken } from '@/lib/auth'
 import { sendConfirmationEmail } from '@/lib/email'
 import { getSiteUrl } from '@/lib/site'
+import { getPasswordStrength } from '@/lib/passwordStrength'
 
 type DocumentInput = { type: 'NATIONAL_ID' | 'COMMERCIAL_REGISTER' | 'TITLE_DEED' | 'POWER_OF_ATTORNEY'; fileUrl: string }
 
@@ -16,6 +17,9 @@ export async function POST(request: NextRequest) {
     }
     if (!body.consentAccepted) return NextResponse.json({ error: 'يجب الموافقة على الإقرار قبل الإرسال' }, { status: 400 })
     if (String(body.password).length < 8) return NextResponse.json({ error: 'كلمة المرور يجب أن تتكون من 8 أحرف على الأقل' }, { status: 400 })
+    if (getPasswordStrength(String(body.password)).score === 0) {
+      return NextResponse.json({ error: 'كلمة المرور ضعيفة جدًا. أضف أحرفًا وأرقامًا أكثر تنوعًا وتجنّب الكلمات الشائعة' }, { status: 400 })
+    }
 
     const documents = (Array.isArray(body.documents) ? body.documents : []) as DocumentInput[]
 

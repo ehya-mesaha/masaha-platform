@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { signEmailVerificationToken } from '@/lib/auth'
 import { sendConfirmationEmail } from '@/lib/email'
 import { getSiteUrl } from '@/lib/site'
+import { getPasswordStrength } from '@/lib/passwordStrength'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +15,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'يرجى استخدام نموذج طلب انضمام أصحاب المساحات' }, { status: 400 })
     }
     if (!name || !email || !password) return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
+    if (!EMAIL_PATTERN.test(String(email).trim())) {
+      return NextResponse.json({ error: 'يرجى إدخال بريد إلكتروني بصيغة صحيحة' }, { status: 400 })
+    }
     if (String(password).length < 8) return NextResponse.json({ error: 'كلمة المرور يجب أن تتكون من 8 أحرف على الأقل' }, { status: 400 })
+    if (getPasswordStrength(String(password)).score === 0) {
+      return NextResponse.json({ error: 'كلمة المرور ضعيفة جدًا. أضف أحرفًا وأرقامًا أكثر تنوعًا وتجنّب الكلمات الشائعة' }, { status: 400 })
+    }
 
     const normalizedEmail = String(email).trim().toLowerCase()
     if (await prisma.user.findUnique({ where: { email: normalizedEmail } })) {
