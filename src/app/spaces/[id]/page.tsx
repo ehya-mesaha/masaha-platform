@@ -8,9 +8,11 @@ import Footer from '@/components/layout/Footer'
 import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
 import StartConversationButton from '@/components/chat/StartConversationButton'
-import { formatSpaceNumber, formatTime12 } from '@/lib/format'
+import SpaceImageLightbox from '@/components/spaces/SpaceImageLightbox'
+import { formatDate, formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
 import { generateWeekdayDates, parseDateValue, weekdaysInRange } from '@/lib/sessionDates'
+import { getServiceCategoryMeta } from '@/lib/serviceCategoryIcons'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -28,7 +30,7 @@ const PRINT_MATRIX_FIELDS: Array<[key: 'bwSingle' | 'bwDouble' | 'colorSingle' |
 
 type PrintMatrixConfig = { bwSingle?: number; bwDouble?: number; colorSingle?: number; colorDouble?: number }
 type WorkingHour = { dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }
-type Service = { id: string; name: string; description: string | null; price: number; pricingType: string; config: PrintMatrixConfig | null }
+type Service = { id: string; name: string; description: string | null; price: number; pricingType: string; category: string | null; config: PrintMatrixConfig | null }
 type PricingTier = { minHours: number; discountPercent: number }
 type Rule = { id: string; rule: string }
 type Review = {
@@ -458,14 +460,19 @@ function SpaceDetailPageInner() {
             <div className="mb-4">
               <div className={`space-detail-gallery ${sortedImages.length <= 1 ? 'is-single' : sortedImages.length === 2 ? 'is-double' : ''}`}>
                 {sortedImages.length > 0 ? (
+                  <>
+                    <SpaceImageLightbox images={sortedImages} activeIndex={activeImage} spaceName={space.name} onActiveIndexChange={setActiveImage} />
+                    {false && (
                   <button type="button" className="space-detail-gallery-main" aria-label="الصورة الرئيسية">
-                    <img src={sortedImages[activeImage]?.url} alt={space.name} />
+                    <img src={sortedImages[activeImage]?.url} alt={space?.name} />
                     <span className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#092C27]/55 to-transparent" />
                     <span className="absolute bottom-4 start-4 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-xs font-bold text-white backdrop-blur-md">
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V6.75A2.25 2.25 0 0 1 5.25 4.5h13.5A2.25 2.25 0 0 1 21 6.75v9.75m-18 0v.75a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 17.25v-.75M3 16.5l5.25-5.25 3.75 3.75 2.25-2.25L21 16.5M14.25 8.25h.008v.008h-.008V8.25Z" /></svg>
                       {activeImage + 1} / {sortedImages.length}
                     </span>
-                  </button>
+                   </button>
+                    )}
+                  </>
                 ) : (
                   <div className="space-detail-gallery-main flex items-center justify-center bg-gradient-to-br from-[#0E3B34]/10 to-[#B99A63]/10">
                     <svg className="w-24 h-24 text-[#0E3B34]/20" fill="currentColor" viewBox="0 0 24 24">
@@ -1089,7 +1096,7 @@ function SpaceDetailPageInner() {
             {bookingStep === 2 && (
               <div className="space-y-3">
                 {space.services.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-4 text-sm text-[#5F6764]">
+                  <div className="rounded-2xl border border-dashed border-[#D8D1C7] bg-[#FAF8F3] p-6 text-center text-sm text-[#5F6764]">
                     لا توجد خدمات إضافية متاحة لهذه المساحة.
                   </div>
                 ) : [...bookingDates].sort().map((date, index) => {
@@ -1097,36 +1104,59 @@ function SpaceDetailPageInner() {
                   const dateInfo = pricing.perDate.find(d => d.date === date)
                   const dateSelections = selectedServicesByDate[date] || {}
                   return (
-                    <div key={date} className="overflow-hidden rounded-xl border border-[#D8D1C7]">
+                    <div key={date} className={`overflow-hidden rounded-2xl border transition-colors ${isOpen ? 'border-[#0E3B34]/25' : 'border-[#D8D1C7]'}`}>
                       <button type="button" onClick={() => setExpandedServiceDate(isOpen ? null : date)}
-                        className="flex w-full items-center justify-between bg-[#F5F1E8] p-3">
-                        <span className="text-sm font-bold text-[#1B1B1B]" dir="ltr">{date}</span>
-                        <span className="flex items-center gap-2 text-xs font-semibold text-[#5F6764]">
-                          {dateInfo && dateInfo.serviceLines.length > 0 && `${dateInfo.serviceLines.length.toLocaleString('en-US')} خدمة · ${dateInfo.dateServicesTotal.toLocaleString('en-US')} ر.س`}
-                          <svg className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        className="flex w-full items-center justify-between gap-3 bg-[#F5F1E8] p-3.5 text-start">
+                        <span className="flex items-center gap-2.5">
+                          <span className="grid h-9 w-9 flex-none place-items-center rounded-xl bg-[#0E3B34] text-white">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          </span>
+                          <span className="text-sm font-extrabold text-[#1B1B1B]">{formatDate(date)}</span>
+                        </span>
+                        <span className="flex items-center gap-2 text-xs font-bold text-[#5F6764]">
+                          {dateInfo && dateInfo.serviceLines.length > 0 && (
+                            <span className="rounded-full bg-white px-2.5 py-1 text-[#0E3B34] shadow-sm">
+                              {dateInfo.serviceLines.length.toLocaleString('en-US')} خدمة · {dateInfo.dateServicesTotal.toLocaleString('en-US')} ر.س
+                            </span>
+                          )}
+                          <svg className={`h-4 w-4 flex-none transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
                           </svg>
                         </span>
                       </button>
                       {isOpen && (
-                        <div className="space-y-2 border-t border-[#D8D1C7] p-3">
+                        <div className="grid gap-2.5 border-t border-[#D8D1C7] p-3 sm:grid-cols-2">
                           {space.services.map(service => {
                             const selection = dateSelections[service.id] || { enabled: false, quantity: 1, matrix: {} }
+                            const meta = getServiceCategoryMeta(service.category)
+                            const needsQuantity = service.pricingType !== 'PRINT_MATRIX' && service.pricingType !== 'PER_PERSON' && service.pricingType !== 'PER_BOOKING'
                             return (
-                              <div key={service.id} className={`rounded-xl border p-3 transition ${selection.enabled ? 'border-[#0E3B34]/30 bg-[#F5F1E8]' : 'border-[#D8D1C7] bg-white'}`}>
-                                <label className="flex cursor-pointer items-center justify-between gap-3">
-                                  <span className="flex items-center gap-2">
-                                    <input type="checkbox" checked={selection.enabled} onChange={() => toggleService(date, service.id)} className="h-4 w-4 accent-[#0E3B34]" />
-                                    <span className="text-sm font-medium text-[#1B1B1B]">{service.name}</span>
+                              <div key={service.id} className={`relative overflow-hidden rounded-2xl border p-3.5 transition-all ${selection.enabled ? 'border-[#0E3B34] bg-[#F7FBF9] shadow-[0_10px_26px_-20px_rgba(14,59,52,0.55)]' : 'border-[#D8D1C7] bg-white hover:border-[#B99A63]/50'}`}>
+                                {selection.enabled && <span className="absolute inset-y-0 start-0 w-1 bg-[#0E3B34]" />}
+                                <button type="button" onClick={() => toggleService(date, service.id)} className="flex w-full items-start justify-between gap-3 text-start">
+                                  <span className="flex items-start gap-2.5">
+                                    <span className={`grid h-9 w-9 flex-none place-items-center rounded-xl ${selection.enabled ? 'bg-[#0E3B34] text-white' : 'bg-[#F5F1E8] text-[#8B9389]'}`}>
+                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">{meta.icon}</svg>
+                                    </span>
+                                    <span>
+                                      <span className="block text-sm font-extrabold text-[#1B1B1B]">{service.name}</span>
+                                      {service.description && <span className="mt-0.5 block text-xs leading-5 text-[#5F6764]">{service.description}</span>}
+                                      {service.pricingType !== 'PRINT_MATRIX' && (
+                                        <span className="mt-1.5 inline-block rounded-full bg-[#F5F1E8] px-2.5 py-1 text-[10px] font-bold text-[#0E3B34]">
+                                          {service.price.toLocaleString('en-US')} ر.س · {pricingTypeLabel(service.pricingType)}
+                                        </span>
+                                      )}
+                                    </span>
                                   </span>
-                                  {service.pricingType !== 'PRINT_MATRIX' && (
-                                    <span className="text-xs font-bold text-[#0E3B34]">{service.price.toLocaleString('en-US')} ر.س · {pricingTypeLabel(service.pricingType)}</span>
-                                  )}
-                                </label>
-                                {service.description && <p className="mt-1 text-xs text-[#5F6764]">{service.description}</p>}
+                                  <span className={`grid h-5 w-5 flex-none place-items-center rounded-full border-2 transition-colors ${selection.enabled ? 'border-[#0E3B34] bg-[#0E3B34]' : 'border-[#D8D1C7] bg-white'}`}>
+                                    {selection.enabled && (
+                                      <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    )}
+                                  </span>
+                                </button>
 
                                 {selection.enabled && service.pricingType === 'PRINT_MATRIX' && (
-                                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#D8D1C7] pt-3">
+                                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#0E3B34]/10 pt-3">
                                     {PRINT_MATRIX_FIELDS.map(([key, label]) => {
                                       const unitPrice = Number(service.config?.[key]) || 0
                                       if (unitPrice <= 0) return null
@@ -1143,14 +1173,16 @@ function SpaceDetailPageInner() {
                                   </div>
                                 )}
 
-                                {selection.enabled && service.pricingType !== 'PRINT_MATRIX' && service.pricingType !== 'PER_PERSON' && service.pricingType !== 'PER_BOOKING' && (
-                                  <div className="mt-3 border-t border-[#D8D1C7] pt-3">
-                                    <label className="block max-w-32">
-                                      <span className="mb-1 block text-[10px] text-[#5F6764]">{service.pricingType === 'PER_HOUR' ? 'العدد (لكل ساعة)' : 'الكمية'}</span>
-                                      <input type="number" min="1" value={selection.quantity}
-                                        onChange={e => updateServiceQuantity(date, service.id, Number(e.target.value) || 1)}
-                                        className="w-full rounded-lg border border-[#D8D1C7] px-2 py-1.5 text-xs" dir="ltr" />
-                                    </label>
+                                {selection.enabled && needsQuantity && (
+                                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#0E3B34]/10 pt-3">
+                                    <span className="text-[11px] font-bold text-[#5F6764]">{service.pricingType === 'PER_HOUR' ? 'العدد (لكل ساعة)' : 'الكمية'}</span>
+                                    <span className="flex items-center gap-1 rounded-full border border-[#D8D1C7] bg-white p-1">
+                                      <button type="button" onClick={() => updateServiceQuantity(date, service.id, Math.max(1, selection.quantity - 1))}
+                                        className="grid h-6 w-6 place-items-center rounded-full text-[#0E3B34] transition-colors hover:bg-[#F5F1E8]" aria-label="إنقاص الكمية">−</button>
+                                      <span className="w-6 text-center text-xs font-extrabold text-[#1B1B1B]" dir="ltr">{selection.quantity}</span>
+                                      <button type="button" onClick={() => updateServiceQuantity(date, service.id, selection.quantity + 1)}
+                                        className="grid h-6 w-6 place-items-center rounded-full text-[#0E3B34] transition-colors hover:bg-[#F5F1E8]" aria-label="زيادة الكمية">+</button>
+                                    </span>
                                   </div>
                                 )}
                               </div>

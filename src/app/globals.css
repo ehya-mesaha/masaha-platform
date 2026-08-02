@@ -1291,6 +1291,28 @@ html[dir="rtl"] .auth-visual::after {
 
 .space-detail-gallery button:hover img { transform: scale(1.035); filter: saturate(1.06); }
 
+/* The legacy main-image button remains in the page markup for compatibility;
+   the interactive lightbox owns the visible main-image slot. */
+.space-detail-gallery > button:nth-child(2) { display: none; }
+
+.lightbox-control {
+  display: inline-grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: .75rem;
+  background: rgba(255,255,255,.1);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: background .2s ease;
+}
+
+.lightbox-control:hover { background: rgba(255,255,255,.2); }
+.lightbox-zoom-label { min-width: 3.5rem; font-size: .75rem; font-weight: 700; }
+.lightbox-arrow { position: absolute; z-index: 1; display: grid; width: 2.75rem; height: 4rem; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: .75rem; background: rgba(0,0,0,.25); font-size: 2.5rem; line-height: 1; }
+.lightbox-arrow:hover { background: rgba(255,255,255,.15); }
+
 .space-detail-section {
   padding-block: 1.75rem;
   border-bottom: 1px solid #D8D1C7;
