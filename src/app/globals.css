@@ -1295,23 +1295,28 @@ html[dir="rtl"] .auth-visual::after {
    the interactive lightbox owns the visible main-image slot. */
 .space-detail-gallery > button:nth-child(2) { display: none; }
 
-.lightbox-control {
+.lightbox-close,
+.lightbox-zoom-button {
   display: inline-grid;
-  width: 2.5rem;
-  height: 2.5rem;
   place-items: center;
   border: 1px solid rgba(255,255,255,.2);
-  border-radius: .75rem;
+  border-radius: .9rem;
   background: rgba(255,255,255,.1);
-  font-size: 1.5rem;
-  line-height: 1;
-  transition: background .2s ease;
+  transition: background .2s ease, opacity .2s ease;
 }
 
-.lightbox-control:hover { background: rgba(255,255,255,.2); }
-.lightbox-zoom-label { min-width: 3.5rem; font-size: .75rem; font-weight: 700; }
-.lightbox-arrow { position: absolute; z-index: 1; display: grid; width: 2.75rem; height: 4rem; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: .75rem; background: rgba(0,0,0,.25); font-size: 2.5rem; line-height: 1; }
-.lightbox-arrow:hover { background: rgba(255,255,255,.15); }
+.lightbox-close { width: 3.25rem; height: 3.25rem; }
+.lightbox-zoom-button { width: 3.25rem; height: 3.25rem; }
+.lightbox-close:hover,
+.lightbox-zoom-button:hover:not(:disabled) { background: rgba(255,255,255,.24); }
+.lightbox-close:focus-visible,
+.lightbox-zoom-button:focus-visible,
+.lightbox-arrow:focus-visible { outline: 3px solid #B99A63; outline-offset: 3px; }
+.lightbox-zoom-button:disabled { cursor: not-allowed; opacity: .35; }
+.lightbox-zoom-value { min-width: 4.5rem; text-align: center; font-size: .95rem; font-weight: 800; }
+.lightbox-arrow { position: absolute; top: 50%; z-index: 1; display: grid; width: 4.25rem; height: 4.25rem; transform: translateY(-50%); place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(6,27,24,.82); transition: background .2s ease, opacity .2s ease; }
+.lightbox-arrow:hover:not(:disabled) { background: #0E3B34; }
+.lightbox-arrow:disabled { cursor: default; opacity: .3; }
 
 .space-detail-section {
   padding-block: 1.75rem;
