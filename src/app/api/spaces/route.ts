@@ -6,20 +6,6 @@ import type { SpaceFormData } from '@/components/spaces/create/types'
 import type { Prisma } from '@/generated/prisma'
 import { LEGAL_VERSION } from '@/lib/legal'
 
-const APPROVED_OWNER_SERVICES = new Set([
-  'المطبوعات',
-  'منظم',
-  'تنظيف بعد الاستخدام',
-  'مياه',
-  'قهوة عربية',
-  'شاي',
-  'ضيافة خفيفة',
-])
-
-function normalizeServiceName(value: string) {
-  return value.normalize('NFD').replace(/[\u064B-\u065F\u0670]/g, '')
-}
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -110,15 +96,11 @@ export async function POST(req: NextRequest) {
       .filter((service: { isEnabled?: boolean; catalogId?: string }) => service.isEnabled && service.catalogId)
     const catalogRows = await prisma.serviceCatalog.findMany({
       where: { id: { in: enabledServices.map((service: { catalogId: string }) => service.catalogId) }, isActive: true },
-      select: { id: true, name: true },
+      select: { id: true },
     })
-    const approvedCatalogIds = new Set(
-      catalogRows
-        .filter(service => APPROVED_OWNER_SERVICES.has(normalizeServiceName(service.name)))
-        .map(service => service.id),
-    )
+    const approvedCatalogIds = new Set(catalogRows.map((service) => service.id))
     if (enabledServices.some((service: { catalogId: string }) => !approvedCatalogIds.has(service.catalogId))) {
-      return NextResponse.json({ error: 'تتضمن الخدمات اختيارًا غير معتمد من الإدارة.' }, { status: 400 })
+      return NextResponse.json({ error: 'تتضمن الخدمات خدمة غير متاحة حاليًا في دليل الإدارة.' }, { status: 400 })
     }
 
     const unitsCount = Math.max(1, Math.min(100, Number(identicalUnitsCount) || 1))

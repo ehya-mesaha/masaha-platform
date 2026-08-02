@@ -5,20 +5,6 @@ import { getStepError } from '@/components/spaces/create/validation'
 import type { SpaceFormData } from '@/components/spaces/create/types'
 import type { Prisma } from '@/generated/prisma'
 
-const APPROVED_OWNER_SERVICES = new Set([
-  'المطبوعات',
-  'منظم',
-  'تنظيف بعد الاستخدام',
-  'مياه',
-  'قهوة عربية',
-  'شاي',
-  'ضيافة خفيفة',
-])
-
-function normalizeServiceName(value: string) {
-  return value.normalize('NFD').replace(/[\u064B-\u065F\u0670]/g, '')
-}
-
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
@@ -86,6 +72,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
               description: config.details || config.catalog.description,
               price: config.price ?? config.catalog.defaultPrice ?? 0,
               pricingType: config.catalog.pricingType,
+              category: config.catalog.category,
               config: config.config ?? config.catalog.defaultConfig ?? null,
             }))
           : space.services.map(service => ({
@@ -94,6 +81,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
               description: service.description,
               price: service.price,
               pricingType: service.pricingType,
+              category: null,
               config: null,
             })),
         reviews,
@@ -166,15 +154,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       .filter((service: { isEnabled?: boolean; catalogId?: string }) => service.isEnabled && service.catalogId)
     const catalogRows = await prisma.serviceCatalog.findMany({
       where: { id: { in: enabledServices.map((service: { catalogId: string }) => service.catalogId) }, isActive: true },
-      select: { id: true, name: true },
+      select: { id: true },
     })
-    const approvedCatalogIds = new Set(
-      catalogRows
-        .filter(service => APPROVED_OWNER_SERVICES.has(normalizeServiceName(service.name)))
-        .map(service => service.id),
-    )
+    const approvedCatalogIds = new Set(catalogRows.map((service) => service.id))
     if (enabledServices.some((service: { catalogId: string }) => !approvedCatalogIds.has(service.catalogId))) {
-      return NextResponse.json({ error: 'تتضمن الخدمات اختيارًا غير معتمد من الإدارة.' }, { status: 400 })
+      return NextResponse.json({ error: 'تتضمن الخدمات خدمة غير متاحة حاليًا في دليل الإدارة.' }, { status: 400 })
     }
 
     const unitCount = Math.max(1, Math.min(100, Number(identicalUnitsCount) || space.identicalUnitsCount || 1))

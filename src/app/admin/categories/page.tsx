@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getServiceCategoryMeta } from '@/lib/serviceCategoryIcons'
 
 type Item = {
   id: string
@@ -288,6 +289,14 @@ export default function AdminCategoriesPage() {
                         <button onClick={cancelEdit} className="flex-1 rounded-lg border border-[#D8D1C7] py-2 text-xs font-bold text-[#5F6764]">إلغاء</button>
                       </div>
                     </div>
+                  ) : section.pricing ? (
+                    <ServiceItemCard
+                      key={item.id}
+                      item={item}
+                      pricingLabel={item.pricingType ? PRICING_LABELS[item.pricingType] || item.pricingType : undefined}
+                      onEdit={() => startEdit(item)}
+                      onDelete={() => remove(section, item.id)}
+                    />
                   ) : (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#F5F1E8] px-4 py-3">
                       <div className="min-w-0">
@@ -307,11 +316,6 @@ export default function AdminCategoriesPage() {
                         {section.cityManagement && (
                           <span className="mt-1 block text-[10px] text-[#7A837C]">ترتيب الظهور: {item.sortOrder || 0}</span>
                         )}
-                        {section.pricing && item.pricingType && (
-                          <span className="mt-1 inline-block rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#0E3B34]">
-                            {PRICING_LABELS[item.pricingType] || item.pricingType}
-                          </span>
-                        )}
                       </div>
                       <div className="flex flex-none gap-3 text-xs font-bold">
                         {section.cityManagement && (
@@ -329,6 +333,57 @@ export default function AdminCategoriesPage() {
             </section>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+function ServiceItemCard({
+  item,
+  pricingLabel,
+  onEdit,
+  onDelete,
+}: {
+  item: Item
+  pricingLabel?: string
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const meta = getServiceCategoryMeta(item.category)
+  const price = item.defaultPrice ?? item.indicativePrice
+  const isActive = item.isActive !== false
+
+  return (
+    <div className={`relative overflow-hidden rounded-2xl border p-3.5 transition-colors ${isActive ? 'border-[#D8D1C7] bg-white hover:border-[#B99A63]/50' : 'border-[#E4DED1] bg-[#FAFAF8] opacity-70'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className={`grid h-10 w-10 flex-none place-items-center rounded-xl ${isActive ? 'bg-[#0E3B34] text-white' : 'bg-[#E8E5DF] text-[#8B9389]'}`}>
+            <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">{meta.icon}</svg>
+          </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <strong className="truncate text-sm font-extrabold text-[#1B1B1B]">{item.name}</strong>
+              {!isActive && <span className="rounded-full bg-[#E8E5DF] px-2 py-0.5 text-[9px] font-extrabold text-[#6C716E]">معطّلة</span>}
+            </div>
+            {item.description && <p className="mt-0.5 line-clamp-1 text-xs text-[#5F6764]">{item.description}</p>}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              {pricingLabel && (
+                <span className="rounded-full bg-[#F5F1E8] px-2.5 py-1 text-[10px] font-bold text-[#0E3B34]">{pricingLabel}</span>
+              )}
+              {price != null && (
+                <span className="rounded-full bg-[#B99A63]/15 px-2.5 py-1 text-[10px] font-bold text-[#8A671D]">{price.toLocaleString('en-US')} ر.س</span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-none items-center gap-1">
+          <button type="button" onClick={onEdit} aria-label="تعديل" title="تعديل" className="grid h-8 w-8 place-items-center rounded-lg text-[#5F6764] transition-colors hover:bg-[#F5F1E8] hover:text-[#0E3B34]">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+          </button>
+          <button type="button" onClick={onDelete} aria-label="حذف" title="حذف" className="grid h-8 w-8 place-items-center rounded-lg text-[#5F6764] transition-colors hover:bg-red-50 hover:text-red-600">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+          </button>
+        </div>
       </div>
     </div>
   )
