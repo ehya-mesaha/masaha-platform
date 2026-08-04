@@ -9,6 +9,13 @@ import { LEGAL_LINKS } from '@/lib/legal'
 type DocType = 'NATIONAL_ID' | 'COMMERCIAL_REGISTER' | 'TITLE_DEED' | 'POWER_OF_ATTORNEY'
 
 const REQUIRED_DOC_TYPES: DocType[] = ['NATIONAL_ID', 'COMMERCIAL_REGISTER', 'TITLE_DEED']
+const PROPERTY_OWNERSHIP_DOCUMENTS = [
+  'صك إلكتروني', 'صك السجل العقاري', 'عقد إيجار إلكتروني', 'حالة تعاقدية في منصة إيجار',
+  'صك ورقي', 'حجة استحكام', 'صك عقار مع حصر ورثة', 'صك تمويلي',
+  'صك عقار مع عقد بيع', 'صك عقار مع شهادة وقفية', 'صك عقار مع إسناد عقار',
+  'وثيقة ملكية المنفعة', 'صك عقار مع صك ولاية', 'صك عقار مع أمر قضائي',
+  'عقد واقف', 'صك عقار مع قرار وزاري', 'وثيقة هيئة المدن الاقتصادية',
+]
 
 export default function SellerApplicationPage() {
   const router = useRouter()
@@ -21,6 +28,7 @@ export default function SellerApplicationPage() {
   const [uploading, setUploading] = useState<DocType | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPropertyDocsInfo, setShowPropertyDocsInfo] = useState(false)
 
   async function upload(file: File, type: DocType) {
     setUploading(type)
@@ -98,6 +106,10 @@ export default function SellerApplicationPage() {
 
           <Section title="3. المستندات">
             <p className="mb-4 text-sm text-[#5F6764]">PDF أو صورة واضحة. تحفظ المستندات للمراجعة الإدارية فقط.</p>
+            <div className="mb-3 flex items-center justify-between rounded-xl bg-[#F5F1E8] px-3 py-2 text-xs font-bold text-[#33423F]">
+              <span>وثيقة الملكية تكون إحدى الوثائق المقبولة الموضحة هنا</span>
+              <button type="button" onClick={() => setShowPropertyDocsInfo(true)} className="grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 border-[#0E3B34] text-sm font-extrabold text-[#0E3B34] transition-colors hover:bg-[#0E3B34] hover:text-white" aria-label="عرض وثائق الملكية المقبولة">i</button>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Upload label="الهوية الوطنية" type="NATIONAL_ID" required uploaded={documents.some((item) => item.type === 'NATIONAL_ID')} uploading={uploading} onFile={upload} />
               <Upload label="السجل التجاري" type="COMMERCIAL_REGISTER" required uploaded={documents.some((item) => item.type === 'COMMERCIAL_REGISTER')} uploading={uploading} onFile={upload} />
@@ -105,6 +117,24 @@ export default function SellerApplicationPage() {
               {form.multipleOwners && <Upload label="الوكالة الشرعية (اختياري)" type="POWER_OF_ATTORNEY" required={false} uploaded={documents.some((item) => item.type === 'POWER_OF_ATTORNEY')} uploading={uploading} onFile={upload} />}
             </div>
           </Section>
+
+          {showPropertyDocsInfo && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="property-documents-title">
+              <button type="button" className="absolute inset-0 bg-[#061B18]/60 backdrop-blur-sm" onClick={() => setShowPropertyDocsInfo(false)} aria-label="إغلاق قائمة وثائق الملكية" />
+              <div className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" dir="rtl">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 id="property-documents-title" className="text-lg font-extrabold text-[#1B1B1B]">وثائق الملكية المقبولة</h2>
+                    <p className="mt-1 text-sm text-[#5F6764]">تكون وثيقة الملكية إحدى الوثائق الآتية:</p>
+                  </div>
+                  <button type="button" onClick={() => setShowPropertyDocsInfo(false)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#F5F1E8] text-xl font-bold text-[#0E3B34]" aria-label="إغلاق">×</button>
+                </div>
+                <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+                  {PROPERTY_OWNERSHIP_DOCUMENTS.map((document) => <li key={document} className="rounded-lg bg-[#F7F4EC] px-3 py-2 text-sm font-semibold text-[#33423F]">{document}</li>)}
+                </ul>
+              </div>
+            </div>
+          )}
 
           <section className="premium-card p-6">
             <label className="flex items-start gap-3 text-sm leading-7 text-[#33423F]">
