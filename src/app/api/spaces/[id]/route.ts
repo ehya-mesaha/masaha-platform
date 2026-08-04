@@ -62,8 +62,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       console.error('Failed to load space reviews', reviewErr)
     }
 
-    return NextResponse.json({
-      space: {
+    return NextResponse.json(
+      {
+        space: {
         ...space,
         services: space.serviceConfigs.length > 0
           ? space.serviceConfigs.map(config => ({
@@ -86,8 +87,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
             })),
         reviews,
         reviewSummary,
+        },
       },
-    })
+      { headers: { 'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120' } },
+    )
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })

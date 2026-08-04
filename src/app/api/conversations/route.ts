@@ -52,26 +52,28 @@ export async function GET(req: NextRequest) {
       where,
       include: conversationInclude,
       orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
+      take: 100,
     })
 
-    const withUnread = await Promise.all(
-      conversations.map(async (conversation) => {
-        const unreadCount = await prisma.conversationMessage.count({
+    const unreadRows = conversations.length
+      ? await prisma.conversationMessage.groupBy({
+          by: ['conversationId'],
           where: {
-            conversationId: conversation.id,
+            conversationId: { in: conversations.map(conversation => conversation.id) },
             senderId: { not: user.id },
             isRead: false,
           },
+          _count: { _all: true },
         })
-        return {
-          ...conversation,
-          lastMessage: conversation.messages[0] ?? null,
-          unreadCount,
-        }
-      })
-    )
+      : []
+    const unreadByConversation = new Map(unreadRows.map(row => [row.conversationId, row._count._all]))
+    const withUnread = conversations.map(conversation => ({
+      ...conversation,
+      lastMessage: conversation.messages[0] ?? null,
+      unreadCount: unreadByConversation.get(conversation.id) ?? 0,
+    }))
 
-    return NextResponse.json({ conversations: withUnread })
+    return NextResponse.json({ conversations: withUnread }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })

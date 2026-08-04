@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const spaceId = searchParams.get('spaceId')
-    const take = Math.min(Number(searchParams.get('take') || 10), 30)
+    const requestedTake = Number(searchParams.get('take') || 10)
+    const take = Number.isFinite(requestedTake) ? Math.min(Math.max(Math.trunc(requestedTake), 1), 30) : 10
 
     if (!spaceId) {
       return NextResponse.json({ error: 'يرجى تحديد المساحة' }, { status: 400 })
@@ -51,7 +52,10 @@ export async function GET(req: NextRequest) {
       getReviewSummary(spaceId),
     ])
 
-    return NextResponse.json({ reviews, summary })
+    return NextResponse.json(
+      { reviews, summary },
+      { headers: { 'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=60' } },
+    )
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })

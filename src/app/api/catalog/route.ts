@@ -18,7 +18,7 @@ export async function GET() {
 
     return NextResponse.json(
       { types, cities, amenities, ownerServices },
-      { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' } },
+      { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=600' } },
     )
   } catch (error) {
     console.error('Failed to load public catalog', error)

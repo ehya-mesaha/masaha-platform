@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
       orderBy,
     })
 
-    return NextResponse.json({ spaces })
+    return NextResponse.json(
+      { spaces },
+      { headers: { 'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120' } },
+    )
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'حدث خطأ' }, { status: 500 })

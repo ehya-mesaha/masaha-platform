@@ -3,7 +3,10 @@ import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  return NextResponse.json(await prisma.partnerService.findMany({ where: { isActive: true }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }))
+  return NextResponse.json(
+    await prisma.partnerService.findMany({ where: { isActive: true }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
+    { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=600' } },
+  )
 }
 
 export async function POST(request: NextRequest) {
