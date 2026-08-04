@@ -16,6 +16,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         spaces: { include: { type: true }, orderBy: { createdAt: 'desc' } },
         bookings: { include: { space: true }, orderBy: { createdAt: 'desc' }, take: 10 },
         documents: { orderBy: { uploadedAt: 'desc' } },
+        sellerApplication: true,
+        organizationMemberships: { include: { organization: true } },
       },
     })
 

@@ -9,6 +9,23 @@ import Link from 'next/link'
 import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
 
 type UserDoc = { id: string; type: string; fileUrl: string; uploadedAt: string }
+type SellerApplication = {
+  id: string
+  schoolName: string
+  branchName: string | null
+  commercialRegisterNo: string
+  nationalIdNumber: string | null
+  multipleOwners: boolean
+  powerOfAttorneyNumber: string | null
+  brokerageContractNo: string | null
+  contractSentAt: string | null
+  approvalDeadline: string | null
+  status: string
+  adminNotes: string | null
+  consentAcceptedAt: string
+  createdAt: string
+}
+type OrganizationMembership = { role: string; organization: { id: string; name: string; branchName: string | null } }
 type User = {
   id: string
   name: string
@@ -19,6 +36,8 @@ type User = {
   createdAt: string
   spaces: { id: string; name: string; status: string; city: string }[]
   documents: UserDoc[]
+  sellerApplication: SellerApplication | null
+  organizationMemberships: OrganizationMembership[]
 }
 
 const roleLabel: Record<string, string> = { ADMIN: 'مدير النظام', SELLER: 'صاحب مساحة', BUYER: 'مستأجر' }
@@ -40,6 +59,25 @@ const statusVariant: Record<string, 'success' | 'danger' | 'warning'> = {
 const docTypeLabel: Record<string, string> = {
   NATIONAL_ID: 'الهوية الوطنية',
   COMMERCIAL_REGISTER: 'السجل التجاري',
+  TITLE_DEED: 'صك ملكية العقار',
+  POWER_OF_ATTORNEY: 'وكالة ممثل الملاك',
+}
+
+const applicationStatusLabel: Record<string, string> = {
+  DATA_REVIEW: 'قيد مراجعة البيانات',
+  CONTRACT_SENT: 'تم إرسال العقد',
+  APPROVED: 'تم اعتماد العقد',
+  EXPIRED: 'انتهت مهلة الموافقة',
+  REJECTED: 'تم رفض العقد',
+  CHANGES_REQUESTED: 'مطلوب تعديل',
+}
+const applicationStatusVariant: Record<string, 'success' | 'danger' | 'warning' | 'gray'> = {
+  DATA_REVIEW: 'warning',
+  CONTRACT_SENT: 'gray',
+  APPROVED: 'success',
+  EXPIRED: 'danger',
+  REJECTED: 'danger',
+  CHANGES_REQUESTED: 'warning',
 }
 
 export default function AdminUserDetailPage() {
@@ -209,6 +247,58 @@ export default function AdminUserDetailPage() {
               <InfoRow label="تاريخ التسجيل" value={new Date(user.createdAt).toLocaleDateString('en-US')} />
             </div>
           </Card>
+
+          {/* Seller application / company details */}
+          {user.sellerApplication && (
+            <Card>
+              <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                <h3 className="font-display font-extrabold text-[#1B1B1B] text-base">بيانات طلب الانضمام</h3>
+                <Badge variant={applicationStatusVariant[user.sellerApplication.status] || 'gray'}>
+                  {applicationStatusLabel[user.sellerApplication.status] || user.sellerApplication.status}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <InfoRow label="اسم المنشأة / المدرسة" value={user.sellerApplication.schoolName} />
+                <InfoRow label="الفرع" value={user.sellerApplication.branchName || '—'} />
+                <InfoRow label="رقم السجل التجاري" value={user.sellerApplication.commercialRegisterNo} dir="ltr" />
+                <InfoRow label="رقم الهوية الوطنية" value={user.sellerApplication.nationalIdNumber || '—'} dir="ltr" />
+                <InfoRow label="العقار مملوك لأكثر من مالك؟" value={user.sellerApplication.multipleOwners ? 'نعم' : 'لا'} />
+                {user.sellerApplication.multipleOwners && (
+                  <InfoRow label="رقم الوكالة لممثل الملاك" value={user.sellerApplication.powerOfAttorneyNumber || '—'} dir="ltr" />
+                )}
+                <InfoRow label="رقم عقد الوساطة" value={user.sellerApplication.brokerageContractNo || '—'} dir="ltr" />
+                <InfoRow label="تاريخ إرسال العقد" value={user.sellerApplication.contractSentAt ? new Date(user.sellerApplication.contractSentAt).toLocaleDateString('en-US') : '—'} />
+                <InfoRow label="آخر موعد للموافقة" value={user.sellerApplication.approvalDeadline ? new Date(user.sellerApplication.approvalDeadline).toLocaleDateString('en-US') : '—'} />
+                <InfoRow label="تاريخ الموافقة على الإقرار" value={new Date(user.sellerApplication.consentAcceptedAt).toLocaleDateString('en-US')} />
+              </div>
+              {user.sellerApplication.adminNotes && (
+                <div className="mt-4 rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-3 text-xs text-[#3F4B47]">
+                  <strong className="text-[#0E3B34]">ملاحظات الإدارة:</strong> {user.sellerApplication.adminNotes}
+                </div>
+              )}
+              <Link href={`/admin/seller-applications/${user.sellerApplication.id}`} className="mt-4 inline-flex text-xs font-bold text-[#0E3B34] hover:underline">
+                عرض تفاصيل الطلب الكاملة ←
+              </Link>
+            </Card>
+          )}
+
+          {/* Organization memberships */}
+          {user.organizationMemberships.length > 0 && (
+            <Card>
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">المنشأة التابع لها</h3>
+              <div className="space-y-2">
+                {user.organizationMemberships.map((membership, index) => (
+                  <div key={index} className="flex items-center justify-between rounded-xl bg-[#F5F1E8] px-4 py-3 text-sm">
+                    <div>
+                      <p className="font-semibold text-[#1B1B1B]">{membership.organization.name}</p>
+                      {membership.organization.branchName && <p className="text-xs text-[#5F6764] mt-0.5">{membership.organization.branchName}</p>}
+                    </div>
+                    <span className="chip border border-[#D8D1C7] text-[#3F4B47]">{membership.role}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* Documents */}
           {user.documents && user.documents.length > 0 && (
