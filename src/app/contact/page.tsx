@@ -50,6 +50,8 @@ const copy = {
   },
 }
 
+const WHATSAPP_NUMBER = '966504913274'
+
 export default function ContactPage() {
   const { locale } = useLanguage()
   const text = copy[locale]
@@ -61,6 +63,20 @@ export default function ContactPage() {
     setLoading(true)
     setFeedback(null)
     const form = new FormData(event.currentTarget)
+    const typeValue = String(form.get('type') || 'INQUIRY')
+    const typeLabel = typeValue === 'SUGGESTION' ? text.suggestion : typeValue === 'COMPLAINT' ? text.complaint : text.inquiry
+    const whatsappMessage = [
+      `*${text.title}*`,
+      `${text.type}: ${typeLabel}`,
+      `${text.name}: ${String(form.get('name') || '')}`,
+      `${text.email}: ${String(form.get('email') || '')}`,
+      `${text.phone}: ${String(form.get('phone') || '—')}`,
+      `${text.subject}: ${String(form.get('subject') || '—')}`,
+      '',
+      `${text.message}:`,
+      String(form.get('message') || ''),
+    ].join('\n')
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`
 
     try {
       const response = await fetch('/api/contact', {
@@ -69,10 +85,9 @@ export default function ContactPage() {
         body: JSON.stringify(Object.fromEntries(form.entries())),
       })
       if (!response.ok) throw new Error()
-      event.currentTarget.reset()
-      setFeedback({ type: 'success', message: text.success })
+      window.location.assign(whatsappUrl)
     } catch {
-      setFeedback({ type: 'error', message: text.error })
+      window.location.assign(whatsappUrl)
     } finally {
       setLoading(false)
     }
