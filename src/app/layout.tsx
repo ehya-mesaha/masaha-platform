@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Cairo } from 'next/font/google'
 import { cookies } from 'next/headers'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
@@ -133,6 +134,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <FirstVisitOpening />
           {children}
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   )
