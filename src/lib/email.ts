@@ -77,6 +77,46 @@ export async function sendConfirmationEmail({ to, name, confirmUrl }: { to: stri
   })
 }
 
+export async function sendContactMessageEmail({
+  type,
+  name,
+  email,
+  phone,
+  subject,
+  message,
+}: {
+  type: string
+  name: string
+  email: string
+  phone: string
+  subject: string
+  message: string
+}) {
+  const typeLabel = ({ INQUIRY: 'استفسار', SUGGESTION: 'اقتراح', COMPLAINT: 'شكوى' } as Record<string, string>)[type] || type
+  const safeSubject = subject || 'رسالة تواصل جديدة'
+  const html = emailShell(`
+    <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:800;color:#1B1B1B;">رسالة تواصل جديدة</h1>
+    <p style="margin:0 0 20px 0;font-size:14px;line-height:24px;color:#3F4B47;">تم استلام رسالة جديدة من نموذج التواصل في الموقع.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px 0;border-collapse:collapse;">
+      <tr><td style="padding:8px 0;font-weight:700;color:#5F6764;">نوع الرسالة</td><td style="padding:8px 0;color:#1B1B1B;">${escapeHtml(typeLabel)}</td></tr>
+      <tr><td style="padding:8px 0;font-weight:700;color:#5F6764;">الاسم</td><td style="padding:8px 0;color:#1B1B1B;">${escapeHtml(name)}</td></tr>
+      <tr><td style="padding:8px 0;font-weight:700;color:#5F6764;">البريد</td><td dir="ltr" style="padding:8px 0;color:#1B1B1B;text-align:right;">${escapeHtml(email)}</td></tr>
+      <tr><td style="padding:8px 0;font-weight:700;color:#5F6764;">الجوال</td><td dir="ltr" style="padding:8px 0;color:#1B1B1B;text-align:right;">${escapeHtml(phone || 'غير مذكور')}</td></tr>
+      <tr><td style="padding:8px 0;font-weight:700;color:#5F6764;">الموضوع</td><td style="padding:8px 0;color:#1B1B1B;">${escapeHtml(safeSubject)}</td></tr>
+    </table>
+    <div style="border-radius:12px;background:#F5F1E8;padding:16px;white-space:pre-wrap;font-size:14px;line-height:26px;color:#1B1B1B;">${escapeHtml(message)}</div>
+  `)
+
+  return getResendClient().emails.send({
+    from: getFromAddress(),
+    to: 'info@ehyamesaha.sa',
+    replyTo: email,
+    subject: `[${typeLabel}] ${safeSubject}`,
+    text: `نوع الرسالة: ${typeLabel}\nالاسم: ${name}\nالبريد: ${email}\nالجوال: ${phone || 'غير مذكور'}\nالموضوع: ${safeSubject}\n\n${message}`,
+    html,
+  })
+}
+
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] as string))
 }

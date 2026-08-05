@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { sendContactMessageEmail } from '@/lib/email'
 
 const ALLOWED_TYPES = new Set(['INQUIRY', 'SUGGESTION', 'COMPLAINT'])
 
@@ -36,7 +37,15 @@ export async function POST(request: NextRequest) {
       select: { id: true },
     })
 
-    return NextResponse.json({ id: created.id }, { status: 201 })
+    let emailSent = true
+    try {
+      await sendContactMessageEmail({ type, name, email, phone, subject, message })
+    } catch (emailError) {
+      emailSent = false
+      console.error('Failed to send contact message email', emailError)
+    }
+
+    return NextResponse.json({ id: created.id, emailSent }, { status: 201 })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'تعذر إرسال الرسالة' }, { status: 500 })
