@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 const SITE_URL = 'https://ehyamesaha.sa'
 
+export const revalidate = 3600
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const publicRoutes: Array<{ path: string; changeFrequency: 'daily' | 'weekly' | 'monthly'; priority: number }> = [
     { path: '', changeFrequency: 'daily', priority: 1 },

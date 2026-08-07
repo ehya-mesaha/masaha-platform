@@ -5,54 +5,25 @@ import Footer from '@/components/layout/Footer'
 import SpaceCard from '@/components/spaces/SpaceCard'
 import RecurringSearchForm from '@/components/spaces/RecurringSearchForm'
 import { formatSpaceNumber } from '@/lib/format'
+import { getCachedActiveCities, getCachedSpaceTypes } from '@/lib/catalog'
+import { unstable_cache } from 'next/cache'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-async function getFeaturedSpaces() {
+const getFeaturedSpaces = unstable_cache(async () => {
   try {
-    return await retryRead(() => prisma.space.findMany({
+    return await prisma.space.findMany({
       where: { status: 'APPROVED' },
-      include: {
-        type: true,
+      select: {
+        id: true, name: true, city: true, district: true, price: true, pricePeriod: true, capacity: true, refSeq: true,
+        type: { select: { name: true } },
         images: { orderBy: { order: 'asc' }, take: 1 },
       },
       orderBy: { createdAt: 'desc' },
       take: 6,
-    }))
+    })
   } catch {
     return []
   }
-}
-
-async function getTypes() {
-  try {
-    return await retryRead(() => prisma.spaceType.findMany({ orderBy: { name: 'asc' } }))
-  } catch {
-    return []
-  }
-}
-
-async function getCities() {
-  try {
-    return await retryRead(() => prisma.city.findMany({
-      where: { isActive: true },
-      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-      select: { id: true, name: true },
-    }))
-  } catch {
-    return []
-  }
-}
-
-async function retryRead<T>(read: () => Promise<T>): Promise<T> {
-  try {
-    return await read()
-  } catch {
-    await new Promise(resolve => setTimeout(resolve, 250))
-    return read()
-  }
-}
+}, ['featured-spaces'], { revalidate: 300, tags: ['spaces'] })
 
 const ArrowIcon = () => (
   <svg className="h-4 w-4 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
@@ -61,7 +32,10 @@ const ArrowIcon = () => (
 )
 
 export default async function HomePage() {
-  const [spaces, types, cities] = await Promise.all([getFeaturedSpaces(), getTypes(), getCities()])
+  const [spaces, types, cities] = await Promise.allSettled([getFeaturedSpaces(), getCachedSpaceTypes(), getCachedActiveCities()])
+  const featuredSpaces = spaces.status === 'fulfilled' ? spaces.value : []
+  const spaceTypes = types.status === 'fulfilled' ? types.value : []
+  const activeCities = cities.status === 'fulfilled' ? cities.value : []
 
   return (
     <div className="public-shell min-h-screen">
@@ -75,7 +49,6 @@ export default async function HomePage() {
           <span className="hero-architecture-axis" />
           <span className="hero-architecture-orbit" />
         </div>
-        <div className="home-hero-index" aria-hidden="true"><span>01</span><i /><span>05</span></div>
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#B99A63]/70 to-transparent" />
 
         <div className="home-hero-content relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -89,7 +62,7 @@ export default async function HomePage() {
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
               قاعات دراسية، مكاتب، قاعات اجتماعات… مصممة لتصل للمكان الأنسب لك.
             </p>
-            <RecurringSearchForm types={types} cities={cities} />
+            <RecurringSearchForm types={spaceTypes} cities={activeCities} />
           </div>
         </div>
 
@@ -116,7 +89,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {types.length > 0 && (
+      {spaceTypes.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
@@ -128,7 +101,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 stagger-grid">
-            {types.slice(0, 5).map((type, index) => (
+            {spaceTypes.slice(0, 5).map((type, index) => (
               <Link key={type.id} href={`/spaces?typeId=${type.id}`} className="category-link group">
                 <span className="text-[11px] font-bold text-[#A3802F]">0{index + 1}</span>
                 <span className="relative z-10 flex items-end">
@@ -151,9 +124,9 @@ export default async function HomePage() {
             <Link href="/spaces" className="hidden items-center gap-2 text-sm font-bold text-[#0E3B34] transition-colors hover:text-[#B99A63] sm:inline-flex">تصفح الكل <ArrowIcon /></Link>
           </div>
 
-          {spaces.length > 0 ? (
+          {featuredSpaces.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 stagger-grid">
-              {spaces.map(space => (
+            {featuredSpaces.map(space => (
                 <SpaceCard key={space.id} id={space.id} name={space.name} city={space.city} district={space.district}
                   type={space.type.name} price={space.price} pricePeriod={space.pricePeriod} capacity={space.capacity}
                   imageUrl={space.images[0]?.url} spaceNumber={formatSpaceNumber(space.refSeq)} />

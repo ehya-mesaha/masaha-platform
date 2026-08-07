@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import LanguageToggle from '@/components/i18n/LanguageToggle'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 import BrandLogo from '@/components/brand/BrandLogo'
 
 type User = {
@@ -115,6 +116,7 @@ export default function PublicNavbar() {
 
           {/* Auth buttons */}
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             <LanguageToggle />
             {user ? (
               <>
@@ -175,8 +177,9 @@ export default function PublicNavbar() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="public-mobile-menu md:hidden border-t border-[#D8D1C7] py-3 flex flex-col gap-1">
-            <div className="px-3 pb-2">
-              <LanguageToggle className="w-full justify-between" />
+            <div className="flex items-center gap-2 px-3 pb-2">
+              <LanguageToggle className="flex-1 justify-between" />
+              <ThemeToggle />
             </div>
             {navLinks.map(link => (
               <Link

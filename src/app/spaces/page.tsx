@@ -4,7 +4,8 @@ import Footer from '@/components/layout/Footer'
 import SpaceGrid from '@/components/spaces/SpaceGrid'
 import SpacesFilters from '@/components/spaces/SpacesFiltersPro'
 import SaveSearchButton from '@/components/spaces/SaveSearchButton'
-import { durationHours, generateProgramSessions, getSpaceAvailability, toSession } from '@/lib/availability'
+import { durationHours, generateProgramSessions, getSpacesAvailability, toSession } from '@/lib/availability'
+import { getCachedActiveCities, getCachedSpaceTypes } from '@/lib/catalog'
 
 interface SearchParams {
   city?: string
@@ -41,13 +42,9 @@ export default async function SpacesPage({
   let cities: { id: string; name: string }[] = []
 
   const [spacesResult, typesResult, citiesResult] = await Promise.allSettled([
-    retryRead(() => getSpaces(params)),
-    retryRead(() => prisma.spaceType.findMany({ orderBy: { name: 'asc' } })),
-    retryRead(() => prisma.city.findMany({
-      where: { isActive: true },
-      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-      select: { id: true, name: true },
-    })),
+    getSpaces(params),
+    getCachedSpaceTypes(),
+    getCachedActiveCities(),
   ])
 
   if (spacesResult.status === 'fulfilled') spaces = spacesResult.value
@@ -148,11 +145,13 @@ async function getSpaces(params: SearchParams) {
 
   const candidates = await prisma.space.findMany({
     where,
-    include: {
-      type: true,
+    select: {
+      id: true, name: true, city: true, district: true, price: true, pricePeriod: true, capacity: true, refSeq: true,
+      type: { select: { name: true } },
       images: { orderBy: { order: 'asc' }, take: 1 },
     },
     orderBy,
+    take: 60,
   })
 
   let sessions: ReturnType<typeof generateProgramSessions> = []
@@ -184,8 +183,9 @@ async function getSpaces(params: SearchParams) {
     tiersBySpace.set(tier.spaceId, tiers)
   })
   const totalHours = sessions.reduce((total, session) => total + durationHours(session.startAt, session.endAt), 0)
-  const evaluated = await mapWithConcurrency(candidates, 8, async space => {
-    const availability = await getSpaceAvailability(prisma, space.id, sessions)
+  const availabilityBySpace = await getSpacesAvailability(prisma, candidates.map(space => space.id), sessions)
+  const evaluated = candidates.map(space => {
+    const availability = availabilityBySpace.get(space.id) ?? { availableSessions: 0, totalSessions: sessions.length }
     const tierDiscount = tiersBySpace.get(space.id)?.find(tier => totalHours >= tier.minHours)?.discountPercent ?? 0
     const discountPercent = Math.max(sessions.length > 1 ? 5 : 0, tierDiscount)
     const baseTotal = Math.round(space.price * totalHours * 100) / 100
@@ -204,19 +204,6 @@ async function getSpaces(params: SearchParams) {
   return evaluated.filter(space => params.fullyAvailable === '1'
     ? space.availableSessions === space.totalSessions
     : space.availableSessions > 0)
-}
-
-async function mapWithConcurrency<T, R>(items: T[], limit: number, mapper: (item: T) => Promise<R>) {
-  const results: R[] = new Array(items.length)
-  let cursor = 0
-  async function worker() {
-    while (cursor < items.length) {
-      const index = cursor++
-      results[index] = await mapper(items[index])
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
-  return results
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
@@ -248,14 +235,5 @@ function safeProgramSessions(params: SearchParams) {
     })
   } catch {
     return []
-  }
-}
-
-async function retryRead<T>(read: () => Promise<T>): Promise<T> {
-  try {
-    return await read()
-  } catch {
-    await new Promise(resolve => setTimeout(resolve, 250))
-    return read()
   }
 }

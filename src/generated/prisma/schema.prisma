@@ -244,6 +244,11 @@ model Space {
   rules              SpaceRule[]
   conversations      Conversation[]
   reviews            SpaceReview[]
+
+  @@index([status, createdAt])
+  @@index([status, city])
+  @@index([status, typeId])
+  @@index([status, price])
 }
 
 model SchoolOrganization {
@@ -276,6 +281,8 @@ model SpaceImage {
   order   Int    @default(0)
   spaceId String
   space   Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, order])
 }
 
 model SpaceAmenity {

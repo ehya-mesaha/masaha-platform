@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import LanguageToggle from '@/components/i18n/LanguageToggle'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 import type { TranslationKey } from '@/lib/i18n'
 import BrandLogo from '@/components/brand/BrandLogo'
 
@@ -212,8 +213,9 @@ export default function DashboardSidebarPro({ role, userName, avatarUrl }: Sideb
       </div>
 
       <nav className="dashboard-nav relative flex flex-1 flex-col gap-0.5 px-3 py-5">
-        <div className="mb-3 px-3">
-          <LanguageToggle className="w-full justify-between" compact={false} />
+        <div className="mb-3 flex items-center gap-2 px-3">
+          <LanguageToggle className="flex-1 justify-between" compact={false} />
+          <ThemeToggle className="theme-toggle-compact" />
         </div>
         <p className="mb-2 px-3 text-[10px] font-bold uppercase text-white/40">{t('menu')}</p>
         {links.map((link) => {

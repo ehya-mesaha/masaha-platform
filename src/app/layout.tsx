@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { Cairo } from 'next/font/google'
+import localFont from 'next/font/local'
 import { cookies } from 'next/headers'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import LanguageProvider from '@/components/i18n/LanguageProvider'
+import ThemeProvider from '@/components/theme/ThemeProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 import ExperienceLayer from '@/components/layout/ExperienceLayer'
 
@@ -12,8 +13,8 @@ const SITE_URL = 'https://ehyamesaha.sa'
 const AR_TITLE = 'إحياء مساحة | لإحياء المساحات غير المستغلة'
 const EN_TITLE = 'Ehya Masaha | Reviving Underutilized Spaces'
 
-const cairo = Cairo({
-  subsets: ['arabic', 'latin'],
+const cairo = localFont({
+  src: '../../public/fonts/ibm-plex-sans-arabic.woff',
   display: 'swap',
   variable: '--font-cairo',
 })
@@ -84,6 +85,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = await cookies()
   const locale = cookieStore.get('masaha_locale')?.value === 'en' ? 'en' : 'ar'
   const dir = locale === 'en' ? 'ltr' : 'rtl'
+  const theme = cookieStore.get('masaha_theme')?.value === 'dark' ? 'dark' : 'light'
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -125,14 +127,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Script id="masaha-opening-state" strategy="beforeInteractive">
           {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v3')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
         </Script>
+        <Script id="masaha-theme-state" strategy="beforeInteractive">
+          {`try{var t=localStorage.getItem('masaha_theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){}`}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
         />
         <LanguageProvider initialLocale={locale}>
-          <ExperienceLayer />
-          <FirstVisitOpening />
-          {children}
+          <ThemeProvider initialTheme={theme}>
+            <ExperienceLayer />
+            <FirstVisitOpening />
+            {children}
+          </ThemeProvider>
         </LanguageProvider>
         <Analytics />
       </body>

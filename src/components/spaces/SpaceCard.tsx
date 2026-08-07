@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface SpaceCardProps {
   id: string
@@ -48,11 +49,13 @@ export default function SpaceCard({
       {/* Image */}
       <div className="space-card-media relative h-56 overflow-hidden bg-gradient-to-br from-[#F5F1E8] to-[#D8D1C7]">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={name}
-            className="space-card-image w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            quality={78}
+            className="space-card-image object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

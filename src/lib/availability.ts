@@ -10,6 +10,16 @@ export type RequestedSession = {
 
 type Database = PrismaClient | Prisma.TransactionClient
 
+type AvailabilitySpace = {
+  id: string
+  status: string
+  workingHours: Array<{ dayOfWeek: number; isOpen: boolean; openTime: string; closeTime: string }>
+  units: Array<{ id: string }>
+  bookings: Array<{ unitId: string; startTime: Date; endTime: Date }>
+  privateOccupancies: Array<{ unitId: string | null; startTime: Date; endTime: Date }>
+  temporaryClosures: Array<{ unitId: string | null; startTime: Date; endTime: Date }>
+}
+
 const RIYADH_OFFSET = '+03:00'
 
 export function toSession(date: string, startTime: string, endTime: string): RequestedSession {
@@ -102,7 +112,45 @@ export async function getSpaceAvailability(db: Database, spaceId: string, sessio
     },
   })
 
-  if (!space || space.status !== 'APPROVED' || space.units.length === 0) {
+  if (!space) {
+    return { totalSessions: sessions.length, availableSessions: 0, fullyAvailable: false, allocations: [] as Array<{ session: RequestedSession; unitId: string }> }
+  }
+
+  return evaluateSpaceAvailability(space, sessions)
+}
+
+export async function getSpacesAvailability(db: Database, spaceIds: string[], sessions: RequestedSession[]) {
+  if (spaceIds.length === 0 || sessions.length === 0) return new Map<string, ReturnType<typeof evaluateSpaceAvailability>>()
+
+  const rangeStart = new Date(Math.min(...sessions.map(session => session.startAt.getTime())))
+  const rangeEnd = new Date(Math.max(...sessions.map(session => session.endAt.getTime())))
+  const spaces = await db.space.findMany({
+    where: { id: { in: spaceIds }, status: 'APPROVED' },
+    select: {
+      id: true,
+      status: true,
+      workingHours: true,
+      units: { where: { isActive: true }, orderBy: { label: 'asc' } },
+      bookings: {
+        where: { status: 'CONFIRMED', startTime: { lt: rangeEnd }, endTime: { gt: rangeStart } },
+        select: { unitId: true, startTime: true, endTime: true },
+      },
+      privateOccupancies: {
+        where: { status: { in: ['PLANNED', 'CONFIRMED'] }, startTime: { lt: rangeEnd }, endTime: { gt: rangeStart } },
+        select: { unitId: true, startTime: true, endTime: true },
+      },
+      temporaryClosures: {
+        where: { status: 'ACTIVE', startTime: { lt: rangeEnd }, endTime: { gt: rangeStart } },
+        select: { unitId: true, startTime: true, endTime: true },
+      },
+    },
+  })
+
+  return new Map(spaces.map(space => [space.id, evaluateSpaceAvailability(space, sessions)]))
+}
+
+function evaluateSpaceAvailability(space: AvailabilitySpace, sessions: RequestedSession[]) {
+  if (space.status !== 'APPROVED' || space.units.length === 0) {
     return { totalSessions: sessions.length, availableSessions: 0, fullyAvailable: false, allocations: [] as Array<{ session: RequestedSession; unitId: string }> }
   }
 

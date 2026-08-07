@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LanguageToggle from '@/components/i18n/LanguageToggle'
+import ThemeToggle from '@/components/theme/ThemeToggle'
 import BrandLogo from '@/components/brand/BrandLogo'
 import { AuthField, MailIcon } from '@/components/auth/AuthField'
 import AuthPasswordField from '@/components/auth/AuthPasswordField'
@@ -69,7 +70,7 @@ export default function LoginPage() {
       </section>
 
       <main className="relative grid place-items-center bg-[#F5F1E8] p-6">
-        <div className="absolute left-6 top-6"><LanguageToggle /></div>
+        <div className="absolute left-6 top-6 flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
         <form onSubmit={submit} className="auth-form-card w-full max-w-md p-8 lg:p-10">
           <Link href="/" className="mb-8 inline-flex lg:hidden" aria-label="إحياء مساحة">
             <BrandLogo variant="horizontal" tone="green" className="auth-brand-logo-mobile" priority />
