@@ -8,7 +8,7 @@ import Footer from '@/components/layout/Footer'
 import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
 import StartConversationButton from '@/components/chat/StartConversationButton'
-import SpaceImageLightbox from '@/components/spaces/SpaceImageLightbox'
+import SpaceImageLightbox, { type SpaceImageLightboxHandle } from '@/components/spaces/SpaceImageLightbox'
 import { formatDate, formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
 import { generateWeekdayDates, parseDateValue, weekdaysInRange } from '@/lib/sessionDates'
@@ -132,6 +132,7 @@ function SpaceDetailPageInner() {
   const [space, setSpace] = useState<Space | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeImage, setActiveImage] = useState(0)
+  const lightboxRef = useRef<SpaceImageLightboxHandle>(null)
   const [todayValue] = useState(() => {
     const now = new Date()
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -460,19 +461,7 @@ function SpaceDetailPageInner() {
             <div className="mb-4">
               <div className={`space-detail-gallery ${sortedImages.length <= 1 ? 'is-single' : sortedImages.length === 2 ? 'is-double' : ''}`}>
                 {sortedImages.length > 0 ? (
-                  <>
-                    <SpaceImageLightbox images={sortedImages} activeIndex={activeImage} spaceName={space.name} onActiveIndexChange={setActiveImage} />
-                    {false && (
-                  <button type="button" className="space-detail-gallery-main" aria-label="الصورة الرئيسية">
-                    <img src={sortedImages[activeImage]?.url} alt={space?.name} />
-                    <span className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#092C27]/55 to-transparent" />
-                    <span className="absolute bottom-4 start-4 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-xs font-bold text-white backdrop-blur-md">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5V6.75A2.25 2.25 0 0 1 5.25 4.5h13.5A2.25 2.25 0 0 1 21 6.75v9.75m-18 0v.75a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 17.25v-.75M3 16.5l5.25-5.25 3.75 3.75 2.25-2.25L21 16.5M14.25 8.25h.008v.008h-.008V8.25Z" /></svg>
-                      {activeImage + 1} / {sortedImages.length}
-                    </span>
-                   </button>
-                    )}
-                  </>
+                  <SpaceImageLightbox ref={lightboxRef} images={sortedImages} activeIndex={activeImage} spaceName={space.name} onActiveIndexChange={setActiveImage} />
                 ) : (
                   <div className="space-detail-gallery-main flex items-center justify-center bg-gradient-to-br from-[#0E3B34]/10 to-[#B99A63]/10">
                     <svg className="w-24 h-24 text-[#0E3B34]/20" fill="currentColor" viewBox="0 0 24 24">
@@ -483,7 +472,7 @@ function SpaceDetailPageInner() {
                 {sortedImages.slice(1, 3).map((image, secondaryIndex) => {
                   const index = secondaryIndex + 1
                   return (
-                    <button key={`${image.id}-${index}`} type="button" onClick={() => setActiveImage(index)} aria-label={`عرض الصورة ${index + 1}`}>
+                    <button key={`${image.id}-${index}`} type="button" onClick={() => lightboxRef.current?.openAt(index)} aria-label={`عرض الصورة ${index + 1}`}>
                       <img src={image.url} alt="" />
                       {secondaryIndex === 1 && sortedImages.length > 3 && (
                         <span className="absolute inset-0 grid place-items-center bg-[#092C27]/35 text-sm font-bold text-white backdrop-blur-[1px] transition-colors hover:bg-[#092C27]/25">عرض الصور</span>

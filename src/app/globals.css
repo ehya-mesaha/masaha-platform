@@ -1386,9 +1386,27 @@ html[dir="rtl"] .auth-visual::after {
 
 .space-detail-gallery button:hover img { transform: scale(1.035); filter: saturate(1.06); }
 
-/* The legacy main-image button remains in the page markup for compatibility;
-   the interactive lightbox owns the visible main-image slot. */
-.space-detail-gallery > button:nth-child(2) { display: none; }
+.lightbox-overlay {
+  animation: lightboxFadeIn .22s ease both;
+}
+.lightbox-overlay.is-closing {
+  animation: lightboxFadeOut .18s ease both;
+}
+.lightbox-overlay.is-opening .lightbox-frame {
+  animation: lightboxImageIn .26s cubic-bezier(.2, .7, .3, 1) both;
+}
+@keyframes lightboxFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes lightboxFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes lightboxImageIn {
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
+}
 
 .lightbox-close,
 .lightbox-zoom-button {
@@ -2813,6 +2831,45 @@ html[dir="rtl"] .dashboard-nav-link:not(.is-active):hover {
 [data-theme="dark"] .language-toggle-segments span.is-active {
   color: #0B1512 !important;
   background: #D7B66D !important;
+}
+
+/* Public navbar — the bare bg-white/NN utility classes on this element are
+   left untouched by the blanket translucency rule further down (those are
+   reserved for decorative overlays on already-dark panels), so the header
+   needs its own explicit dark treatment here. */
+[data-theme="dark"] .public-navbar {
+  background: rgba(16, 30, 24, 0.72) !important;
+  border-color: rgba(215, 182, 109, 0.14) !important;
+}
+[data-theme="dark"] .public-navbar.is-scrolled {
+  background: rgba(10, 20, 17, 0.88) !important;
+  border-color: rgba(215, 182, 109, 0.18) !important;
+  box-shadow: 0 16px 40px -28px rgba(0, 0, 0, 0.75) !important;
+}
+[data-theme="dark"] .public-navbar::before {
+  background:
+    linear-gradient(90deg, transparent, rgba(31, 51, 43, 0.8) 42%, transparent),
+    rgba(10, 20, 17, 0.9) !important;
+}
+[data-theme="dark"] .public-navbar-thread {
+  background: linear-gradient(90deg, #35B98C 0 33%, #E3C88B 50%, #35B98C 67% 100%) !important;
+  background-size: 220% 100%;
+  opacity: 0.85 !important;
+}
+[data-theme="dark"] .public-navbar a:hover,
+[data-theme="dark"] .public-nav-link:hover {
+  background-color: rgba(215, 182, 109, 0.1) !important;
+}
+[data-theme="dark"] .public-nav-link.is-active {
+  background-color: rgba(215, 182, 109, 0.16) !important;
+}
+[data-theme="dark"] .public-nav-link::after {
+  background: #E3C88B !important;
+}
+@media (max-width: 767px) {
+  [data-theme="dark"] .public-navbar {
+    background: rgba(10, 20, 17, 0.92) !important;
+  }
 }
 
 /* Cards & surfaces */

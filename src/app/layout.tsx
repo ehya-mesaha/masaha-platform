@@ -128,7 +128,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {`try{document.documentElement.dataset.masahaOpening=localStorage.getItem('masaha_opening_v3')==='seen'?'seen':'new'}catch(e){document.documentElement.dataset.masahaOpening='new'}`}
         </Script>
         <Script id="masaha-theme-state" strategy="beforeInteractive">
-          {`try{var t=localStorage.getItem('masaha_theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){}`}
+          {`try{var t=localStorage.getItem('masaha_theme');document.documentElement.dataset.theme=(t==='dark')?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}`}
         </Script>
         <script
           type="application/ld+json"
