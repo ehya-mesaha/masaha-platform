@@ -31,7 +31,10 @@ export function getSpaceStatusBadge(status: string): { variant: BadgeVariant; la
 
 export function getBookingStatusBadge(status: string): { variant: BadgeVariant; label: string } {
   return ({
+    PENDING_PAYMENT: { variant: 'warning', label: 'بانتظار الدفع' },
     CONFIRMED: { variant: 'success', label: 'مؤكد' },
+    PAYMENT_FAILED: { variant: 'danger', label: 'فشل الدفع' },
+    PAYMENT_EXPIRED: { variant: 'gray', label: 'انتهت مهلة الدفع' },
     CANCELLED_BY_BUYER: { variant: 'gray', label: 'ألغاه طالب المساحة' },
     CANCELLED_BY_SELLER: { variant: 'danger', label: 'ألغاه صاحب المساحة' },
     COMPLETED: { variant: 'blue', label: 'مكتمل' },

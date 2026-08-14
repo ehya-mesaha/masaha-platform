@@ -151,7 +151,7 @@ function SpaceDetailPageInner() {
   const [datesFromSearch, setDatesFromSearch] = useState(false)
   const [selectedServicesByDate, setSelectedServicesByDate] = useState<Record<string, Record<string, ServiceSelection>>>({})
   const [expandedServiceDate, setExpandedServiceDate] = useState<string | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState('mada')
+  const [checkoutKey, setCheckoutKey] = useState('')
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
@@ -214,7 +214,7 @@ function SpaceDetailPageInner() {
     setAvailabilityCheck(null)
     setSelectedServicesByDate({})
     setExpandedServiceDate(null)
-    setPaymentMethod('mada')
+    setCheckoutKey(crypto.randomUUID())
     setAgreedToTerms(false)
     setBookingOpen(true)
   }
@@ -383,6 +383,7 @@ function SpaceDetailPageInner() {
           persons: bookingForm.persons,
           notes: bookingForm.purpose,
           servicesByDate,
+          checkoutKey,
           termsAccepted: true,
           termsVersion: LEGAL_VERSION,
         }),
@@ -391,15 +392,17 @@ function SpaceDetailPageInner() {
       if (!res.ok) {
         if (res.status === 401) { router.push('/auth/login'); return }
         if (res.status === 409) {
-          setBookingStep(1)
-          setBookingError('تغيّر توفر الموعد قبل التأكيد. اختر موعدًا آخر وسنتحقق منه فورًا.')
-          void verifyAvailability(false)
+          setBookingError(data.error || 'تعذر بدء عملية الدفع. أعد فتح نافذة الحجز وحاول من جديد.')
           return
         }
         setBookingError(data.error || 'حدث خطأ')
         return
       }
-      setBookingSuccess(true)
+      if (typeof data.checkoutUrl !== 'string') {
+        setBookingError('لم يصل رابط الدفع بصورة صحيحة. حاول مرة أخرى.')
+        return
+      }
+      window.location.assign(data.checkoutUrl)
     } catch {
       setBookingError('حدث خطأ في الاتصال')
     } finally {
@@ -1247,17 +1250,8 @@ function SpaceDetailPageInner() {
                   <p className="text-2xl font-extrabold text-[#0E3B34]">{pricing.grandTotal.toLocaleString('en-US')} ر.س</p>
                 </div>
 
-                <div className="space-y-2">
-                  {[
-                    { value: 'mada', label: 'مدى' },
-                    { value: 'card', label: 'بطاقة ائتمان (فيزا / ماستركارد)' },
-                    { value: 'apple_pay', label: 'Apple Pay' },
-                  ].map(method => (
-                    <label key={method.value} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm font-medium ${paymentMethod === method.value ? 'border-[#0E3B34] bg-[#F5F1E8]' : 'border-[#D8D1C7]'}`}>
-                      <input type="radio" name="paymentMethod" checked={paymentMethod === method.value} onChange={() => setPaymentMethod(method.value)} className="h-4 w-4 accent-[#0E3B34]" />
-                      {method.label}
-                    </label>
-                  ))}
+                <div className="rounded-xl border border-[#D8D1C7] bg-white p-4 text-sm leading-7 text-[#3F4B47]">
+                  ستنتقل إلى صفحة StreamPay الآمنة لاختيار وسيلة الدفع المتاحة وإتمام العملية. لن يتم تأكيد الحجز إلا بعد تحقق منصتنا من نجاح الدفع مباشرةً.
                 </div>
 
                 <label className="flex cursor-pointer items-start gap-2 text-xs text-[#3F4B47]">
@@ -1297,7 +1291,7 @@ function SpaceDetailPageInner() {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                   )}
-                  {bookingLoading ? 'جاري التأكيد...' : `ادفع ${pricing.grandTotal.toLocaleString('en-US')} ر.س`}
+                  {bookingLoading ? 'جاري الانتقال للدفع...' : `ادفع ${pricing.grandTotal.toLocaleString('en-US')} ر.س`}
                 </button>
               )}
             </div>

@@ -34,7 +34,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     if (!booking) return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 })
-    const canView = user.role === 'ADMIN' || booking.buyerId === user.id || booking.space.sellerId === user.id
+    const sellerVisibleStatuses = ['CONFIRMED', 'CANCELLED_BY_BUYER', 'CANCELLED_BY_SELLER', 'COMPLETED']
+    const canView = user.role === 'ADMIN'
+      || booking.buyerId === user.id
+      || (booking.space.sellerId === user.id && sellerVisibleStatuses.includes(booking.status))
     if (!canView) return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
 
     const cancellation = booking.status === 'CONFIRMED'
@@ -102,22 +105,48 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         bookingStart: booking.startTime,
         grandTotal: booking.grandTotal,
       })
-      const updated = await prisma.booking.update({
-        where: { id },
-        data: {
-          status: 'CANCELLED_BY_BUYER',
-          cancelledAt: new Date(),
-          cancelledBy: user.id as string,
-          refundAmount: cancellation.refundAmount,
-        },
-      })
-      await prisma.notification.create({
-        data: {
-          userId: booking.space.sellerId,
-          title: 'إلغاء حجز',
-          message: `ألغى طالب المساحة حجزه في ${booking.space.name}.`,
-          href: `/seller/bookings/${id}`,
-        },
+      const updated = await prisma.$transaction(async tx => {
+        const updatedBooking = await tx.booking.update({
+          where: { id },
+          data: {
+            status: 'CANCELLED_BY_BUYER',
+            cancelledAt: new Date(),
+            cancelledBy: user.id as string,
+            refundAmount: cancellation.refundAmount,
+          },
+        })
+        const refundHalalas = Math.round(cancellation.refundAmount * 100)
+        if (booking.paymentOrderId && refundHalalas > 0) {
+          await tx.paymentRefund.upsert({
+            where: { bookingId: booking.id },
+            create: {
+              paymentOrderId: booking.paymentOrderId,
+              bookingId: booking.id,
+              amountHalalas: refundHalalas,
+              reason: 'BUYER_CANCELLATION_POLICY',
+              note: `Refund ${cancellation.refundPercent}% according to the booking cancellation policy.`,
+            },
+            update: {
+              amountHalalas: refundHalalas,
+              status: 'PENDING',
+              reason: 'BUYER_CANCELLATION_POLICY',
+              lastError: null,
+            },
+          })
+          await tx.paymentOrder.updateMany({
+            where: { id: booking.paymentOrderId, status: { in: ['PAID', 'PARTIALLY_REFUNDED'] } },
+            data: { status: 'REFUND_PENDING' },
+          })
+        }
+        await tx.notification.create({
+          data: {
+            userId: booking.space.sellerId,
+            title: 'إلغاء حجز',
+            message: `ألغى طالب المساحة حجزه في ${booking.space.name}.`,
+            href: `/seller/bookings/${id}`,
+          },
+        })
+        return updatedBooking
       })
       return NextResponse.json({ booking: updated, cancellation })
     }
@@ -131,17 +160,43 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         return NextResponse.json({ error: 'لا يمكن تعديل هذا الحجز' }, { status: 400 })
       }
 
-      const updated = await prisma.booking.update({
-        where: { id },
-        data: requestedStatus === 'COMPLETED'
-          ? { status: 'COMPLETED', sellerNote: typeof body.sellerNote === 'string' ? body.sellerNote : null }
-          : {
-              status: 'CANCELLED_BY_SELLER',
-              cancelledAt: new Date(),
-              cancelledBy: user.id as string,
-              refundAmount: booking.grandTotal,
-              sellerNote: typeof body.sellerNote === 'string' ? body.sellerNote : null,
+      const updated = await prisma.$transaction(async tx => {
+        const updatedBooking = await tx.booking.update({
+          where: { id },
+          data: requestedStatus === 'COMPLETED'
+            ? { status: 'COMPLETED', sellerNote: typeof body.sellerNote === 'string' ? body.sellerNote : null }
+            : {
+                status: 'CANCELLED_BY_SELLER',
+                cancelledAt: new Date(),
+                cancelledBy: user.id as string,
+                refundAmount: booking.grandTotal,
+                sellerNote: typeof body.sellerNote === 'string' ? body.sellerNote : null,
+              },
+        })
+        const refundHalalas = Math.round(booking.grandTotal * 100)
+        if (requestedStatus === 'CANCELLED_BY_SELLER' && booking.paymentOrderId && refundHalalas > 0) {
+          await tx.paymentRefund.upsert({
+            where: { bookingId: booking.id },
+            create: {
+              paymentOrderId: booking.paymentOrderId,
+              bookingId: booking.id,
+              amountHalalas: refundHalalas,
+              reason: 'SELLER_CANCELLATION',
+              note: 'Full refund required because the space owner cancelled the booking.',
             },
+            update: {
+              amountHalalas: refundHalalas,
+              status: 'PENDING',
+              reason: 'SELLER_CANCELLATION',
+              lastError: null,
+            },
+          })
+          await tx.paymentOrder.updateMany({
+            where: { id: booking.paymentOrderId, status: { in: ['PAID', 'PARTIALLY_REFUNDED'] } },
+            data: { status: 'REFUND_PENDING' },
+          })
+        }
+        return updatedBooking
       })
       return NextResponse.json({ booking: updated })
     }

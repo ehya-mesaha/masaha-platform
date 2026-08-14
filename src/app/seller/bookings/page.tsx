@@ -13,7 +13,10 @@ export default async function SellerBookingsPage() {
 
   try {
     bookings = await prisma.booking.findMany({
-      where: { space: { sellerId: user.id as string } },
+      where: {
+        space: { sellerId: user.id as string },
+        status: { in: ['CONFIRMED', 'CANCELLED_BY_BUYER', 'CANCELLED_BY_SELLER', 'COMPLETED'] },
+      },
       include: {
         space: { select: { name: true } },
         buyer: { select: { name: true, email: true, phone: true } },

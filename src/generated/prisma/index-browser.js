@@ -352,7 +352,8 @@ exports.Prisma.BookingScalarFieldEnum = {
   spaceId: 'spaceId',
   buyerId: 'buyerId',
   unitId: 'unitId',
-  programId: 'programId'
+  programId: 'programId',
+  paymentOrderId: 'paymentOrderId'
 };
 
 exports.Prisma.BookingServiceScalarFieldEnum = {
@@ -377,6 +378,68 @@ exports.Prisma.BookingProgramScalarFieldEnum = {
   discountPercent: 'discountPercent',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PaymentOrderScalarFieldEnum = {
+  id: 'id',
+  checkoutKey: 'checkoutKey',
+  checkoutToken: 'checkoutToken',
+  status: 'status',
+  currency: 'currency',
+  amountHalalas: 'amountHalalas',
+  refundedHalalas: 'refundedHalalas',
+  expiresAt: 'expiresAt',
+  paidAt: 'paidAt',
+  failedAt: 'failedAt',
+  streamConsumerId: 'streamConsumerId',
+  streamProductId: 'streamProductId',
+  streamPaymentLinkId: 'streamPaymentLinkId',
+  streamInvoiceId: 'streamInvoiceId',
+  streamPaymentId: 'streamPaymentId',
+  checkoutUrl: 'checkoutUrl',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  buyerId: 'buyerId'
+};
+
+exports.Prisma.PaymentProviderCustomerScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  environment: 'environment',
+  providerCustomerId: 'providerCustomerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.PaymentRefundScalarFieldEnum = {
+  id: 'id',
+  amountHalalas: 'amountHalalas',
+  status: 'status',
+  reason: 'reason',
+  note: 'note',
+  providerRefundId: 'providerRefundId',
+  lastError: 'lastError',
+  requestedAt: 'requestedAt',
+  processedAt: 'processedAt',
+  updatedAt: 'updatedAt',
+  paymentOrderId: 'paymentOrderId',
+  bookingId: 'bookingId'
+};
+
+exports.Prisma.StreamWebhookEventScalarFieldEnum = {
+  id: 'id',
+  payloadHash: 'payloadHash',
+  eventType: 'eventType',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  providerTime: 'providerTime',
+  status: 'status',
+  lastError: 'lastError',
+  receivedAt: 'receivedAt',
+  processedAt: 'processedAt',
+  paymentOrderId: 'paymentOrderId'
 };
 
 exports.Prisma.FavoriteScalarFieldEnum = {
@@ -613,10 +676,38 @@ exports.ServicePricingType = exports.$Enums.ServicePricingType = {
 };
 
 exports.BookingStatus = exports.$Enums.BookingStatus = {
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
   CONFIRMED: 'CONFIRMED',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  PAYMENT_EXPIRED: 'PAYMENT_EXPIRED',
   CANCELLED_BY_BUYER: 'CANCELLED_BY_BUYER',
   CANCELLED_BY_SELLER: 'CANCELLED_BY_SELLER',
   COMPLETED: 'COMPLETED'
+};
+
+exports.PaymentOrderStatus = exports.$Enums.PaymentOrderStatus = {
+  PENDING: 'PENDING',
+  CHECKOUT_CREATED: 'CHECKOUT_CREATED',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+  REFUND_PENDING: 'REFUND_PENDING',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
+  REFUNDED: 'REFUNDED'
+};
+
+exports.PaymentRefundStatus = exports.$Enums.PaymentRefundStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.StreamWebhookStatus = exports.$Enums.StreamWebhookStatus = {
+  RECEIVED: 'RECEIVED',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED'
 };
 
 exports.PartnerServiceRequestStatus = exports.$Enums.PartnerServiceRequestStatus = {
@@ -679,6 +770,10 @@ exports.Prisma.ModelName = {
   Booking: 'Booking',
   BookingService: 'BookingService',
   BookingProgram: 'BookingProgram',
+  PaymentOrder: 'PaymentOrder',
+  PaymentProviderCustomer: 'PaymentProviderCustomer',
+  PaymentRefund: 'PaymentRefund',
+  StreamWebhookEvent: 'StreamWebhookEvent',
   Favorite: 'Favorite',
   Notification: 'Notification',
   SavedSearch: 'SavedSearch',

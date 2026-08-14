@@ -22,7 +22,7 @@ export default async function AdminBookingsPage() {
           <div>
             <p className="mb-2 text-xs font-bold text-[#B99A63]">متابعة التشغيل</p>
             <h1 className="text-2xl font-extrabold text-white">جميع الحجوزات</h1>
-            <p className="mt-2 text-sm text-white/65">سجل موحد للحجوزات المؤكدة والملغاة والمكتملة، دون أي عمليات دفع.</p>
+            <p className="mt-2 text-sm text-white/65">سجل موحد للحجوزات وحالات الدفع والتأكيد والإلغاء.</p>
           </div>
           <Link href="/api/admin/exports/bookings?format=xlsx" prefetch={false} className="rounded-xl bg-[#D7B66D] px-5 py-2.5 text-sm font-extrabold text-[#092C27]">تصدير Excel</Link>
         </div>

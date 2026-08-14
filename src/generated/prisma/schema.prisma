@@ -28,10 +28,38 @@ enum SpaceStatus {
 }
 
 enum BookingStatus {
+  PENDING_PAYMENT
   CONFIRMED
+  PAYMENT_FAILED
+  PAYMENT_EXPIRED
   CANCELLED_BY_BUYER
   CANCELLED_BY_SELLER
   COMPLETED
+}
+
+enum PaymentOrderStatus {
+  PENDING
+  CHECKOUT_CREATED
+  PAID
+  FAILED
+  EXPIRED
+  REFUND_PENDING
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum PaymentRefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum StreamWebhookStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
 }
 
 enum SpaceNeedStatus {
@@ -127,20 +155,22 @@ model User {
   bookings  Booking[]
   documents UserDocument[]
 
-  buyerConversations      Conversation[]          @relation("BuyerConversations")
-  sellerConversations     Conversation[]          @relation("SellerConversations")
-  adminConversations      Conversation[]          @relation("AdminConversations")
-  sentMessages            ConversationMessage[]
-  reviews                 SpaceReview[]
-  spaceNeedRequests       SpaceNeedRequest[]
-  favorites               Favorite[]
-  notifications           Notification[]
-  savedSearches           SavedSearch[]
-  sellerApplication       SellerApplication?
-  organizationMemberships OrganizationMember[]
-  contactMessages         ContactMessage[]
-  partnerServiceRequests  PartnerServiceRequest[]
-  adminAuditLogs          AdminAuditLog[]
+  buyerConversations       Conversation[]            @relation("BuyerConversations")
+  sellerConversations      Conversation[]            @relation("SellerConversations")
+  adminConversations       Conversation[]            @relation("AdminConversations")
+  sentMessages             ConversationMessage[]
+  reviews                  SpaceReview[]
+  spaceNeedRequests        SpaceNeedRequest[]
+  favorites                Favorite[]
+  notifications            Notification[]
+  savedSearches            SavedSearch[]
+  sellerApplication        SellerApplication?
+  organizationMemberships  OrganizationMember[]
+  contactMessages          ContactMessage[]
+  partnerServiceRequests   PartnerServiceRequest[]
+  adminAuditLogs           AdminAuditLog[]
+  paymentOrders            PaymentOrder[]
+  paymentProviderCustomers PaymentProviderCustomer[]
 }
 
 model AdminAuditLog {
@@ -442,21 +472,25 @@ model Booking {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  spaceId   String
-  space     Space           @relation(fields: [spaceId], references: [id])
-  buyerId   String
-  buyer     User            @relation(fields: [buyerId], references: [id])
-  unitId    String
-  unit      SpaceUnit       @relation(fields: [unitId], references: [id])
-  programId String?
-  program   BookingProgram? @relation(fields: [programId], references: [id], onDelete: SetNull)
+  spaceId        String
+  space          Space           @relation(fields: [spaceId], references: [id])
+  buyerId        String
+  buyer          User            @relation(fields: [buyerId], references: [id])
+  unitId         String
+  unit           SpaceUnit       @relation(fields: [unitId], references: [id])
+  programId      String?
+  program        BookingProgram? @relation(fields: [programId], references: [id], onDelete: SetNull)
+  paymentOrderId String?
+  paymentOrder   PaymentOrder?   @relation(fields: [paymentOrderId], references: [id], onDelete: SetNull)
 
-  review   SpaceReview?
-  services BookingService[]
+  review        SpaceReview?
+  services      BookingService[]
+  paymentRefund PaymentRefund?
 
   @@index([unitId, startTime, endTime, status])
   @@index([buyerId, createdAt])
   @@index([programId])
+  @@index([paymentOrderId])
 }
 
 model BookingService {
@@ -487,6 +521,90 @@ model BookingProgram {
   updatedAt       DateTime @updatedAt
 
   bookings Booking[]
+}
+
+model PaymentOrder {
+  id                  String             @id @default(cuid())
+  checkoutKey         String             @unique
+  checkoutToken       String             @unique @default(uuid())
+  status              PaymentOrderStatus @default(PENDING)
+  currency            String             @default("SAR")
+  amountHalalas       Int
+  refundedHalalas     Int                @default(0)
+  expiresAt           DateTime
+  paidAt              DateTime?
+  failedAt            DateTime?
+  streamConsumerId    String?
+  streamProductId     String?
+  streamPaymentLinkId String?            @unique
+  streamInvoiceId     String?            @unique
+  streamPaymentId     String?            @unique
+  checkoutUrl         String?
+  lastError           String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  buyerId             String
+  buyer               User               @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+
+  bookings      Booking[]
+  refunds       PaymentRefund[]
+  webhookEvents StreamWebhookEvent[]
+
+  @@index([buyerId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model PaymentProviderCustomer {
+  id                 String   @id @default(cuid())
+  provider           String   @default("STREAMPAY")
+  environment        String
+  providerCustomerId String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, environment, userId])
+  @@unique([provider, environment, providerCustomerId])
+}
+
+model PaymentRefund {
+  id               String              @id @default(cuid())
+  amountHalalas    Int
+  status           PaymentRefundStatus @default(PENDING)
+  reason           String
+  note             String?
+  providerRefundId String?             @unique
+  lastError        String?
+  requestedAt      DateTime            @default(now())
+  processedAt      DateTime?
+  updatedAt        DateTime            @updatedAt
+  paymentOrderId   String
+  paymentOrder     PaymentOrder        @relation(fields: [paymentOrderId], references: [id], onDelete: Restrict)
+  bookingId        String?             @unique
+  booking          Booking?            @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([paymentOrderId, requestedAt])
+  @@index([status, requestedAt])
+}
+
+model StreamWebhookEvent {
+  id             String              @id @default(cuid())
+  payloadHash    String              @unique
+  eventType      String
+  entityType     String?
+  entityId       String?
+  providerTime   DateTime?
+  status         StreamWebhookStatus @default(RECEIVED)
+  lastError      String?
+  receivedAt     DateTime            @default(now())
+  processedAt    DateTime?
+  paymentOrderId String?
+  paymentOrder   PaymentOrder?       @relation(fields: [paymentOrderId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, receivedAt])
+  @@index([status, receivedAt])
+  @@index([paymentOrderId])
 }
 
 model Favorite {

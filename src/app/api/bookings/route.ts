@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { durationHours, generateProgramSessions, getSpaceAvailability, sessionsFromDates, toSession } from '@/lib/availability'
 import { LEGAL_VERSION } from '@/lib/legal'
+import { assertStreamPayConfigured, StreamPayError } from '@/lib/streampay/client'
+import { createCheckoutForOrder } from '@/lib/streampay/service'
 
 type SelectedService = {
   configId: string
@@ -46,7 +48,10 @@ export async function GET(req: NextRequest) {
 
     if (user.role === 'SELLER' || role === 'seller') {
       const bookings = await prisma.booking.findMany({
-        where: { space: { sellerId: user.id as string } },
+        where: {
+          space: { sellerId: user.id as string },
+          status: { in: ['CONFIRMED', 'CANCELLED_BY_BUYER', 'CANCELLED_BY_SELLER', 'COMPLETED'] },
+        },
         include: {
           ...commonInclude,
           space: { include: { type: true } },
@@ -71,6 +76,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'يجب تسجيل الدخول كطالب مساحة' }, { status: 401 })
     }
 
+    assertStreamPayConfigured()
     const body = await req.json()
     if (body.termsAccepted !== true || body.termsVersion !== LEGAL_VERSION) {
       return NextResponse.json({ error: 'يجب قراءة الوثائق القانونية والموافقة على نسختها الحالية قبل إتمام الحجز.' }, { status: 400 })
@@ -79,10 +85,28 @@ export async function POST(req: NextRequest) {
     const persons = body.persons ? Number(body.persons) : null
     const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : null
     const requesterIdNumber = typeof body.requesterIdNumber === 'string' ? body.requesterIdNumber.trim().slice(0, 100) : ''
+    const checkoutKey = typeof body.checkoutKey === 'string' ? body.checkoutKey.trim().toLowerCase() : ''
     const selectedServices: SelectedService[] = Array.isArray(body.services) ? body.services : []
     const servicesByDate: Record<string, SelectedService[]> = body.servicesByDate && typeof body.servicesByDate === 'object' ? body.servicesByDate : {}
-    if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber) {
+    if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber || !isUuid(checkoutKey)) {
       return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
+    }
+
+    const existingOrder = await prisma.paymentOrder.findUnique({ where: { checkoutKey } })
+    if (existingOrder) {
+      if (
+        existingOrder.buyerId === user.id
+        && existingOrder.status === 'CHECKOUT_CREATED'
+        && existingOrder.checkoutUrl
+        && existingOrder.expiresAt > new Date()
+      ) {
+        return NextResponse.json({
+          checkoutUrl: existingOrder.checkoutUrl,
+          checkoutToken: existingOrder.checkoutToken,
+          expiresAt: existingOrder.expiresAt,
+        })
+      }
+      return NextResponse.json({ error: 'تم إرسال طلب الدفع بالفعل. أعد فتح نافذة الحجز للمحاولة من جديد.' }, { status: 409 })
     }
 
     let sessions
@@ -212,6 +236,18 @@ export async function POST(req: NextRequest) {
       })
       const servicesTotal = roundMoney(sessionServiceLines.reduce((sum, lines) => sum + lines.reduce((lineSum, line) => lineSum + line.lineTotal, 0), 0))
       const grandTotal = roundMoney(basePrice - discountAmount + servicesTotal)
+      const amountHalalas = Math.round(grandTotal * 100)
+      if (!Number.isSafeInteger(amountHalalas) || amountHalalas < 1) {
+        throw new BookingError('قيمة الحجز غير صالحة للدفع', 400)
+      }
+      const paymentOrder = await tx.paymentOrder.create({
+        data: {
+          checkoutKey,
+          buyerId: user.id as string,
+          amountHalalas,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        },
+      })
 
       const program = sessions.length > 1
         ? await tx.bookingProgram.create({
@@ -247,7 +283,8 @@ export async function POST(req: NextRequest) {
             persons,
             notes,
             requesterIdNumber,
-            status: 'CONFIRMED',
+            status: 'PENDING_PAYMENT',
+            paymentOrderId: paymentOrder.id,
             termsAcceptedAt: new Date(),
             termsVersion: LEGAL_VERSION,
             totalHours: sessionHours,
@@ -264,32 +301,37 @@ export async function POST(req: NextRequest) {
         bookings.push(booking)
       }
 
-      await tx.notification.create({
-        data: {
-          userId: space.sellerId,
-          title: 'حجز جديد مؤكد',
-          message: `تم تأكيد ${sessions.length.toLocaleString('en-US')} جلسة في ${space.name}.`,
-          href: `/seller/bookings/${bookings[0].id}`,
-        },
-      })
-
-      return { bookings, program, pricing: { totalHours, basePrice, discountPercent, discountAmount, servicesTotal, grandTotal } }
+      return { bookings, program, paymentOrder, pricing: { totalHours, basePrice, discountPercent, discountAmount, servicesTotal, grandTotal } }
     }, {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       // Raised above Prisma's defaults (maxWait 2s, timeout 5s): this transaction does several
-      // sequential round trips per session (space lookup, availability check, one booking.create
-      // per date, notification), which can exceed the defaults under normal latency to the DB region.
+      // sequential round trips per session (space lookup, availability check and one booking.create
+      // per date), which can exceed the defaults under normal latency to the DB region.
       maxWait: 10000,
       timeout: 20000,
     })
 
-    return NextResponse.json(result, { status: 201 })
+    const checkout = await createCheckoutForOrder(result.paymentOrder.id)
+    return NextResponse.json({
+      checkoutUrl: checkout.checkoutUrl,
+      checkoutToken: checkout.checkoutToken,
+      expiresAt: result.paymentOrder.expiresAt,
+      pricing: result.pricing,
+    }, { status: 201 })
   } catch (error) {
     if (error instanceof BookingError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && ['P2002', 'P2034'].includes(error.code)) {
       return NextResponse.json({ error: 'تم حجز الموعد للتو من مستخدم آخر. اختر موعدًا مختلفًا.' }, { status: 409 })
+    }
+    if (error instanceof StreamPayError) {
+      const message = error.code === 'NOT_CONFIGURED'
+        ? 'لم يتم إعداد بوابة الدفع بعد. أضف مفاتيح StreamPay الجديدة في إعدادات الخادم.'
+        : error.code === 'ENVIRONMENT_MISMATCH'
+          ? 'تم إيقاف الدفع لأن مفتاح StreamPay لا يطابق بيئة الاختبار أو البيئة الحية.'
+          : 'تعذر إنشاء رابط الدفع الآن. لم يتم تأكيد الحجز ويمكنك المحاولة مرة أخرى.'
+      return NextResponse.json({ error: message }, { status: error.status >= 400 && error.status <= 599 ? error.status : 502 })
     }
     console.error(error)
     return NextResponse.json({ error: 'حدث خطأ أثناء تأكيد الحجز' }, { status: 500 })
@@ -304,4 +346,8 @@ class BookingError extends Error {
 
 function roundMoney(value: number) {
   return Math.round(value * 100) / 100
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 }

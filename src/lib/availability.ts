@@ -87,7 +87,10 @@ export async function getSpaceAvailability(db: Database, spaceId: string, sessio
       units: { where: { isActive: true }, orderBy: { label: 'asc' } },
       bookings: {
         where: {
-          status: 'CONFIRMED',
+          OR: [
+            { status: 'CONFIRMED' },
+            { status: 'PENDING_PAYMENT', paymentOrder: { expiresAt: { gt: new Date() } } },
+          ],
           startTime: { lt: rangeEnd },
           endTime: { gt: rangeStart },
         },
@@ -132,7 +135,14 @@ export async function getSpacesAvailability(db: Database, spaceIds: string[], se
       workingHours: true,
       units: { where: { isActive: true }, orderBy: { label: 'asc' } },
       bookings: {
-        where: { status: 'CONFIRMED', startTime: { lt: rangeEnd }, endTime: { gt: rangeStart } },
+        where: {
+          OR: [
+            { status: 'CONFIRMED' },
+            { status: 'PENDING_PAYMENT', paymentOrder: { expiresAt: { gt: new Date() } } },
+          ],
+          startTime: { lt: rangeEnd },
+          endTime: { gt: rangeStart },
+        },
         select: { unitId: true, startTime: true, endTime: true },
       },
       privateOccupancies: {

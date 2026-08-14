@@ -46,12 +46,14 @@ export default function BuyerBookingsHub({ userName, bookings }: { userName: str
   )
   const completed = bookings.filter(booking => booking.status === 'COMPLETED')
   const needsReview = completed.filter(booking => !booking.hasReview).length
-  const totalSpend = bookings.filter(booking => booking.status !== 'CANCELLED').reduce((sum, booking) => sum + booking.grandTotal, 0)
+  const totalSpend = bookings
+    .filter(booking => ['CONFIRMED', 'COMPLETED'].includes(booking.status))
+    .reduce((sum, booking) => sum + booking.grandTotal, 0)
 
   const visible = bookings.filter(booking => {
     if (filter === 'upcoming') return isUpcoming(booking, now)
     if (filter === 'completed') return booking.status === 'COMPLETED'
-    if (filter === 'cancelled') return booking.status === 'CANCELLED'
+    if (filter === 'cancelled') return ['CANCELLED_BY_BUYER', 'CANCELLED_BY_SELLER'].includes(booking.status)
     return true
   })
 
