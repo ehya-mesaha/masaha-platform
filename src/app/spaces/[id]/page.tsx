@@ -10,6 +10,7 @@ import Spinner from '@/components/ui/Spinner'
 import StartConversationButton from '@/components/chat/StartConversationButton'
 import SpaceImageLightbox, { type SpaceImageLightboxHandle } from '@/components/spaces/SpaceImageLightbox'
 import SpaceLocationMap from '@/components/maps/SpaceLocationMap'
+import { placeSearchUrl } from '@/lib/geo'
 import { formatDate, formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
 import { generateWeekdayDates, parseDateValue, weekdaysInRange } from '@/lib/sessionDates'
@@ -508,13 +509,30 @@ function SpaceDetailPageInner() {
                 </div>
                 <span className="hidden rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-bold text-green-700 sm:inline-flex">مساحة معتمدة</span>
               </div>
-              <p className="text-[#5F6764] text-sm flex items-center gap-1 mb-4">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {fullAddress || `${space.city}${space.district ? `، ${space.district}` : ''}`}
-              </p>
+              {(() => {
+                const label = fullAddress || `${space.city}${space.district ? `، ${space.district}` : ''}`
+                const mapUrl = placeSearchUrl({ lat: space.latitude, lng: space.longitude, query: label })
+                const pin = (
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )
+                return mapUrl ? (
+                  <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0E3B34] underline decoration-[#0E3B34]/25 underline-offset-4 transition-colors hover:decoration-[#0E3B34]"
+                  >
+                    {pin}
+                    <span>{label}</span>
+                    <span className="text-xs font-bold text-[#B99A63]">· عرض على الخريطة</span>
+                  </a>
+                ) : (
+                  <p className="text-[#5F6764] text-sm flex items-center gap-1 mb-4">{pin}{label}</p>
+                )
+              })()}
               {space.description && <p className="text-[#3F4B47] text-sm leading-relaxed mb-4">{space.description}</p>}
 
               <div className="mb-5 grid grid-cols-3 divide-x divide-x-reverse divide-[#E0D8CA] border-y border-[#E0D8CA] py-4">

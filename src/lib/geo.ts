@@ -82,6 +82,19 @@ export function formatLatLng(point: LatLng) {
   return `${formatCoordinate(point.lat)}, ${formatCoordinate(point.lng)}`
 }
 
+/**
+ * A single "open in maps" link for a space: by dropped pin when it has coordinates,
+ * by address text otherwise. Returns null only when there is nothing at all to search.
+ */
+export function placeSearchUrl(input: { lat?: number | null; lng?: number | null; query?: string | null }) {
+  const point = { lat: Number(input.lat), lng: Number(input.lng) }
+  if (isValidLatLng(point)) {
+    return `https://www.google.com/maps/search/?api=1&query=${point.lat},${point.lng}`
+  }
+  const query = (input.query || '').trim()
+  return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null
+}
+
 /** Deep links to the map apps a Saudi user is most likely to have installed. */
 export function mapLinks(point: LatLng, label?: string) {
   const pair = `${point.lat},${point.lng}`
