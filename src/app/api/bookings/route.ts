@@ -83,12 +83,12 @@ export async function POST(req: NextRequest) {
     }
     const spaceId = typeof body.spaceId === 'string' ? body.spaceId : ''
     const persons = body.persons ? Number(body.persons) : null
-    const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : null
+    const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : ''
     const requesterIdNumber = typeof body.requesterIdNumber === 'string' ? body.requesterIdNumber.trim().slice(0, 100) : ''
     const checkoutKey = typeof body.checkoutKey === 'string' ? body.checkoutKey.trim().toLowerCase() : ''
     const selectedServices: SelectedService[] = Array.isArray(body.services) ? body.services : []
     const servicesByDate: Record<string, SelectedService[]> = body.servicesByDate && typeof body.servicesByDate === 'object' ? body.servicesByDate : {}
-    if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber || !isUuid(checkoutKey)) {
+    if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber || !notes || !isUuid(checkoutKey)) {
       return NextResponse.json({ error: 'يرجى إدخال جميع البيانات المطلوبة' }, { status: 400 })
     }
 
@@ -281,7 +281,7 @@ export async function POST(req: NextRequest) {
             startTime: allocation.session.startAt,
             endTime: allocation.session.endAt,
             persons,
-            notes,
+            notes: notes || null,
             requesterIdNumber,
             status: 'PENDING_PAYMENT',
             paymentOrderId: paymentOrder.id,

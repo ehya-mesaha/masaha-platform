@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const ALLOWED_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl', 'www.google.com', 'google.com', 'maps.google.com'])
+const ALLOWED_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl', 'g.co', 'share.google', 'www.google.com', 'google.com', 'maps.google.com'])
 
 async function fetchFinalUrl(url: URL) {
   const response = await fetch(url, {

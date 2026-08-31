@@ -285,6 +285,7 @@ function SpaceDetailPageInner() {
   function validateStep(step: number): string {
     if (step === 1) {
       if (!bookingForm.requesterIdNumber.trim()) return 'أدخل رقم الهوية الوطنية أو السجل التجاري'
+      if (!bookingForm.purpose.trim()) return 'أدخل وصف الفعالية أو الغرض من الحجز'
       if (bookingMode === 'single' && !singleDate) return 'اختر تاريخ الحجز'
       if (bookingMode === 'program' && (!programStart || !programEnd)) return 'اختر تاريخ بداية ونهاية البرنامج'
       if (bookingMode === 'program' && programEnd < programStart) return 'يجب أن يكون تاريخ النهاية بعد تاريخ البداية'
@@ -927,9 +928,10 @@ function SpaceDetailPageInner() {
             {bookingStep === 1 && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">رقم الهوية الوطنية أو السجل التجاري</label>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">رقم الهوية الوطنية أو السجل التجاري <span className="text-[#B44A3C]">*</span></label>
                   <input value={bookingForm.requesterIdNumber}
                     onChange={e => updateBookingForm({ requesterIdNumber: e.target.value })}
+                    required
                     className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
                     placeholder="أدخل الرقم" dir="ltr" />
                 </div>
@@ -1075,9 +1077,10 @@ function SpaceDetailPageInner() {
                     placeholder="اختياري" min={1} dir="ltr" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وصف الفعالية</label>
+                  <label className="block text-xs font-bold text-[#3F4B47] mb-1.5">وصف الفعالية <span className="text-[#B44A3C]">*</span></label>
                   <textarea value={bookingForm.purpose}
                     onChange={e => updateBookingForm({ purpose: e.target.value })}
+                    required
                     className="w-full px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34] resize-none"
                     rows={3} placeholder="اكتب نبذة عن الفعالية أو الغرض من الحجز..." />
                 </div>

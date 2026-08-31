@@ -6,12 +6,30 @@ import SearchableSelect from '@/components/ui/SearchableSelect'
 
 function extractCoordinates(value: string) {
   let decoded = value.trim()
-  try { decoded = decodeURIComponent(decoded) } catch {}
+  // Google Maps links are often double-encoded (%2C for the comma between lat/lng).
+  for (let i = 0; i < 2; i += 1) {
+    try {
+      const next = decodeURIComponent(decoded)
+      if (next === decoded) break
+      decoded = next
+    } catch { break }
+  }
+
   const patterns = [
-    /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
-    /[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    // Google Maps place pin — the most precise value in a share link: !3d<lat>!4d<lng>
     /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
-    /(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/,
+    // Google Maps viewport center: @<lat>,<lng>
+    /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    // Query params: q= query= ll= sll= center= destination= viewpoint= daddr= saddr=
+    /[?&#](?:q|query|ll|sll|center|destination|viewpoint|daddr|saddr)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    // OpenStreetMap marker params: ?mlat=<lat>&mlon=<lng>
+    /[?&]mlat=(-?\d+(?:\.\d+)?)[^]*?[?&]mlon=(-?\d+(?:\.\d+)?)/,
+    // OpenStreetMap hash: #map=<zoom>/<lat>/<lng>
+    /#map=[\d.]+\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)/,
+    // geo: URI — geo:<lat>,<lng>
+    /geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+    // Bare "lat, lng" / "lat lng" / "lat/lng" (requires a real separator and precise decimals)
+    /(-?\d{1,2}\.\d{3,})\s*[,/ ]\s*(-?\d{1,3}\.\d{3,})/,
   ]
 
   for (const pattern of patterns) {
@@ -19,7 +37,7 @@ function extractCoordinates(value: string) {
     if (!match) continue
     const lat = Number(match[1])
     const lng = Number(match[2])
-    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && !(lat === 0 && lng === 0)) {
       return { lat, lng }
     }
   }
@@ -27,13 +45,32 @@ function extractCoordinates(value: string) {
   return null
 }
 
+function normalizeCityName(value: string) {
+  return value.replace(/\s+/g, ' ').replace(/^(مدينة|محافظة|منطقة)\s+/, '').trim()
+}
+
+function lookupCityCenter(city: string) {
+  if (!city) return null
+  if (CITY_CENTERS[city]) return CITY_CENTERS[city]
+  const normalized = normalizeCityName(city)
+  const hit = Object.keys(CITY_CENTERS).find(key => {
+    const keyNorm = normalizeCityName(key)
+    return keyNorm === normalized || normalized.includes(keyNorm) || keyNorm.includes(normalized)
+  })
+  return hit ? CITY_CENTERS[hit] : null
+}
+
 export default function StepLocation({ form, update, cities = [] }: StepProps) {
   const [locationUrl, setLocationUrl] = useState('')
   const [urlError, setUrlError] = useState('')
   const [zoom, setZoom] = useState(13)
-  const cityCenter = CITY_CENTERS[form.city] || CITY_CENTERS['الخبر']
-  const lat = parseFloat(form.latitude) || cityCenter.lat
-  const lng = parseFloat(form.longitude) || cityCenter.lng
+  const cityCenter = lookupCityCenter(form.city) || CITY_CENTERS['الرياض']
+  const parsedLat = parseFloat(form.latitude)
+  const parsedLng = parseFloat(form.longitude)
+  const hasPin = Number.isFinite(parsedLat) && Number.isFinite(parsedLng)
+  // Until the seller places a precise pin, the map should follow the chosen city.
+  const lat = hasPin ? parsedLat : cityCenter.lat
+  const lng = hasPin ? parsedLng : cityCenter.lng
   const mapSpan = 0.12 / Math.pow(2, zoom - 10)
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
   const cityOptions = cities.length
@@ -47,24 +84,35 @@ export default function StepLocation({ form, update, cities = [] }: StepProps) {
   }
 
   async function applyLocationUrl() {
-    let resolvedUrl = locationUrl
-    if (/^https?:\/\/(maps\.app\.goo\.gl|goo\.gl)\//i.test(locationUrl.trim())) {
+    const raw = locationUrl.trim()
+    if (!raw) {
+      setUrlError('الصق رابط الموقع أولاً.')
+      return
+    }
+
+    // First try to read the coordinates straight from the pasted text.
+    let coordinates = extractCoordinates(raw)
+
+    // Short links (maps.app.goo.gl, goo.gl, g.co, share.google…) carry no coordinates —
+    // resolve them server-side to their full destination, then read the coordinates from that.
+    if (!coordinates && /^https?:\/\//i.test(raw)) {
       try {
         const response = await fetch('/api/maps/resolve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: locationUrl.trim() }),
+          body: JSON.stringify({ url: raw }),
         })
         const data = await response.json()
-        if (response.ok && data.url) resolvedUrl = data.url
+        if (response.ok && data.url) coordinates = extractCoordinates(data.url)
       } catch {}
     }
-    const coordinates = extractCoordinates(resolvedUrl)
+
     if (!coordinates) {
-      setUrlError('لم نتمكن من قراءة الرابط. افتح خرائط Google واختر مشاركة ثم انسخ الرابط الكامل.')
+      setUrlError('لم نتمكن من قراءة الرابط. افتح خرائط Google، اضغط على الموقع مطوّلاً، ثم انسخ الرابط من زر "مشاركة" أو من شريط العنوان.')
       return
     }
     setCoordinates(coordinates.lat, coordinates.lng)
+    setZoom(16)
     setUrlError('')
   }
 
@@ -76,7 +124,7 @@ export default function StepLocation({ form, update, cities = [] }: StepProps) {
     // the map and the address fields are independent, matching how sellers actually work:
     // they may fix a typo in the city/district after already placing an exact pin.
     if (form.latitude || form.longitude) return
-    const center = CITY_CENTERS[city]
+    const center = lookupCityCenter(city)
     if (center) setCoordinates(center.lat, center.lng)
   }
 
