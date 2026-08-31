@@ -138,17 +138,19 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
                     ) : (
                       <label className="block max-w-[200px]">
                         <span className="mb-1 block text-[11px] font-bold text-[#5F6764]">السعر (ريال)</span>
-                        <div className="relative">
+                        {/* Number leads, ر.س trails on the right — same addon layout as the
+                            hourly-price field in StepPricing, which sidesteps any overlap. */}
+                        <span className="flex overflow-hidden rounded-xl border border-[#D8D1C7] bg-white transition focus-within:border-[#0E3B34] focus-within:ring-4 focus-within:ring-[#0E3B34]/5" dir="ltr">
                           <input
                             type="number"
                             min="0"
                             value={service.price}
                             onChange={event => change(service.catalogId, { price: event.target.value })}
-                            className="field py-2 pe-10 text-sm"
+                            className="min-w-0 flex-1 px-3 py-2 text-sm font-bold outline-none"
                             dir="ltr"
                           />
-                          <span className="pointer-events-none absolute inset-y-0 end-3 grid place-items-center text-xs font-bold text-[#8B9389]">ر.س</span>
-                        </div>
+                          <span className="flex items-center border-l border-[#D8D1C7] bg-[#F5F1E8] px-3 text-xs font-bold text-[#0E3B34]">ر.س</span>
+                        </span>
                       </label>
                     )}
                     <label className="block">
