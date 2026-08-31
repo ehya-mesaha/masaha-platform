@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal'
 import Spinner from '@/components/ui/Spinner'
 import StartConversationButton from '@/components/chat/StartConversationButton'
 import SpaceImageLightbox, { type SpaceImageLightboxHandle } from '@/components/spaces/SpaceImageLightbox'
+import SpaceLocationMap from '@/components/maps/SpaceLocationMap'
 import { formatDate, formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
 import { generateWeekdayDates, parseDateValue, weekdaysInRange } from '@/lib/sessionDates'
@@ -442,9 +443,6 @@ function SpaceDetailPageInner() {
         return `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`
       })()
     : undefined
-  const mapHref = space.latitude && space.longitude
-    ? `https://www.google.com/maps/search/?api=1&query=${space.latitude},${space.longitude}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || space.city)}`
 
   return (
     <div className="min-h-screen flex flex-col bg-paper">
@@ -744,50 +742,25 @@ function SpaceDetailPageInner() {
             </div>
 
             {/* Map */}
-            {space.latitude && space.longitude && (
-              <div className="space-detail-section">
-                <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#B99A63]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  الموقع على الخريطة
-                </h3>
-                <div className="rounded-xl overflow-hidden border border-[#D8D1C7]">
-                  <iframe
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${space.longitude - 0.01},${space.latitude - 0.01},${space.longitude + 0.01},${space.latitude + 0.01}&layer=mapnik&marker=${space.latitude},${space.longitude}`}
-                    className="w-full h-64"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                  />
-                </div>
-                <a
-                  href={mapHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-[#0E3B34] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors"
-                >
-                  فتح الموقع في الخرائط
-                </a>
-                {space.landmarks && (
-                  <p className="text-xs text-[#5F6764] mt-2">معالم قريبة: {space.landmarks}</p>
-                )}
-              </div>
-            )}
-            {(!space.latitude || !space.longitude) && (
-              <div className="space-detail-section">
-                <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-2">الموقع</h3>
-                <p className="text-sm text-[#5F6764] mb-4">{fullAddress || space.city}</p>
-                <a
-                  href={mapHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-[#0E3B34] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors"
-                >
-                  فتح الموقع في الخرائط
-                </a>
-              </div>
-            )}
+            <div className="space-detail-section">
+              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4 text-[#B99A63]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                الموقع على الخريطة
+              </h3>
+              <SpaceLocationMap
+                latitude={space.latitude}
+                longitude={space.longitude}
+                address={fullAddress || space.city}
+                city={space.city}
+                height={280}
+              />
+              {space.landmarks && (
+                <p className="text-xs text-[#5F6764] mt-2">معالم قريبة: {space.landmarks}</p>
+              )}
+            </div>
           </div>
 
           {/* Sidebar */}

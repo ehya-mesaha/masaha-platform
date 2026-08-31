@@ -3202,3 +3202,218 @@ html[dir="rtl"] .dashboard-nav-link:not(.is-active):hover {
 [data-theme="dark"] .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3) !important; }
 [data-theme="dark"] .border-amber-200 { border-color: rgba(245, 158, 11, 0.3) !important; }
 [data-theme="dark"] .border-blue-200 { border-color: rgba(59, 130, 246, 0.3) !important; }
+
+/* ============================================================================
+   Map canvas
+   The interactive slippy map used by the seller's location picker and by every
+   read-only map (space page, seller space detail, admin review). Tiles are
+   plain <img> elements positioned in world-pixel space by MapCanvas, so the
+   pin sits exactly on the coordinate it represents.
+   ============================================================================ */
+
+.map-canvas {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--border, #D8D1C7);
+  background: #E8E3DA;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.map-canvas.is-interactive {
+  touch-action: none;
+  cursor: grab;
+}
+
+.map-canvas.is-interactive:active {
+  cursor: grabbing;
+}
+
+.map-canvas.is-editable {
+  cursor: crosshair;
+}
+
+.map-canvas:focus-visible {
+  outline: 3px solid var(--brand-gold, #B99A63);
+  outline-offset: 2px;
+}
+
+.map-canvas-tiles {
+  position: absolute;
+  inset: 0;
+}
+
+.map-canvas-tiles img {
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+  max-width: none;
+}
+
+/* Pin: anchored so the tip of the teardrop is the coordinate. */
+.map-canvas-pin {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  margin-top: -34px;
+  color: #B44A3C;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.38));
+  transition: transform 0.14s ease;
+  z-index: 3;
+}
+
+.map-canvas-pin svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-canvas-pin.is-draggable {
+  cursor: grab;
+}
+
+.map-canvas-pin.is-dragging {
+  cursor: grabbing;
+  transform: scale(1.14);
+}
+
+.map-canvas-pin.is-draggable:hover {
+  transform: scale(1.08);
+}
+
+/* Small ellipse under the tip, so the exact point stays readable while dragging. */
+.map-canvas-pin-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 12px;
+  height: 4px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.map-canvas-overlay {
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  top: 0.75rem;
+  z-index: 4;
+  max-width: calc(100% - 5.5rem);
+}
+
+.map-canvas-zoom {
+  position: absolute;
+  inset-inline-end: 0.75rem;
+  bottom: 2rem;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border, #D8D1C7);
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+.map-canvas-zoom button {
+  width: 2.5rem;
+  height: 2.25rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brand-green, #0E3B34);
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.map-canvas-zoom button:first-child {
+  border-bottom: 1px solid var(--border, #D8D1C7);
+}
+
+.map-canvas-zoom button:hover:not(:disabled) {
+  background: #F5F1E8;
+}
+
+.map-canvas-zoom button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.map-canvas-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(9, 44, 39, 0.55);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  animation: map-hint-in 0.16s ease;
+}
+
+@keyframes map-hint-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.map-canvas-attribution {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  z-index: 4;
+  padding: 0.15rem 0.5rem;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #33423F;
+  background: rgba(255, 255, 255, 0.82);
+  border-start-start-radius: 0.5rem;
+  text-decoration: none;
+}
+
+.map-canvas-attribution:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-canvas-tiles img,
+  .map-canvas-pin,
+  .map-canvas-hint {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Dark theme: OSM raster tiles are light-only, so tone them down to sit inside
+   the dark surface without washing the page out. */
+[data-theme="dark"] .map-canvas {
+  background: #16261F;
+  border-color: #263831;
+}
+
+[data-theme="dark"] .map-canvas-tiles img {
+  filter: brightness(0.72) contrast(1.04) saturate(0.82);
+}
+
+[data-theme="dark"] .map-canvas-zoom {
+  background: #1B2C25;
+  border-color: #2E4038;
+}
+
+[data-theme="dark"] .map-canvas-zoom button {
+  color: #EDE7D8;
+}
+
+[data-theme="dark"] .map-canvas-zoom button:hover:not(:disabled) {
+  background: #24382F;
+}
+
+[data-theme="dark"] .map-canvas-attribution {
+  color: #C9D2CB;
+  background: rgba(16, 30, 24, 0.85);
+}

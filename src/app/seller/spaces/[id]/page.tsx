@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Badge, { getSpaceStatusBadge, getBookingStatusBadge } from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
+import SpaceLocationMap from '@/components/maps/SpaceLocationMap'
 import { formatSpaceNumber } from '@/lib/format'
 
 export default async function SellerSpaceDetailPage({
@@ -39,9 +40,7 @@ export default async function SellerSpaceDetailPage({
   if (!space) return notFound()
 
   const { variant, label } = getSpaceStatusBadge(space.status)
-  const mapHref = space.latitude && space.longitude
-    ? `https://www.google.com/maps/search/?api=1&query=${space.latitude},${space.longitude}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([space.district, space.city].filter(Boolean).join(', '))}`
+  const spaceAddress = [space.district, space.city].filter(Boolean).join('، ')
 
   return (
     <div className="p-8">
@@ -62,25 +61,14 @@ export default async function SellerSpaceDetailPage({
           <p className="text-gray-500 text-sm mt-1">{space.type.name} · {space.city}</p>
           <Card>
             <h3 className="font-semibold text-gray-900 mb-3">الموقع</h3>
-            <p className="text-sm text-gray-600 mb-3">{[space.district, space.city].filter(Boolean).join('، ')}</p>
-            {space.latitude && space.longitude && (
-              <div className="rounded-xl overflow-hidden border border-[#D8D1C7] mb-3">
-                <iframe
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${space.longitude - 0.01},${space.latitude - 0.01},${space.longitude + 0.01},${space.latitude + 0.01}&layer=mapnik&marker=${space.latitude},${space.longitude}`}
-                  className="w-full h-56"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                />
-              </div>
-            )}
-            <a
-              href={mapHref}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-[#0E3B34] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#092C27] transition-colors"
-            >
-              فتح الموقع في الخرائط
-            </a>
+            <SpaceLocationMap
+              latitude={space.latitude}
+              longitude={space.longitude}
+              address={spaceAddress}
+              city={space.city}
+              showCoordinates
+              height={240}
+            />
           </Card>
         </div>
         <div className="flex items-center gap-3">

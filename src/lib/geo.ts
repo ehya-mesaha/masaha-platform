@@ -1,0 +1,246 @@
+/**
+ * Geographic helpers shared by every map surface in the platform.
+ *
+ * The platform used to render maps through `openstreetmap.org/export/embed.html`
+ * inside an <iframe>. That approach could not work correctly for picking a point:
+ * the embed silently refits the requested bbox to the iframe's aspect ratio, so the
+ * visible extent never matched what we asked for, and the picker converted clicks to
+ * coordinates with a *linear* interpolation even though Web Mercator latitude is
+ * logarithmic. Both errors compounded, so a click could land hundreds of metres from
+ * where the seller pointed.
+ *
+ * Everything here is pure and framework-free so the projection can be tested directly.
+ */
+
+export const TILE_SIZE = 256
+
+/** Web Mercator cannot represent the poles; this is the standard cutoff. */
+export const MAX_LATITUDE = 85.05112878
+
+export const MIN_ZOOM = 3
+export const MAX_ZOOM = 19
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+/** Total width/height of the world in pixels at a given zoom level. */
+export function worldSize(zoom: number) {
+  return TILE_SIZE * Math.pow(2, zoom)
+}
+
+export function lngToWorldX(lng: number, zoom: number) {
+  return ((lng + 180) / 360) * worldSize(zoom)
+}
+
+export function latToWorldY(lat: number, zoom: number) {
+  const clamped = clamp(lat, -MAX_LATITUDE, MAX_LATITUDE)
+  const rad = (clamped * Math.PI) / 180
+  const y = Math.log(Math.tan(rad) + 1 / Math.cos(rad))
+  return (1 - y / Math.PI) * 0.5 * worldSize(zoom)
+}
+
+export function worldXToLng(x: number, zoom: number) {
+  return (x / worldSize(zoom)) * 360 - 180
+}
+
+export function worldYToLat(y: number, zoom: number) {
+  const n = Math.PI * (1 - (2 * y) / worldSize(zoom))
+  return (Math.atan(Math.sinh(n)) * 180) / Math.PI
+}
+
+export type LatLng = { lat: number; lng: number }
+
+export function isValidLatLng(value: unknown): value is LatLng {
+  if (!value || typeof value !== 'object') return false
+  const { lat, lng } = value as LatLng
+  return (
+    Number.isFinite(lat) && Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
+    !(lat === 0 && lng === 0)
+  )
+}
+
+/** Great-circle distance in metres — used to tell the seller how far they moved the pin. */
+export function distanceMeters(a: LatLng, b: LatLng) {
+  const R = 6371008.8
+  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const dLat = toRad(b.lat - a.lat)
+  const dLng = toRad(b.lng - a.lng)
+  const lat1 = toRad(a.lat)
+  const lat2 = toRad(b.lat)
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+
+/** Six decimals ≈ 11 cm — more precision than a street address can justify. */
+export function formatCoordinate(value: number) {
+  return value.toFixed(6)
+}
+
+export function formatLatLng(point: LatLng) {
+  return `${formatCoordinate(point.lat)}, ${formatCoordinate(point.lng)}`
+}
+
+/** Deep links to the map apps a Saudi user is most likely to have installed. */
+export function mapLinks(point: LatLng, label?: string) {
+  const pair = `${point.lat},${point.lng}`
+  const query = label ? `${encodeURIComponent(label)}` : ''
+  return {
+    google: `https://www.google.com/maps/search/?api=1&query=${pair}`,
+    googleDirections: `https://www.google.com/maps/dir/?api=1&destination=${pair}${query ? `&destination_place_id=` : ''}`,
+    apple: `https://maps.apple.com/?ll=${pair}&q=${query || pair}`,
+    osm: `https://www.openstreetmap.org/?mlat=${point.lat}&mlon=${point.lng}#map=17/${point.lat}/${point.lng}`,
+  }
+}
+
+/**
+ * Pull coordinates out of anything a seller might paste: a Google Maps share link,
+ * an OpenStreetMap permalink, a geo: URI, or a bare "lat, lng" pair.
+ *
+ * Ordering matters. `!3d…!4d…` is the place's actual pin and is checked before
+ * `@lat,lng`, which is only the camera position and can sit far from the pin when the
+ * user scrolled after searching.
+ */
+export function extractCoordinates(value: string): LatLng | null {
+  const decoded = fullyDecode(value.trim())
+
+  const patterns: RegExp[] = [
+    ...LINK_PATTERNS,
+    // A bare pair. Requires 3+ decimals so it cannot match a price, phone, or date.
+    /(-?\d{1,2}\.\d{3,})\s*[,/ ]\s*(-?\d{1,3}\.\d{3,})/,
+  ]
+
+  for (const pattern of patterns) {
+    const match = decoded.match(pattern)
+    if (!match) continue
+    const candidate = { lat: Number(match[1]), lng: Number(match[2]) }
+    if (isValidLatLng(candidate)) return candidate
+  }
+
+  return null
+}
+
+/**
+ * Same as `extractCoordinates` but without the bare "lat, lng" fallback.
+ *
+ * Use this when scanning untrusted free-form text such as a fetched HTML body,
+ * where any two decimal numbers near each other would otherwise be mistaken for
+ * a coordinate pair.
+ */
+export function extractCoordinatesStrict(value: string): LatLng | null {
+  const decoded = fullyDecode(value)
+  for (const pattern of LINK_PATTERNS) {
+    const match = decoded.match(pattern)
+    if (!match) continue
+    const candidate = { lat: Number(match[1]), lng: Number(match[2]) }
+    if (isValidLatLng(candidate)) return candidate
+  }
+  return null
+}
+
+/**
+ * Last resort for a Google Maps page whose URL carries no coordinates: the map view is
+ * embedded in the markup as `APP_INITIALIZATION_STATE=[[[altitude,lng,lat],…`.
+ *
+ * Note the order — longitude comes before latitude. This is the camera position rather
+ * than the place's exact pin, so callers should treat it as approximate and let the user
+ * confirm it, but it is far better than refusing a link that is perfectly valid.
+ */
+export function extractCoordinatesFromHtml(html: string): { point: LatLng; approximate: boolean } | null {
+  const exact = extractCoordinatesStrict(html)
+  if (exact) return { point: exact, approximate: false }
+
+  const match = html.match(
+    /APP_INITIALIZATION_STATE\s*=\s*\[\[\[[-\d.eE+]+,\s*(-?\d+\.\d+),\s*(-?\d+\.\d+)/,
+  )
+  if (match) {
+    const candidate = { lat: Number(match[2]), lng: Number(match[1]) }
+    if (isValidLatLng(candidate)) return { point: candidate, approximate: true }
+  }
+  return null
+}
+
+function fullyDecode(value: string) {
+  let decoded = value
+  // Share links are frequently double-encoded (%252C for the separating comma).
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      const next = decodeURIComponent(decoded)
+      if (next === decoded) break
+      decoded = next
+    } catch { break }
+  }
+  return decoded
+}
+
+/** Patterns that only match inside a recognisable map link, safe for body scanning. */
+const LINK_PATTERNS: RegExp[] = [
+  // Google Maps place pin — the precise location behind a share link.
+  /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+  // Google Maps camera position.
+  /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?),\s*[\d.]+[zm]/,
+  /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+  // Common query parameters across Google/Apple/Bing.
+  /[?&#](?:q|query|ll|sll|center|destination|viewpoint|daddr|saddr|cp)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+  // OpenStreetMap marker parameters.
+  /[?&]mlat=(-?\d+(?:\.\d+)?)[\s\S]{0,120}?[?&]mlon=(-?\d+(?:\.\d+)?)/,
+  // OpenStreetMap permalink hash.
+  /#map=[\d.]+\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)/,
+  // geo: URI, as produced by "share location" on Android.
+  /geo:(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+]
+
+/** Approximate city centres, used only to frame the map before a pin exists. */
+export const CITY_CENTERS: Record<string, LatLng> = {
+  'الرياض': { lat: 24.7136, lng: 46.6753 },
+  'جدة': { lat: 21.5433, lng: 39.1728 },
+  'مكة المكرمة': { lat: 21.3891, lng: 39.8579 },
+  'المدينة المنورة': { lat: 24.5247, lng: 39.5692 },
+  'الدمام': { lat: 26.4207, lng: 50.0888 },
+  'الخبر': { lat: 26.2172, lng: 50.1971 },
+  'الظهران': { lat: 26.2361, lng: 50.0393 },
+  'تبوك': { lat: 28.3838, lng: 36.5550 },
+  'بريدة': { lat: 26.3260, lng: 43.9750 },
+  'حائل': { lat: 27.5114, lng: 41.6900 },
+  'الطائف': { lat: 21.2703, lng: 40.4158 },
+  'أبها': { lat: 18.2164, lng: 42.5053 },
+  'خميس مشيط': { lat: 18.3060, lng: 42.7297 },
+  'نجران': { lat: 17.4924, lng: 44.1277 },
+  'جازان': { lat: 16.8892, lng: 42.5511 },
+  'ينبع': { lat: 24.0895, lng: 38.0618 },
+  'الجبيل': { lat: 27.0046, lng: 49.6605 },
+  'القطيف': { lat: 26.5205, lng: 49.9975 },
+  'الأحساء': { lat: 25.3838, lng: 49.5860 },
+  'عنيزة': { lat: 26.0837, lng: 43.9930 },
+}
+
+/** Centre of Saudi Arabia — the fallback when no city has been chosen yet. */
+export const SAUDI_CENTER: LatLng = { lat: 24.0, lng: 45.0 }
+
+function normalizeCityName(value: string) {
+  return value
+    .replace(/[ً-ْ]/g, '')       // strip diacritics
+    .replace(/[إأآا]/g, 'ا')                // unify alef forms
+    .replace(/ة/g, 'ه')                     // unify taa marbuta
+    .replace(/\s+/g, ' ')
+    .replace(/^(مدينة|محافظة|منطقة)\s+/, '')
+    .trim()
+}
+
+/** Tolerant city lookup — sellers type "مدينة الخبر" or "الخُبر" and still expect a match. */
+export function lookupCityCenter(city: string | null | undefined): LatLng | null {
+  if (!city) return null
+  if (CITY_CENTERS[city]) return CITY_CENTERS[city]
+
+  const target = normalizeCityName(city)
+  if (!target) return null
+
+  for (const [name, center] of Object.entries(CITY_CENTERS)) {
+    const candidate = normalizeCityName(name)
+    if (candidate === target || target.includes(candidate) || candidate.includes(target)) {
+      return center
+    }
+  }
+  return null
+}

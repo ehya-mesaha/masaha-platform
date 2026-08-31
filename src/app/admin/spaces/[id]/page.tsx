@@ -8,6 +8,7 @@ import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import { formatSpaceNumber } from '@/lib/format'
 import AdminDeleteButton from '@/components/admin/AdminDeleteButton'
+import SpaceLocationMap from '@/components/maps/SpaceLocationMap'
 
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const POLICY_LABEL: Record<string, { name: string; desc: string; color: string }> = {
@@ -327,20 +328,18 @@ export default function AdminSpaceDetailPage() {
               )}
             </Card>
 
-          {/* Map */}
-          {space.latitude && space.longitude && (
-            <Card>
-              <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">الموقع على الخريطة</h3>
-              <div className="rounded-xl overflow-hidden border border-[#D8D1C7]">
-                <iframe
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${space.longitude - 0.01},${space.latitude - 0.01},${space.longitude + 0.01},${space.latitude + 0.01}&layer=mapnik&marker=${space.latitude},${space.longitude}`}
-                  className="w-full h-64"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                />
-              </div>
-            </Card>
-          )}
+          {/* Map — always rendered: a missing pin is itself something to review. */}
+          <Card>
+            <h3 className="font-display font-extrabold text-[#1B1B1B] text-base mb-4">الموقع على الخريطة</h3>
+            <SpaceLocationMap
+              latitude={space.latitude}
+              longitude={space.longitude}
+              address={[space.streetName, space.district, space.city].filter(Boolean).join('، ')}
+              city={space.city}
+              showCoordinates
+              height={280}
+            />
+          </Card>
         </div>
 
         {/* Sidebar */}

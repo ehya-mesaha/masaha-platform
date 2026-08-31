@@ -1,4 +1,5 @@
 import type { SpaceFormData } from './types'
+import { isValidLatLng } from '@/lib/geo'
 
 const VALID_POLICIES = new Set(['FLEXIBLE', 'MODERATE', 'STRICT'])
 
@@ -27,11 +28,13 @@ export function getStepError(step: number, form: SpaceFormData): string {
     if (!form.city) return 'اختر المدينة.'
     if (!form.district.trim()) return 'أدخل اسم الحي.'
     if (!form.streetName.trim()) return 'أدخل اسم الشارع.'
+    if (!form.buildingNumber.trim()) return 'أدخل رقم المبنى.'
     if (!/^\d{5}$/.test(form.postalCode.trim())) return 'أدخل رمزًا بريديًا صحيحًا من 5 أرقام.'
-    const latitude = Number(form.latitude)
-    const longitude = Number(form.longitude)
-    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return 'حدد خط عرض صحيحًا من الخريطة.'
-    if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return 'حدد خط طول صحيحًا من الخريطة.'
+    // `Number('')` is 0, so an untouched pair used to pass this check and publish a
+    // space pinned to null island off the coast of Africa.
+    if (!isValidLatLng({ lat: Number(form.latitude), lng: Number(form.longitude) })) {
+      return 'حدد موقع المساحة على الخريطة.'
+    }
   }
 
   if (step === 3 && form.images.length < 1) {
