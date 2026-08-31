@@ -27,7 +27,7 @@ export default async function ConfirmedPage({ searchParams }: { searchParams: Pr
   return (
     <main className="grid min-h-screen place-items-center bg-[#F5F1E8] px-4">
       <section className="premium-card max-w-lg p-8 text-center">
-        <Link href="/" className="mb-6 inline-flex" aria-label="إحياء مساحة">
+        <Link href="/" className="mb-6 inline-flex" aria-label="مساحة">
           <BrandLogo variant="horizontal" tone="green" className="status-brand-logo" priority />
         </Link>
         <span className={`mx-auto grid h-16 w-16 place-items-center rounded-full ${isSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>

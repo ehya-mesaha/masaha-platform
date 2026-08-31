@@ -7,8 +7,9 @@ export const localeLabels: Record<Locale, string> = {
 
 export const translations = {
   ar: {
-    brand: 'إحياء مساحة',
-    brandSub: 'EHYA MASAHA',
+    brand: 'مساحة',
+    brandLegal: 'إحياء مساحة',
+    brandSub: 'MESAHA',
     navHome: 'الرئيسية',
     navSpaces: 'تصفح المساحات',
     navHow: 'كيف نعمل',
@@ -111,8 +112,9 @@ export const translations = {
     language: 'اللغة',
   },
   en: {
-    brand: 'Ehya Masaha',
-    brandSub: 'EHYA MASAHA',
+    brand: 'Mesaha',
+    brandLegal: 'Ehya Masaha',
+    brandSub: 'MESAHA',
     navHome: 'Home',
     navSpaces: 'Browse Spaces',
     navHow: 'How It Works',

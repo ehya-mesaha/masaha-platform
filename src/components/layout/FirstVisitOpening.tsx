@@ -58,7 +58,7 @@ export default function FirstVisitOpening() {
       className={`first-visit-opening ${phase === 'leaving' ? 'is-leaving' : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label={isEnglish ? 'Welcome to Ehya Masaha' : 'مرحباً بك في إحياء مساحة'}
+      aria-label={isEnglish ? 'Welcome to Mesaha' : 'مرحباً بك في مساحة'}
       data-no-translate="true"
       data-testid="masaha-opening"
     >
@@ -104,7 +104,7 @@ export default function FirstVisitOpening() {
               tone="white"
               className="opening-official-logo"
               priority
-              alt={isEnglish ? 'Ehya Masaha' : 'إحياء مساحة'}
+              alt={isEnglish ? 'Mesaha' : 'مساحة'}
             />
           </div>
 

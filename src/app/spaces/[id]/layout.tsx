@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
-
-const SITE_URL = 'https://ehyamesaha.sa'
+import { BRAND_NAME_AR, SITE_URL } from '@/lib/brand'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -19,11 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         images: { orderBy: { order: 'asc' }, take: 1, select: { url: true } },
       },
     })
-    if (!space) return { title: 'المساحة غير موجودة | إحياء مساحة', robots: { index: false, follow: false } }
+    if (!space) return { title: `المساحة غير موجودة | ${BRAND_NAME_AR}`, robots: { index: false, follow: false } }
 
-    const title = `${space.name} في ${space.city} | إحياء مساحة`
+    const title = `${space.name} في ${space.city} | ${BRAND_NAME_AR}`
     const description = space.description?.slice(0, 155)
-      || `احجز ${space.type.name} في ${space.city}${space.district ? `، ${space.district}` : ''} بالساعة عبر إحياء مساحة.`
+      || `احجز ${space.type.name} في ${space.city}${space.district ? `، ${space.district}` : ''} بالساعة عبر ${BRAND_NAME_AR}.`
     const image = space.images[0]?.url
 
     return {
@@ -36,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         url: `${SITE_URL}/spaces/${id}`,
         type: 'website',
         locale: 'ar_SA',
-        siteName: 'إحياء مساحة',
+        siteName: BRAND_NAME_AR,
         images: image ? [{ url: image, alt: space.name }] : undefined,
       },
       twitter: { card: 'summary_large_image', title, description, images: image ? [image] : undefined },
@@ -46,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       },
     }
   } catch {
-    return { title: 'مساحة | إحياء مساحة' }
+    return { title: BRAND_NAME_AR }
   }
 }
 

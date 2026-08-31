@@ -4,7 +4,7 @@ import BrandLogo from '@/components/brand/BrandLogo'
 export default function PendingApprovalPage() {
   return <main className="grid min-h-screen place-items-center bg-[#F5F1E8] px-4">
     <section className="premium-card max-w-lg p-8 text-center">
-      <Link href="/" className="mb-6 inline-flex" aria-label="إحياء مساحة">
+      <Link href="/" className="mb-6 inline-flex" aria-label="مساحة">
         <BrandLogo variant="horizontal" tone="green" className="status-brand-logo" priority />
       </Link>
       <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-amber-50 text-amber-700"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" /><path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></span>

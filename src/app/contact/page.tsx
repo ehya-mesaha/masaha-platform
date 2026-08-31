@@ -8,7 +8,7 @@ import { useLanguage } from '@/components/i18n/LanguageProvider'
 const copy = {
   ar: {
     eyebrow: 'نحن هنا لمساعدتك',
-    title: 'تواصل مع فريق إحياء مساحة',
+    title: 'تواصل مع فريق مساحة',
     intro: 'أرسل استفسارك أو اقتراحك أو شكواك، وسيتابعها الفريق المختص بوضوح واهتمام.',
     responseTime: 'وسيتم الرد عليك بمدة لا تتجاوز 72 ساعة، بإذن الله.',
     type: 'نوع الرسالة',
@@ -29,7 +29,7 @@ const copy = {
   },
   en: {
     eyebrow: 'We are here to help',
-    title: 'Contact the Ehya Masaha team',
+    title: 'Contact the Mesaha team',
     intro: 'Send an inquiry, suggestion, or complaint and the right team will follow up with care and clarity.',
     responseTime: 'We will respond within 72 hours, God willing.',
     type: 'Message type',

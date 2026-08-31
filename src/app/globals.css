@@ -227,15 +227,17 @@ html[dir="ltr"] body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-cairo), 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
-  letter-spacing: 0;
+  letter-spacing: -0.011em;
   font-weight: 800;
+  line-height: 1.28;
 }
 
-/* Fine-tuned typography for Arabic */
+/* Fine-tuned typography for Arabic — Cairo carries a full 200–1000 weight axis, so the
+   display treatment leans into the heaviest end for headline contrast. */
 .font-display {
   font-family: var(--font-cairo), 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
   font-weight: 900;
-  letter-spacing: 0;
+  letter-spacing: -0.015em;
 }
 
 .brand-logo {
@@ -253,47 +255,49 @@ h1, h2, h3, h4, h5, h6 {
   min-width: 0;
 }
 
+/* The new lockup is wider and shorter than the old one (≈2.75:1 vs ≈2.15:1), so widths
+   are set a touch larger to keep the same optical presence in each slot. */
 .public-brand-logo {
-  width: clamp(6.6rem, 9vw, 7.65rem);
+  width: clamp(7.4rem, 10vw, 8.6rem);
   height: auto;
   transition: transform .45s cubic-bezier(.2,.8,.2,1), filter .35s ease;
 }
 
 .dashboard-sidebar-logo {
-  width: 7.4rem;
+  width: 8.6rem;
   height: auto;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .16));
 }
 
 .dashboard-mobile-logo {
-  width: 5.9rem;
+  width: 6.9rem;
   height: auto;
 }
 
 .site-footer-logo {
-  width: 9.6rem;
+  width: 11rem;
   height: auto;
 }
 
 .auth-brand-logo {
-  width: 10.5rem;
+  width: 12rem;
   height: auto;
 }
 
 .auth-brand-logo-mobile {
-  width: 8.4rem;
+  width: 9.6rem;
   height: auto;
 }
 
 .policy-brand-logo {
-  width: 9.5rem;
+  width: 10.8rem;
   height: auto;
 }
 
 .policy-footer-logo,
 .status-brand-logo,
 .notification-brand-logo {
-  width: 7.8rem;
+  width: 9rem;
   height: auto;
 }
 
@@ -872,7 +876,7 @@ body.masaha-opening-active {
 }
 
 .opening-official-logo {
-  width: clamp(16rem, 34vw, 27rem);
+  width: clamp(13rem, 29vw, 22rem);
   height: auto;
   filter: drop-shadow(0 24px 50px rgba(0, 0, 0, .25));
 }
@@ -953,7 +957,7 @@ html[dir="rtl"] .opening-progress span { transform-origin: right; }
   .opening-room { width: 90vw; height: 58vh; }
   .opening-door { width: 110px; }
   .opening-copy { padding-inline: 1.25rem; }
-  .opening-official-logo { width: min(77vw, 20rem); }
+  .opening-official-logo { width: min(66vw, 16rem); }
   .opening-message { max-width: 19rem; line-height: 1.8; }
 }
 

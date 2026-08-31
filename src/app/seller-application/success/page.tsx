@@ -5,7 +5,7 @@ export default async function SellerApplicationSuccess({ searchParams }: { searc
   const { ref } = await searchParams
   return <main className="grid min-h-screen place-items-center bg-[#F5F1E8] px-4">
     <section className="premium-card max-w-2xl p-8 text-center">
-      <Link href="/" className="mb-6 inline-flex" aria-label="إحياء مساحة">
+      <Link href="/" className="mb-6 inline-flex" aria-label="مساحة">
         <BrandLogo variant="horizontal" tone="green" className="status-brand-logo" priority />
       </Link>
       <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#E7F2E9] text-[#0E3B34]"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></span>

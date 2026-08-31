@@ -6,7 +6,7 @@ import LegalEnglishGuide from '@/components/legal/LegalEnglishGuide'
 import legalDocuments from '@/data/legal-documents.json'
 
 export const metadata: Metadata = {
-  title: 'السياسات والشروط | إحياء مساحة',
+  title: 'السياسات والشروط | مساحة',
   description:
     'الوثائق القانونية الرسمية المنظمة لاستخدام منصة إحياء مساحة والحجوزات وأصحاب المساحات والخصوصية والملكية الفكرية.',
   alternates: { canonical: '/policies' },

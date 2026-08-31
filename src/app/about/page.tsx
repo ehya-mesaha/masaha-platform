@@ -7,10 +7,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieStore = await cookies()
   const isEnglish = cookieStore.get('masaha_locale')?.value === 'en'
   return {
-    title: isEnglish ? 'About Us | Ehya Masaha' : 'من نحن | إحياء مساحة',
+    title: isEnglish ? 'About Us | Mesaha' : 'من نحن | مساحة',
     description: isEnglish
-      ? 'Learn about the vision, mission, and values of Ehya Masaha.'
-      : 'تعرف على رؤية ورسالة وقيم إحياء مساحة.',
+      ? 'Learn about the vision, mission, and values of Mesaha (Ehya Masaha).'
+      : 'تعرف على رؤية ورسالة وقيم منصة مساحة.',
   }
 }
 

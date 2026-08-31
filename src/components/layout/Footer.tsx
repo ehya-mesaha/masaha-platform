@@ -107,7 +107,7 @@ export default function Footer() {
           </div>
 
           <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
-            <span>© {new Date().getFullYear()} {t('brand')}. {t('footerRights')}</span>
+            <span>© {new Date().getFullYear()} {t('brandLegal')}. {t('footerRights')}</span>
             <span dir="ltr">ehyamesaha.sa · Saudi Arabia</span>
           </div>
         </div>

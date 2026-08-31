@@ -11,17 +11,18 @@ function getResendClient() {
 }
 
 function getFromAddress() {
-  return process.env.EMAIL_FROM || 'إحياء مساحة <no-reply@ehyamesaha.sa>'
+  return process.env.EMAIL_FROM || 'مساحة <no-reply@ehyamesaha.sa>'
 }
 
 function emailShell(bodyHtml: string) {
-  const logoUrl = `${getSiteUrl()}/brand/logo-horizontal-green.png`
+  // White lockup — the email header band is brand green.
+  const logoUrl = `${getSiteUrl()}/brand/logo-horizontal-white.png`
   return `<!doctype html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>إحياء مساحة</title>
+    <title>مساحة</title>
   </head>
   <body style="margin:0;padding:0;background-color:#F5F1E8;font-family:Tahoma,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F1E8;padding:32px 16px;">
@@ -30,7 +31,7 @@ function emailShell(bodyHtml: string) {
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E4DED1;">
             <tr>
               <td align="center" style="background-color:#0E3B34;padding:28px 24px;">
-                <img src="${logoUrl}" alt="إحياء مساحة" height="32" style="height:32px;display:block;" />
+                <img src="${logoUrl}" alt="مساحة" height="34" style="height:34px;display:block;" />
               </td>
             </tr>
             <tr>
@@ -55,7 +56,7 @@ export async function sendConfirmationEmail({ to, name, confirmUrl }: { to: stri
   const html = emailShell(`
     <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:800;color:#1B1B1B;">أكّد بريدك الإلكتروني</h1>
     <p style="margin:0 0 20px 0;font-size:14px;line-height:24px;color:#3F4B47;">
-      مرحبًا ${escapeHtml(name)}، شكرًا لتسجيلك في إحياء مساحة. لتفعيل حسابك والبدء في الحجز، يرجى تأكيد بريدك الإلكتروني بالضغط على الزر أدناه.
+      مرحبًا ${escapeHtml(name)}، شكرًا لتسجيلك في مساحة. لتفعيل حسابك والبدء في الحجز، يرجى تأكيد بريدك الإلكتروني بالضغط على الزر أدناه.
     </p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;">
       <tr>
@@ -72,7 +73,7 @@ export async function sendConfirmationEmail({ to, name, confirmUrl }: { to: stri
   return getResendClient().emails.send({
     from: getFromAddress(),
     to,
-    subject: 'تأكيد بريدك الإلكتروني - إحياء مساحة',
+    subject: 'تأكيد بريدك الإلكتروني - مساحة',
     html,
   })
 }

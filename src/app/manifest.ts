@@ -1,9 +1,10 @@
 import type { MetadataRoute } from 'next'
+import { SITE_TITLE_AR, BRAND_NAME_AR } from '@/lib/brand'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'إحياء مساحة | لإحياء المساحات غير المستغلة',
-    short_name: 'إحياء مساحة',
+    name: SITE_TITLE_AR,
+    short_name: BRAND_NAME_AR,
     description: 'منصة سعودية لإحياء المساحات غير المستغلة وحجز القاعات والمساحات بالساعة.',
     start_url: '/',
     display: 'standalone',

@@ -8,15 +8,22 @@ import LanguageProvider from '@/components/i18n/LanguageProvider'
 import ThemeProvider from '@/components/theme/ThemeProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 import ExperienceLayer from '@/components/layout/ExperienceLayer'
+import {
+  BRAND_NAME_AR, BRAND_NAME_EN, LEGAL_NAME_AR, LEGAL_NAME_EN,
+  SITE_TITLE_AR, SITE_TITLE_EN, SITE_URL,
+} from '@/lib/brand'
 
-const SITE_URL = 'https://ehyamesaha.sa'
-const AR_TITLE = 'إحياء مساحة | لإحياء المساحات غير المستغلة'
-const EN_TITLE = 'Ehya Masaha | Reviving Underutilized Spaces'
+const AR_TITLE = SITE_TITLE_AR
+const EN_TITLE = SITE_TITLE_EN
 
+// Cairo — the brand's primary typeface ("خط القاهرة"). Variable weight axis 200–1000
+// covers everything from detail copy to display headings from one 70 KB file.
 const cairo = localFont({
-  src: '../../public/fonts/ibm-plex-sans-arabic.woff',
+  src: '../../public/fonts/cairo.woff2',
+  weight: '200 1000',
   display: 'swap',
   variable: '--font-cairo',
+  fallback: ['Segoe UI', 'Tahoma', 'Arial', 'system-ui', 'sans-serif'],
 })
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,15 +37,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    applicationName: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
+    applicationName: isEnglish ? BRAND_NAME_EN : BRAND_NAME_AR,
     title,
     description,
     keywords: isEnglish
-      ? ['space rental Saudi Arabia', 'hourly space booking', 'training rooms', 'meeting rooms', 'classrooms', 'underutilized spaces', 'Ehya Masaha']
-      : ['إحياء مساحة', 'تأجير مساحات', 'حجز قاعات بالساعة', 'قاعات تدريب', 'قاعات اجتماعات', 'فصول دراسية', 'مساحات غير مستغلة', 'مساحات عمل'],
-    authors: [{ name: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة', url: SITE_URL }],
-    creator: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
-    publisher: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
+      ? ['space rental Saudi Arabia', 'hourly space booking', 'training rooms', 'meeting rooms', 'classrooms', 'underutilized spaces', 'Mesaha', 'Ehya Masaha']
+      : ['مساحة', 'إحياء مساحة', 'تأجير مساحات', 'حجز قاعات بالساعة', 'قاعات تدريب', 'قاعات اجتماعات', 'فصول دراسية', 'مساحات غير مستغلة', 'مساحات عمل'],
+    authors: [{ name: isEnglish ? LEGAL_NAME_EN : LEGAL_NAME_AR, url: SITE_URL }],
+    creator: isEnglish ? LEGAL_NAME_EN : LEGAL_NAME_AR,
+    publisher: isEnglish ? LEGAL_NAME_EN : LEGAL_NAME_AR,
     alternates: {
       canonical: '/',
     },
@@ -62,7 +69,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: '/',
       locale: isEnglish ? 'en_US' : 'ar_SA',
       alternateLocale: isEnglish ? ['ar_SA'] : ['en_US'],
-      siteName: isEnglish ? 'Ehya Masaha' : 'إحياء مساحة',
+      siteName: isEnglish ? BRAND_NAME_EN : BRAND_NAME_AR,
       images: [
         {
           url: '/og.png',
@@ -92,8 +99,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       {
         '@type': 'Organization',
         '@id': `${SITE_URL}/#organization`,
-        name: 'إحياء مساحة',
-        alternateName: 'Ehya Masaha',
+        name: LEGAL_NAME_AR,
+        legalName: LEGAL_NAME_AR,
+        alternateName: [BRAND_NAME_AR, BRAND_NAME_EN, LEGAL_NAME_EN],
         url: SITE_URL,
         logo: `${SITE_URL}/brand/logo-stacked-green.png`,
         email: 'info@ehyamesaha.sa',
@@ -108,8 +116,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         '@type': 'WebSite',
         '@id': `${SITE_URL}/#website`,
         url: SITE_URL,
-        name: 'إحياء مساحة',
-        alternateName: 'Ehya Masaha',
+        name: BRAND_NAME_AR,
+        alternateName: [BRAND_NAME_EN, LEGAL_NAME_AR, LEGAL_NAME_EN],
         inLanguage: ['ar-SA', 'en-SA'],
         publisher: { '@id': `${SITE_URL}/#organization` },
         potentialAction: {

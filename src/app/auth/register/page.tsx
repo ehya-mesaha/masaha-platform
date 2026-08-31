@@ -59,7 +59,7 @@ export default function RegisterPage() {
   return (
     <div className="auth-shell grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]">
       <section className="auth-visual hidden flex-col justify-between p-12 text-white lg:flex">
-        <Link href="/" className="relative inline-flex" aria-label="إحياء مساحة">
+        <Link href="/" className="relative inline-flex" aria-label="مساحة">
           <BrandLogo variant="horizontal" tone="white" className="auth-brand-logo" priority />
         </Link>
         <div className="relative">
@@ -88,7 +88,7 @@ export default function RegisterPage() {
       <main className="relative grid place-items-center bg-[#F5F1E8] p-6 py-10">
         <div className="absolute left-6 top-6"><LanguageToggle /></div>
         <form onSubmit={submit} className="auth-form-card w-full max-w-xl p-8 lg:p-10">
-          <Link href="/" className="mb-6 inline-flex lg:hidden" aria-label="إحياء مساحة">
+          <Link href="/" className="mb-6 inline-flex lg:hidden" aria-label="مساحة">
             <BrandLogo variant="horizontal" tone="green" className="auth-brand-logo-mobile" priority />
           </Link>
           <h2 className="text-3xl font-extrabold text-[#1B1B1B]">إنشاء حساب جديد</h2>

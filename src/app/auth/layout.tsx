@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'الحساب | إحياء مساحة',
+  title: 'الحساب | مساحة',
   robots: { index: false, follow: false },
 }
 
