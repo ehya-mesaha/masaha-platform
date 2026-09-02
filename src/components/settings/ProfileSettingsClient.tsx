@@ -4,6 +4,8 @@ import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 import type { TranslationKey } from '@/lib/i18n'
+import AuthPasswordField from '@/components/auth/AuthPasswordField'
+import { getPasswordStrength } from '@/lib/passwordStrength'
 
 type UserData = {
   name: string
@@ -29,6 +31,11 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
   const [saving, setSaving] = useState(false)
   const [avatarSaving, setAvatarSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
   async function updateProfile(payload: Record<string, unknown>) {
     const res = await fetch('/api/auth/profile', {
@@ -84,6 +91,35 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
       setMessage({ type: 'err', text: err instanceof Error ? err.message : t('deleteFailed') })
     } finally {
       setAvatarSaving(false)
+    }
+  }
+
+  async function changePassword() {
+    setPasswordMessage(null)
+    if (!currentPassword) {
+      setPasswordMessage({ type: 'err', text: t('currentPassword') })
+      return
+    }
+    if (getPasswordStrength(newPassword).score === 0) {
+      setPasswordMessage({ type: 'err', text: t('passwordMustBeStrong') })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: 'err', text: t('passwordDoesNotMatch') })
+      return
+    }
+
+    setPasswordSaving(true)
+    try {
+      await updateProfile({ currentPassword, newPassword })
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordMessage({ type: 'ok', text: t('passwordChanged') })
+    } catch (err) {
+      setPasswordMessage({ type: 'err', text: err instanceof Error ? err.message : t('connectionError') })
+    } finally {
+      setPasswordSaving(false)
     }
   }
 
@@ -186,6 +222,28 @@ export default function ProfileSettingsClient({ user }: { user: UserData }) {
                 </p>
               </div>
             </div>
+          </section>
+
+          <section className="premium-card p-6 animate-in">
+            <h2 className="text-sm font-extrabold text-[#1B1B1B]">{t('changePassword')}</h2>
+            <p className="mt-2 text-xs leading-6 text-[#5F6764]">{t('passwordChangeHint')}</p>
+            {passwordMessage && (
+              <div className={`mt-4 rounded-xl px-4 py-3 text-sm font-semibold ${
+                passwordMessage.type === 'ok' ? 'border border-green-200 bg-green-50 text-green-700' : 'border border-red-200 bg-red-50 text-red-700'
+              }`}>
+                {passwordMessage.text}
+              </div>
+            )}
+            <div className="mt-4 space-y-4">
+              <AuthPasswordField label={t('currentPassword')} value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
+              <div className="grid gap-4 md:grid-cols-2">
+                <AuthPasswordField label={t('newPassword')} value={newPassword} onChange={setNewPassword} placeholder="8 أحرف على الأقل" autoComplete="new-password" showStrength />
+                <AuthPasswordField label={t('confirmNewPassword')} value={confirmPassword} onChange={setConfirmPassword} placeholder="أعد إدخال كلمة المرور" autoComplete="new-password" error={confirmPassword && confirmPassword !== newPassword ? t('passwordDoesNotMatch') : undefined} />
+              </div>
+            </div>
+            <button type="button" onClick={changePassword} disabled={passwordSaving} className="btn-primary mt-5 rounded-xl px-6 py-2.5 text-sm font-bold disabled:opacity-60">
+              {passwordSaving ? t('saving') : t('changePassword')}
+            </button>
           </section>
 
           <section className="premium-card p-6 animate-in">

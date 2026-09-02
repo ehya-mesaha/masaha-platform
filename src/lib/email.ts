@@ -78,6 +78,32 @@ export async function sendConfirmationEmail({ to, name, confirmUrl }: { to: stri
   })
 }
 
+export async function sendPasswordResetEmail({ to, name, resetUrl }: { to: string; name: string; resetUrl: string }) {
+  const html = emailShell(`
+    <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:800;color:#1B1B1B;">إعادة تعيين كلمة المرور</h1>
+    <p style="margin:0 0 20px 0;font-size:14px;line-height:24px;color:#3F4B47;">
+      مرحبًا ${escapeHtml(name)}، تلقّينا طلبًا لإعادة تعيين كلمة مرور حسابك في مساحة. اضغط على الزر أدناه لاختيار كلمة مرور جديدة.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;">
+      <tr>
+        <td align="center" style="border-radius:12px;background-color:#0E3B34;">
+          <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">تعيين كلمة مرور جديدة</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 8px 0;font-size:12px;line-height:20px;color:#8B9389;">أو انسخ الرابط التالي والصقه في المتصفح:</p>
+    <p dir="ltr" style="margin:0 0 20px 0;font-size:12px;line-height:20px;color:#0E3B34;word-break:break-all;text-align:left;">${resetUrl}</p>
+    <p style="margin:0;font-size:12px;line-height:20px;color:#8B9389;">هذا الرابط صالح لمدة ساعة واحدة ويُستخدم مرة واحدة. إذا لم تطلب تغيير كلمة المرور، يمكنك تجاهل هذه الرسالة بأمان.</p>
+  `)
+
+  return getResendClient().emails.send({
+    from: getFromAddress(),
+    to,
+    subject: 'إعادة تعيين كلمة المرور - مساحة',
+    html,
+  })
+}
+
 export async function sendContactMessageEmail({
   type,
   name,

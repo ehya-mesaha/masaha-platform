@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LanguageToggle from '@/components/i18n/LanguageToggle'
@@ -17,6 +17,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [resendMessage, setResendMessage] = useState('')
+  const [passwordReset, setPasswordReset] = useState(false)
+
+  useEffect(() => {
+    setPasswordReset(new URLSearchParams(window.location.search).get('passwordReset') === '1')
+  }, [])
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -77,6 +82,7 @@ export default function LoginPage() {
           </Link>
           <h2 className="text-3xl font-extrabold text-[#1B1B1B]">تسجيل الدخول</h2>
           <p className="mb-7 mt-2 text-sm text-[#5F6764]">أدخل بيانات حسابك للوصول إلى لوحة التحكم.</p>
+          {passwordReset && <p className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">تم تغيير كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.</p>}
           {error && (
             <div className="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
               <p>{error}</p>
@@ -111,6 +117,11 @@ export default function LoginPage() {
               placeholder="••••••••"
               autoComplete="current-password"
             />
+            <div className="-mt-1 text-start">
+              <Link href="/auth/forgot-password" className="text-xs font-bold text-[#0E3B34] underline underline-offset-4 hover:text-[#B99A63]">
+                نسيت كلمة المرور؟
+              </Link>
+            </div>
           </div>
           <button disabled={loading} className="btn-primary mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold disabled:opacity-60">
             {loading ? (

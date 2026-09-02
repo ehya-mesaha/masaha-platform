@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose'
+import { createHmac } from 'crypto'
 import { cookies } from 'next/headers'
 import {
   getJwtSecret,
@@ -41,6 +42,7 @@ export type TokenPayload = {
 }
 
 const EMAIL_VERIFICATION_PURPOSE = 'verify-email'
+const PASSWORD_RESET_PURPOSE = 'reset-password'
 
 export async function signEmailVerificationToken(userId: string) {
   return new SignJWT({ purpose: EMAIL_VERIFICATION_PURPOSE, userId })
@@ -56,4 +58,38 @@ export async function verifyEmailVerificationToken(token: string): Promise<strin
     throw new Error('Invalid verification token')
   }
   return payload.userId
+}
+
+function passwordResetVersion(userId: string, passwordHash: string) {
+  return createHmac('sha256', getJwtSecret())
+    .update(`${userId}:${passwordHash}`)
+    .digest('base64url')
+}
+
+export async function signPasswordResetToken(userId: string, passwordHash: string) {
+  return new SignJWT({
+    purpose: PASSWORD_RESET_PURPOSE,
+    userId,
+    version: passwordResetVersion(userId, passwordHash),
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('1h')
+    .sign(getJwtSecret())
+}
+
+export async function verifyPasswordResetToken(token: string): Promise<{ userId: string; version: string }> {
+  const { payload } = await jwtVerify(token, getJwtSecret(), { algorithms: ['HS256'] })
+  if (
+    payload.purpose !== PASSWORD_RESET_PURPOSE ||
+    typeof payload.userId !== 'string' ||
+    typeof payload.version !== 'string'
+  ) {
+    throw new Error('Invalid password reset token')
+  }
+  return { userId: payload.userId, version: payload.version }
+}
+
+export function isPasswordResetTokenCurrent(userId: string, passwordHash: string, version: string) {
+  return passwordResetVersion(userId, passwordHash) === version
 }
