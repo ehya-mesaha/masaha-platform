@@ -120,18 +120,66 @@ export function extractCoordinates(value: string): LatLng | null {
 
   const patterns: RegExp[] = [
     ...LINK_PATTERNS,
+    // "24.7111° N, 46.6734° E" — Google's "What's here?" / coordinate readout.
+    /(-?\d{1,2}(?:\.\d+)?)\s*°?\s*([NSns])[,\s]+(-?\d{1,3}(?:\.\d+)?)\s*°?\s*([EWew])/,
     // A bare pair. Requires 3+ decimals so it cannot match a price, phone, or date.
-    /(-?\d{1,2}\.\d{3,})\s*[,/ ]\s*(-?\d{1,3}\.\d{3,})/,
+    // Accepts a plain, Arabic (،) or ideographic comma, a slash, or whitespace.
+    /(-?\d{1,2}\.\d{3,})\s*[,،/\s]\s*(-?\d{1,3}\.\d{3,})/,
   ]
 
   for (const pattern of patterns) {
     const match = decoded.match(pattern)
     if (!match) continue
-    const candidate = { lat: Number(match[1]), lng: Number(match[2]) }
+    // The degree pattern has 4 groups (value, hemisphere, value, hemisphere).
+    let lat: number, lng: number
+    if (match.length >= 5 && /[NSns]/.test(match[2] || '')) {
+      lat = Number(match[1]) * (/[Ss]/.test(match[2]) ? -1 : 1)
+      lng = Number(match[3]) * (/[Ww]/.test(match[4]) ? -1 : 1)
+    } else {
+      lat = Number(match[1])
+      lng = Number(match[2])
+    }
+    const candidate = { lat, lng }
     if (isValidLatLng(candidate)) return candidate
   }
 
   return null
+}
+
+/**
+ * The first http(s) URL anywhere in a blob of text. Mobile "Share" wraps the link in a
+ * sentence, and a single-line <input> strips the newline before it, so the scheme can end
+ * up glued to the previous word ("…Googlehttps://…") — hence no leading word boundary.
+ */
+export function extractUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s<>"'\]}]+/i)
+  if (!match) return null
+  // Trim trailing sentence punctuation a URL never really ends with.
+  return match[0].replace(/[.,;:!؟?)\]]+$/, '')
+}
+
+export type LocationInput =
+  | { kind: 'coords'; point: LatLng }
+  | { kind: 'url'; url: string }
+  | { kind: 'text'; query: string }
+  | { kind: 'empty' }
+
+/**
+ * Classify whatever the seller typed or pasted into the one location field, so the UI
+ * has a single place to decide: use these coordinates / resolve this link / search this text.
+ */
+export function parseLocationInput(raw: string): LocationInput {
+  const value = raw.trim()
+  if (!value) return { kind: 'empty' }
+
+  const point = extractCoordinates(value)
+  if (point) return { kind: 'coords', point }
+
+  const url = extractUrl(value)
+  if (url) return { kind: 'url', url }
+  if (/^geo:/i.test(value)) return { kind: 'url', url: value }
+
+  return { kind: 'text', query: value }
 }
 
 /**

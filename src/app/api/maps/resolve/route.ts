@@ -11,23 +11,19 @@ import { extractCoordinates, extractCoordinatesFromHtml, isValidLatLng } from '@
  * are handled here rather than leaving the browser to guess.
  */
 
-const SHORT_LINK_HOSTS = new Set([
-  'maps.app.goo.gl', 'goo.gl', 'g.co', 'share.google', 'maps.google.com',
-  'www.google.com', 'google.com',
-])
-
 const ALLOWED_HOSTS = new Set([
-  ...SHORT_LINK_HOSTS,
+  'maps.app.goo.gl', 'goo.gl', 'g.co', 'share.google',
+  'maps.google.com', 'www.google.com', 'google.com',
+  'maps.google.com.sa', 'www.google.com.sa', 'google.com.sa',
   'openstreetmap.org', 'www.openstreetmap.org', 'osm.org',
   'maps.apple.com',
 ])
 
-const MAX_BODY_BYTES = 400_000
+const MAX_BODY_BYTES = 600_000
 
 function isAllowedHost(hostname: string) {
   return ALLOWED_HOSTS.has(hostname)
-    || hostname.endsWith('.google.com')
-    || hostname.endsWith('.google.com.sa')
+    || /(^|\.)google\.(com|com\.sa|com\.eg|ae|sa)$/.test(hostname)
 }
 
 async function fetchPage(url: URL) {

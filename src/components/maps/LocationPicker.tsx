@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MapCanvas, { MapView } from './MapCanvas'
 import {
-  LatLng, SAUDI_CENTER, extractCoordinates, formatCoordinate,
-  formatLatLng, isValidLatLng, lookupCityCenter, mapLinks,
+  LatLng, SAUDI_CENTER, formatCoordinate,
+  formatLatLng, isValidLatLng, lookupCityCenter, mapLinks, parseLocationInput,
 } from '@/lib/geo'
 
 export type ResolvedAddress = {
@@ -34,8 +34,6 @@ type SearchResult = {
   postalCode: string | null
 }
 
-const looksLikeLink = (value: string) => /^https?:\/\//i.test(value.trim()) || /^geo:/i.test(value.trim())
-
 export default function LocationPicker({ value, onChange, city, onUseAddress, height = 380 }: Props) {
   const fallbackCenter = lookupCityCenter(city) || SAUDI_CENTER
   const [view, setView] = useState<MapView>(() => ({
@@ -47,6 +45,8 @@ export default function LocationPicker({ value, onChange, city, onUseAddress, he
   const [search, setSearch] = useState<{ query: string; results: SearchResult[] }>({ query: '', results: [] })
   const [resolving, setResolving] = useState(false)
   const [message, setMessage] = useState<{ tone: 'error' | 'success' | 'info'; text: string } | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const resolvedRef = useRef<string>('')   // the last link/coords text we already acted on
   const [addressEntry, setAddressEntry] = useState<{ key: string; data: ResolvedAddress & { label: string } } | null>(null)
   const [addressLoading, setAddressLoading] = useState(false)
   const [locating, setLocating] = useState(false)
@@ -72,93 +72,118 @@ export default function LocationPicker({ value, onChange, city, onUseAddress, he
     setView({ center: point, zoom })
   }, [onChange])
 
-  // --- Smart input: one box that accepts either a map link or an address ----
-  // A link is resolved on submit; free text is searched as it is typed.
-  const trimmedQuery = query.trim()
-  const isSearchable = trimmedQuery.length >= 3
-    && !looksLikeLink(trimmedQuery)
-    && !extractCoordinates(trimmedQuery)
+  // --- Smart input: one box that takes a pasted map link, raw coordinates, or an address.
+  const parsed = parseLocationInput(query)
+  // Only free text is searched as it is typed; a link or coordinates are acted on directly.
+  const searchText = parsed.kind === 'text' && parsed.query.length >= 3 ? parsed.query : ''
 
   useEffect(() => {
-    if (!isSearchable) return
+    if (!searchText) return
     let cancelled = false
     const timer = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({ q: trimmedQuery })
+        const params = new URLSearchParams({ q: searchText })
         if (city) params.set('city', city)
         const response = await fetch(`/api/maps/search?${params}`)
         const data = await response.json()
         if (!cancelled) {
-          setSearch({ query: trimmedQuery, results: Array.isArray(data.results) ? data.results : [] })
+          setSearch({ query: searchText, results: Array.isArray(data.results) ? data.results : [] })
         }
       } catch {
-        if (!cancelled) setSearch({ query: trimmedQuery, results: [] })
+        if (!cancelled) setSearch({ query: searchText, results: [] })
       }
     }, 450)
     return () => { cancelled = true; clearTimeout(timer) }
-  }, [trimmedQuery, isSearchable, city])
+  }, [searchText, city])
 
   // Tying the results to the query they came from means a stale list can never be shown
   // against a newer query, and the spinner needs no state of its own.
-  const results = search.query === trimmedQuery ? search.results : []
-  const searching = isSearchable && search.query !== trimmedQuery
+  const results = useMemo(
+    () => (searchText && search.query === searchText ? search.results : []),
+    [searchText, search],
+  )
+  const searching = Boolean(searchText) && search.query !== searchText
 
-  async function submitQuery() {
-    const trimmed = query.trim()
-    if (!trimmed) {
-      setMessage({ tone: 'error', text: 'الصق رابط الموقع أو اكتب اسم الحي أو المعلم القريب.' })
-      return
-    }
+  const resolveLink = useCallback(async (url: string) => {
+    // `resolving` drives the button's "جارٍ التحديد..." state; message is set only on a
+    // terminal result so there is never a transient message to get stuck.
+    setResolving(true)
     setMessage(null)
-
-    // Coordinates or a link with coordinates in it — resolve without a round trip.
-    const direct = extractCoordinates(trimmed)
-    if (direct) {
-      placePin(direct)
-      setMessage({ tone: 'success', text: 'تم تحديد الموقع من الرابط.' })
-      return
-    }
-
-    if (looksLikeLink(trimmed)) {
-      setResolving(true)
-      try {
-        const response = await fetch('/api/maps/resolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: trimmed }),
+    try {
+      const response = await fetch('/api/maps/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (response.ok && isValidLatLng({ lat: data.lat, lng: data.lng })) {
+        placePin({ lat: data.lat, lng: data.lng }, data.approximate ? 15 : 17)
+        setQuery('')
+        setMessage(data.approximate
+          ? { tone: 'info', text: 'حددنا الموقع تقريبًا من الرابط — اسحب الدبوس إلى مكان المساحة بالضبط.' }
+          : { tone: 'success', text: 'تم تحديد الموقع من الرابط. تحقق منه على الخريطة بالأسفل.' })
+      } else {
+        setMessage({
+          tone: 'error',
+          text: data.error
+            || 'لم نتمكن من قراءة هذا الرابط. افتح الموقع في خرائط Google، اضغط على الدبوس، وانسخ الإحداثيات الظاهرة (مثل 24.7136, 46.6753) والصقها هنا — أو حدّد الموقع على الخريطة بالأسفل.',
         })
-        const data = await response.json()
-        if (response.ok && isValidLatLng({ lat: data.lat, lng: data.lng })) {
-          placePin({ lat: data.lat, lng: data.lng }, data.approximate ? 15 : 17)
-          setMessage(data.approximate
-            ? { tone: 'info', text: 'حددنا الموقع تقريبًا من الرابط — اسحب الدبوس إلى مكان المساحة بالضبط.' }
-            : { tone: 'success', text: 'تم تحديد الموقع من الرابط.' })
-        } else {
-          setMessage({
-            tone: 'error',
-            text: data.error || 'تعذر قراءة الرابط. جرّب البحث بالاسم أو حدّد الموقع على الخريطة مباشرة.',
-          })
-        }
-      } catch {
-        setMessage({ tone: 'error', text: 'تعذر الاتصال. حدّد الموقع على الخريطة مباشرة.' })
-      } finally {
-        setResolving(false)
       }
+    } catch {
+      setMessage({ tone: 'error', text: 'تعذر الاتصال بالخادم. الصق الإحداثيات أو حدّد الموقع على الخريطة بالأسفل.' })
+    } finally {
+      setResolving(false)
+    }
+  }, [placePin])
+
+  const chooseResult = useCallback((result: SearchResult) => {
+    placePin({ lat: result.lat, lng: result.lng })
+    setQuery('')
+    setMessage({ tone: 'success', text: 'تم تحديد الموقع. اسحب الدبوس لضبطه بدقة.' })
+  }, [placePin])
+
+  /** Act on whatever is in the field: coordinates → place, link → resolve, text → search. */
+  const runInput = useCallback((rawValue: string) => {
+    const p = parseLocationInput(rawValue)
+    if (p.kind === 'empty') {
+      setMessage({ tone: 'error', text: 'الصق رابط الموقع أو الإحداثيات، أو اكتب اسم الحي أو معلمًا قريبًا.' })
       return
     }
-
-    // Plain text: take the first search result if the list has already loaded.
+    if (p.kind === 'coords') {
+      resolvedRef.current = rawValue.trim()
+      placePin(p.point)
+      setQuery('')
+      setMessage({ tone: 'success', text: 'تم تحديد الموقع من الإحداثيات. تحقق منه على الخريطة بالأسفل.' })
+      return
+    }
+    if (p.kind === 'url') {
+      resolvedRef.current = rawValue.trim()
+      resolveLink(p.url)
+      return
+    }
     if (results.length > 0) {
       chooseResult(results[0])
       return
     }
-    setMessage({ tone: 'info', text: 'لا توجد نتائج مطابقة. حدّد الموقع على الخريطة مباشرة.' })
+    setMessage({ tone: 'info', text: 'لا توجد نتائج مطابقة. جرّب صياغة أخرى أو حدّد الموقع على الخريطة بالأسفل.' })
+  }, [placePin, resolveLink, chooseResult, results])
+
+  function submitQuery() {
+    setMessage(null)
+    runInput(query)
   }
 
-  function chooseResult(result: SearchResult) {
-    placePin({ lat: result.lat, lng: result.lng })
-    setQuery('')
-    setMessage({ tone: 'success', text: 'تم تحديد الموقع. اسحب الدبوس لضبطه بدقة.' })
+  // Auto-act when the seller pastes a link or coordinates — no button press needed.
+  // Reading the field value after the paste settles is the reliable way to get the
+  // full text (a paste can replace a selection, prepend, or append).
+  function handlePaste() {
+    window.setTimeout(() => {
+      const text = inputRef.current?.value ?? ''
+      const p = parseLocationInput(text)
+      if ((p.kind === 'url' || p.kind === 'coords') && text.trim() !== resolvedRef.current) {
+        runInput(text)
+      }
+    }, 0)
   }
 
   function useMyLocation() {
@@ -229,25 +254,29 @@ export default function LocationPicker({ value, onChange, city, onUseAddress, he
       {/* One field for both a pasted link and a place search. */}
       <div className="rounded-2xl border border-[#D8D1C7] bg-white p-4">
         <label htmlFor="location-search" className="block text-sm font-bold text-[#1B1B1B] mb-1">
-          ابحث عن الموقع أو الصق رابط الخريطة
+          الصق رابط الموقع من خرائط Google
         </label>
         <p className="text-xs text-[#5F6764] mb-2.5">
-          اكتب اسم الحي أو معلمًا قريبًا، أو الصق رابطًا من خرائط Google — وسنحدد الموقع تلقائيًا.
+          افتح مكان مساحتك في خرائط Google، اضغط «مشاركة» ← «نسخ الرابط»، ثم الصقه هنا — سيُحدَّد الموقع فورًا.
+          يمكنك أيضًا لصق الإحداثيات مباشرة، أو كتابة اسم الحي للبحث.
         </p>
         <div className="relative">
           <div className="flex gap-2">
             <input
               id="location-search"
+              ref={inputRef}
               value={query}
               onChange={event => { setQuery(event.target.value); setMessage(null) }}
+              onPaste={handlePaste}
               onKeyDown={event => {
                 if (event.key === 'Enter') { event.preventDefault(); submitQuery() }
                 // Dismiss the list but keep what was typed.
-                if (event.key === 'Escape') setSearch({ query: trimmedQuery, results: [] })
+                if (event.key === 'Escape') setSearch({ query: '', results: [] })
               }}
-              placeholder="مثال: حي الملقا الرياض — أو الصق الرابط هنا"
+              placeholder="الصق الرابط هنا، أو: 24.7136, 46.6753 — أو: حي الملقا الرياض"
               className="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-[#D8D1C7] text-sm focus:outline-none focus:border-[#0E3B34]"
               autoComplete="off"
+              dir="auto"
             />
             <button
               type="button"
@@ -326,7 +355,12 @@ export default function LocationPicker({ value, onChange, city, onUseAddress, he
           </div>
         )}
 
-        {message && (
+        {resolving ? (
+          <p className="mt-2.5 flex items-center gap-2 text-xs font-semibold text-[#5F6764]">
+            <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#0E3B34]/25 border-t-[#0E3B34]" />
+            جارٍ قراءة الرابط وتحديد الموقع...
+          </p>
+        ) : message ? (
           <p className={`mt-2.5 text-xs font-semibold ${
             message.tone === 'error' ? 'text-[#B44A3C]'
               : message.tone === 'success' ? 'text-emerald-700'
@@ -334,7 +368,7 @@ export default function LocationPicker({ value, onChange, city, onUseAddress, he
           }`}>
             {message.text}
           </p>
-        )}
+        ) : null}
       </div>
 
       <MapCanvas
