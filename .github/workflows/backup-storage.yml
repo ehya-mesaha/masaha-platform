@@ -1,0 +1,67 @@
+name: Backup storage buckets
+
+on:
+  schedule:
+    # 23:30 UTC Sunday = 02:30 Riyadh Monday. Weekly keeps egress low on the
+    # Supabase free tier; move to daily once the project is on Pro.
+    - cron: '30 23 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: backup-storage
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Install age
+        run: sudo apt-get update && sudo apt-get install -y age
+
+      - name: Fetch previous manifest
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 cp "s3://${{ secrets.R2_BUCKET }}/storage/manifest.json" manifest.json \
+            --endpoint-url "${{ secrets.R2_ENDPOINT }}" || echo "No manifest yet - first run."
+
+      - name: Download new and changed objects
+        id: download
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/backup-storage.mjs --out storage-backup --manifest manifest.json
+
+      - name: Encrypt and upload increment
+        if: steps.download.outputs.new_files != '0'
+        env:
+          AGE_PUBLIC_KEY: ${{ secrets.AGE_PUBLIC_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          set -euo pipefail
+          FILE="masaha-storage-$(date -u +%Y%m%d-%H%M).tar.gz.age"
+          tar -czf - -C storage-backup . | age -r "$AGE_PUBLIC_KEY" > "$FILE"
+          aws s3 cp "$FILE" "s3://${{ secrets.R2_BUCKET }}/storage/$FILE" \
+            --endpoint-url "${{ secrets.R2_ENDPOINT }}"
+          # Manifest is written last: if the upload fails, the next run retries
+          # the same objects instead of believing they are already stored.
+          aws s3 cp manifest.json "s3://${{ secrets.R2_BUCKET }}/storage/manifest.json" \
+            --endpoint-url "${{ secrets.R2_ENDPOINT }}"
+
+      - name: Ping dead-man's switch
+        if: success()
+        run: curl -fsS -m 10 --retry 3 "${{ secrets.HEALTHCHECK_URL_STORAGE }}" || true

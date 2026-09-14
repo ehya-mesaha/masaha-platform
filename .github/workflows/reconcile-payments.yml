@@ -1,0 +1,30 @@
+name: Reconcile stale payment orders
+
+on:
+  schedule:
+    - cron: '15 * * * *'   # hourly
+  workflow_dispatch:
+
+concurrency:
+  group: reconcile-payments
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Call reconciliation endpoint
+        run: |
+          set -euo pipefail
+          RESPONSE=$(curl -fsS -m 60 -X POST \
+            -H "Authorization: Bearer ${{ secrets.STREAMPAY_RECONCILE_SECRET }}" \
+            "${{ secrets.SITE_URL }}/api/payments/stream/reconcile")
+          echo "$RESPONSE"
+          echo "$RESPONSE" >> "$GITHUB_STEP_SUMMARY"
+          # heldForReview > 0 means StreamPay reports collected funds on an order
+          # we expired locally. That needs a human - see docs/backup-and-restore.md.
+          HELD=$(echo "$RESPONSE" | grep -o '"heldForReview":[0-9]*' | cut -d: -f2 || echo 0)
+          if [ "${HELD:-0}" -gt 0 ]; then
+            echo "::warning::$HELD payment order(s) need manual reconciliation."
+          fi

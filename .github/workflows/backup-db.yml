@@ -1,0 +1,60 @@
+name: Backup database
+
+on:
+  schedule:
+    # 23:00 UTC = 02:00 Riyadh
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: backup-db
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Install pg_dump 17 and age
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17 age
+
+      - name: Dump, encrypt and upload
+        env:
+          # Direct connection (port 5432). The pooled DATABASE_URL (6543) is
+          # pgbouncer in transaction mode and produces broken dumps.
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          AGE_PUBLIC_KEY: ${{ secrets.AGE_PUBLIC_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          set -euo pipefail
+          FILE="masaha-db-$(date -u +%Y%m%d-%H%M).sql.gz.age"
+          pg_dump --no-owner --no-acl --clean --if-exists "$DIRECT_URL" \
+            | gzip -9 \
+            | age -r "$AGE_PUBLIC_KEY" > "$FILE"
+
+          # A 0-byte file uploads "successfully" every night. Refuse it.
+          SIZE=$(stat -c%s "$FILE")
+          echo "Encrypted dump: $FILE ($SIZE bytes)"
+          if [ "$SIZE" -lt 4096 ]; then
+            echo "::error::Dump is suspiciously small ($SIZE bytes) - aborting."
+            exit 1
+          fi
+
+          aws s3 cp "$FILE" "s3://$R2_BUCKET/db/$FILE" --endpoint-url "$R2_ENDPOINT"
+          echo "size_bytes=$SIZE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ping dead-man's switch
+        if: success()
+        run: curl -fsS -m 10 --retry 3 "${{ secrets.HEALTHCHECK_URL_DB }}" || true

@@ -79,21 +79,41 @@ export async function sendConfirmationEmail({ to, name, confirmUrl }: { to: stri
 }
 
 export async function sendPasswordResetEmail({ to, name, resetUrl }: { to: string; name: string; resetUrl: string }) {
+  const safeResetUrl = escapeHtml(resetUrl)
   const html = emailShell(`
-    <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:800;color:#1B1B1B;">إعادة تعيين كلمة المرور</h1>
-    <p style="margin:0 0 20px 0;font-size:14px;line-height:24px;color:#3F4B47;">
-      مرحبًا ${escapeHtml(name)}، تلقّينا طلبًا لإعادة تعيين كلمة مرور حسابك في مساحة. اضغط على الزر أدناه لاختيار كلمة مرور جديدة.
-    </p>
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all;">رابط آمن لإعادة تعيين كلمة مرور حسابك في مساحة.</div>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;">
       <tr>
-        <td align="center" style="border-radius:12px;background-color:#0E3B34;">
-          <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">تعيين كلمة مرور جديدة</a>
+        <td style="width:44px;height:44px;border-radius:14px;background:#E8F1EE;text-align:center;vertical-align:middle;">
+          <span style="font-size:22px;line-height:44px;color:#0E3B34;">⌁</span>
+        </td>
+        <td style="padding-right:12px;vertical-align:middle;">
+          <p style="margin:0 0 3px 0;font-size:11px;font-weight:700;letter-spacing:.4px;color:#B1872E;">أمان الحساب</p>
+          <h1 style="margin:0;font-size:21px;font-weight:800;color:#1B1B1B;">إعادة تعيين كلمة المرور</h1>
         </td>
       </tr>
     </table>
-    <p style="margin:0 0 8px 0;font-size:12px;line-height:20px;color:#8B9389;">أو انسخ الرابط التالي والصقه في المتصفح:</p>
-    <p dir="ltr" style="margin:0 0 20px 0;font-size:12px;line-height:20px;color:#0E3B34;word-break:break-all;text-align:left;">${resetUrl}</p>
-    <p style="margin:0;font-size:12px;line-height:20px;color:#8B9389;">هذا الرابط صالح لمدة ساعة واحدة ويُستخدم مرة واحدة. إذا لم تطلب تغيير كلمة المرور، يمكنك تجاهل هذه الرسالة بأمان.</p>
+    <p style="margin:0 0 20px 0;font-size:14px;line-height:25px;color:#3F4B47;">
+      مرحبًا ${escapeHtml(name)}، تلقّينا طلبًا لإعادة تعيين كلمة مرور حسابك في مساحة. اختر كلمة مرور جديدة وآمنة بالضغط على الزر أدناه.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
+      <tr>
+        <td align="center" style="border-radius:12px;background-color:#0E3B34;box-shadow:0 8px 18px rgba(14,59,52,.18);">
+          <a href="${safeResetUrl}" style="display:inline-block;padding:15px 32px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">تعيين كلمة مرور جديدة ←</a>
+        </td>
+      </tr>
+    </table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px 0;border-radius:12px;background:#F5F1E8;">
+      <tr>
+        <td style="padding:14px 16px;">
+          <p style="margin:0 0 4px 0;font-size:13px;font-weight:700;color:#0E3B34;">رابط آمن ومحدود الوقت</p>
+          <p style="margin:0;font-size:12px;line-height:20px;color:#5F6764;">صالح لمدة ساعة واحدة، ويُلغى تلقائيًا بعد استخدامه أو عند طلب رابط أحدث.</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 8px 0;font-size:12px;line-height:20px;color:#8B9389;">إذا لم يعمل الزر، انسخ الرابط التالي والصقه في المتصفح:</p>
+    <p dir="ltr" style="margin:0 0 20px 0;padding:12px;border-radius:8px;background:#FAF8F3;font-size:11px;line-height:19px;color:#0E3B34;word-break:break-all;text-align:left;">${safeResetUrl}</p>
+    <p style="margin:0;font-size:12px;line-height:20px;color:#8B9389;">إذا لم تطلب تغيير كلمة المرور، فلا يلزمك أي إجراء. لم يتم تغيير كلمة مرورك.</p>
   `)
 
   return getResendClient().emails.send({
@@ -101,6 +121,7 @@ export async function sendPasswordResetEmail({ to, name, resetUrl }: { to: strin
     to,
     subject: 'إعادة تعيين كلمة المرور - مساحة',
     html,
+    text: `مرحبًا ${name}،\n\nتلقّينا طلبًا لإعادة تعيين كلمة مرور حسابك في مساحة. استخدم الرابط التالي لاختيار كلمة مرور جديدة:\n${resetUrl}\n\nالرابط صالح لمدة ساعة واحدة ويُلغى بعد استخدامه أو عند طلب رابط أحدث. إذا لم تطلب تغيير كلمة المرور، فلا يلزمك أي إجراء.`,
   })
 }
 
