@@ -83,8 +83,13 @@ export default function LanguageProvider({ children, initialLocale = 'ar' }: { c
           }
         }
         if (!storedSource && !arabicTextPattern.test(current)) return
-        const source = storedSource ?? current
-        if (!storedSource) originalText.set(textNode, source)
+        // React can re-render new Arabic copy into a text node we already recorded - a
+        // "loading" line becoming an empty-state line, or a button label changing. The
+        // remembered source is stale then, and restoring it would silently undo the
+        // update, so the fresh Arabic text becomes the new source instead.
+        const isRerenderedArabic = Boolean(storedSource) && current !== storedSource && arabicTextPattern.test(current)
+        const source = storedSource && !isRerenderedArabic ? storedSource : current
+        if (!storedSource || isRerenderedArabic) originalText.set(textNode, source)
         const nextValue = latinDigits(locale === 'en' ? translateDomText(source) : source)
         if (textNode.nodeValue !== nextValue) textNode.nodeValue = nextValue
         return

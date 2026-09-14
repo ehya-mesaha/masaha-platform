@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Prisma } from '@/generated/prisma'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { CouponInputError, parseCouponInput } from '@/lib/coupon-admin'
@@ -53,7 +52,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     })
   } catch (error) {
     if (error instanceof CouponInputError) return NextResponse.json({ error: error.message }, { status: 400 })
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (isDuplicateCodeError(error)) {
       return NextResponse.json({ error: 'يوجد كوبون بنفس الرمز. اختر رمزًا مختلفًا.' }, { status: 409 })
     }
     console.error(error)
@@ -97,4 +96,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     console.error(error)
     return NextResponse.json({ error: 'تعذر حذف الكوبون' }, { status: 500 })
   }
+}
+
+/**
+ * Prisma 7 throws its error from inside the generated runtime, and that class is not always
+ * the same identity as the re-exported `Prisma.PrismaClientKnownRequestError`, so `instanceof`
+ * can miss a genuine unique-constraint violation. The error code is checked structurally.
+ */
+function isDuplicateCodeError(error: unknown) {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2002'
 }
