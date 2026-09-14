@@ -112,6 +112,7 @@ export default async function AdminBookingDetailsPage({
               <MoneyRow label="السعر الأساسي" value={booking.basePrice} />
               <MoneyRow label="الخصم" value={booking.discountAmount} />
               <MoneyRow label="الخدمات الإضافية" value={booking.servicesTotal} />
+              {booking.couponDiscount > 0 && <MoneyRow label={`كوبون ${booking.couponCode || ''}`} value={booking.couponDiscount} />}
               <div className="border-t border-[#D8D1C7] pt-3"><MoneyRow label="الإجمالي" value={booking.grandTotal} strong /></div>
             </div>
           </section>

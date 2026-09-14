@@ -233,6 +233,8 @@ async function bookingsSheet(range: DateRange): Promise<ExportSheet> {
       { key: 'basePrice', label: 'السعر الأساسي', width: 16 },
       { key: 'discount', label: 'الخصم', width: 14 },
       { key: 'servicesTotal', label: 'الخدمات الإضافية', width: 18 },
+      { key: 'couponCode', label: 'كوبون الخصم', width: 16 },
+      { key: 'couponDiscount', label: 'قيمة خصم الكوبون', width: 18 },
       { key: 'grandTotal', label: 'الإجمالي', width: 16 },
       { key: 'services', label: 'الخدمات', width: 38 },
       { key: 'status', label: 'الحالة', width: 20 },
@@ -258,6 +260,8 @@ async function bookingsSheet(range: DateRange): Promise<ExportSheet> {
       basePrice: booking.basePrice,
       discount: booking.discountAmount,
       servicesTotal: booking.servicesTotal,
+      couponCode: booking.couponCode,
+      couponDiscount: booking.couponDiscount,
       grandTotal: booking.grandTotal,
       services: booking.services
         .map((service) => `${service.name} × ${service.quantity} (${service.lineTotal})`)

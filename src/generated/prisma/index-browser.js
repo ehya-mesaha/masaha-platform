@@ -351,6 +351,8 @@ exports.Prisma.BookingScalarFieldEnum = {
   totalHours: 'totalHours',
   basePrice: 'basePrice',
   discountAmount: 'discountAmount',
+  couponCode: 'couponCode',
+  couponDiscount: 'couponDiscount',
   servicesTotal: 'servicesTotal',
   grandTotal: 'grandTotal',
   cancelledAt: 'cancelledAt',
@@ -598,6 +600,37 @@ exports.Prisma.SpaceReviewScalarFieldEnum = {
   bookingId: 'bookingId'
 };
 
+exports.Prisma.CouponScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  description: 'description',
+  discountType: 'discountType',
+  discountValue: 'discountValue',
+  maxDiscountAmount: 'maxDiscountAmount',
+  minBookingAmount: 'minBookingAmount',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  maxRedemptions: 'maxRedemptions',
+  maxPerUser: 'maxPerUser',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdById: 'createdById'
+};
+
+exports.Prisma.CouponRedemptionScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  discountHalalas: 'discountHalalas',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  confirmedAt: 'confirmedAt',
+  releasedAt: 'releasedAt',
+  couponId: 'couponId',
+  userId: 'userId',
+  paymentOrderId: 'paymentOrderId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -757,6 +790,17 @@ exports.ConversationType = exports.$Enums.ConversationType = {
   ADMIN_SUPPORT: 'ADMIN_SUPPORT'
 };
 
+exports.CouponDiscountType = exports.$Enums.CouponDiscountType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED'
+};
+
+exports.CouponRedemptionStatus = exports.$Enums.CouponRedemptionStatus = {
+  RESERVED: 'RESERVED',
+  CONFIRMED: 'CONFIRMED',
+  RELEASED: 'RELEASED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   PasswordResetToken: 'PasswordResetToken',
@@ -797,7 +841,9 @@ exports.Prisma.ModelName = {
   SpaceNeedRequest: 'SpaceNeedRequest',
   Conversation: 'Conversation',
   ConversationMessage: 'ConversationMessage',
-  SpaceReview: 'SpaceReview'
+  SpaceReview: 'SpaceReview',
+  Coupon: 'Coupon',
+  CouponRedemption: 'CouponRedemption'
 };
 
 /**

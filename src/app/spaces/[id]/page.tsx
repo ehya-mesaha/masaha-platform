@@ -10,6 +10,7 @@ import Spinner from '@/components/ui/Spinner'
 import StartConversationButton from '@/components/chat/StartConversationButton'
 import SpaceImageLightbox, { type SpaceImageLightboxHandle } from '@/components/spaces/SpaceImageLightbox'
 import SpaceLocationMap from '@/components/maps/SpaceLocationMap'
+import CouponField, { type AppliedCoupon } from '@/components/bookings/CouponField'
 import { placeSearchUrl } from '@/lib/geo'
 import { formatDate, formatSpaceNumber, formatTime12 } from '@/lib/format'
 import { LEGAL_LINKS, LEGAL_UPDATED_AT_AR, LEGAL_VERSION } from '@/lib/legal'
@@ -154,6 +155,7 @@ function SpaceDetailPageInner() {
   const [selectedServicesByDate, setSelectedServicesByDate] = useState<Record<string, Record<string, ServiceSelection>>>({})
   const [expandedServiceDate, setExpandedServiceDate] = useState<string | null>(null)
   const [checkoutKey, setCheckoutKey] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
@@ -217,6 +219,7 @@ function SpaceDetailPageInner() {
     setSelectedServicesByDate({})
     setExpandedServiceDate(null)
     setCheckoutKey(crypto.randomUUID())
+    setAppliedCoupon(null)
     setAgreedToTerms(false)
     setBookingOpen(true)
   }
@@ -258,18 +261,18 @@ function SpaceDetailPageInner() {
 
   const pricing = useMemo(() => {
     const emptyResult = {
-      basePrice: 0, discountPercent: 0, discountAmount: 0, servicesTotal: 0, grandTotal: 0, totalHours: 0,
+      basePrice: 0, discountPercent: 0, discountAmount: 0, servicesTotal: 0, subtotal: 0, couponDiscount: 0, grandTotal: 0, totalHours: 0,
       perDate: [] as { date: string; serviceLines: { name: string; total: number }[]; dateServicesTotal: number }[],
     }
     if (!space || bookingDates.length === 0) return emptyResult
 
     const totalHours = hours * bookingDates.length
-    const basePrice = space.price * totalHours
+    const basePrice = roundMoney(space.price * totalHours)
     const tier = [...space.pricingTiers].sort((a, b) => b.minHours - a.minHours).find(t => totalHours >= t.minHours)
     const tierDiscount = tier?.discountPercent ?? 0
     const recurringDiscount = bookingDates.length > 1 ? 5 : 0
     const discountPercent = Math.max(tierDiscount, recurringDiscount)
-    const discountAmount = basePrice * discountPercent / 100
+    const discountAmount = roundMoney(basePrice * discountPercent / 100)
 
     const perDate = [...bookingDates].sort().map(date => {
       const dateSelections = selectedServicesByDate[date] || {}
@@ -277,12 +280,22 @@ function SpaceDetailPageInner() {
         .filter(service => dateSelections[service.id]?.enabled)
         .map(service => ({ name: service.name, total: serviceLineTotal(service, dateSelections[service.id], persons, hours) }))
         .filter(line => line.total > 0)
-      return { date, serviceLines, dateServicesTotal: serviceLines.reduce((sum, line) => sum + line.total, 0) }
+      return { date, serviceLines, dateServicesTotal: roundMoney(serviceLines.reduce((sum, line) => sum + line.total, 0)) }
     })
-    const servicesTotal = perDate.reduce((sum, d) => sum + d.dateServicesTotal, 0)
-    const grandTotal = basePrice - discountAmount + servicesTotal
-    return { basePrice, discountPercent, discountAmount, servicesTotal, grandTotal, totalHours, perDate }
-  }, [space, hours, persons, bookingDates, selectedServicesByDate])
+    const servicesTotal = roundMoney(perDate.reduce((sum, d) => sum + d.dateServicesTotal, 0))
+
+    // Priced per session then summed, exactly as /api/bookings does, so the total shown here
+    // is the same figure that reaches the payment gateway rather than a parallel calculation.
+    const sessionBasePrice = roundMoney(space.price * hours)
+    const sessionDiscount = roundMoney(sessionBasePrice * discountPercent / 100)
+    const subtotal = roundMoney(perDate.reduce(
+      (sum, d) => sum + roundMoney(sessionBasePrice - sessionDiscount + d.dateServicesTotal),
+      0,
+    ))
+    const couponDiscount = appliedCoupon ? Math.min(roundMoney(appliedCoupon.discount), subtotal) : 0
+    const grandTotal = roundMoney(subtotal - couponDiscount)
+    return { basePrice, discountPercent, discountAmount, servicesTotal, subtotal, couponDiscount, grandTotal, totalHours, perDate }
+  }, [space, hours, persons, bookingDates, selectedServicesByDate, appliedCoupon])
 
   function validateStep(step: number): string {
     if (step === 1) {
@@ -387,6 +400,7 @@ function SpaceDetailPageInner() {
           notes: bookingForm.purpose,
           servicesByDate,
           checkoutKey,
+          couponCode: appliedCoupon?.code || undefined,
           termsAccepted: true,
           termsVersion: LEGAL_VERSION,
         }),
@@ -1216,12 +1230,23 @@ function SpaceDetailPageInner() {
                   ))}
                 </div>
 
+                <CouponField amount={pricing.subtotal} applied={appliedCoupon} onChange={setAppliedCoupon} />
+
                 <div className="rounded-xl border border-[#D8D1C7] p-4 text-sm">
                   <p className="mb-2 flex justify-between"><span className="text-[#5F6764]">السعر الأساسي (كل الأيام)</span><span className="font-bold text-[#1B1B1B]">{pricing.basePrice.toLocaleString('en-US')} ر.س</span></p>
                   {pricing.discountAmount > 0 && (
                     <p className="mb-2 flex justify-between text-green-700"><span>خصم ({pricing.discountPercent.toLocaleString('en-US')}%)</span><span className="font-bold">-{pricing.discountAmount.toLocaleString('en-US')} ر.س</span></p>
                   )}
                   <p className="mb-2 flex justify-between text-[#3F4B47]"><span>إجمالي الخدمات</span><span className="font-bold">{pricing.servicesTotal.toLocaleString('en-US')} ر.س</span></p>
+                  {pricing.couponDiscount > 0 && (
+                    <>
+                      <p className="mb-2 flex justify-between border-t border-dashed border-[#D8D1C7] pt-2 text-[#3F4B47]"><span>الإجمالي قبل الكوبون</span><span className="font-bold">{pricing.subtotal.toLocaleString('en-US')} ر.س</span></p>
+                      <p className="mb-2 flex justify-between text-green-700">
+                        <span>كوبون <span dir="ltr">{appliedCoupon?.code}</span></span>
+                        <span className="font-bold">-{pricing.couponDiscount.toLocaleString('en-US')} ر.س</span>
+                      </p>
+                    </>
+                  )}
                   <div className="mt-2 flex justify-between border-t border-[#D8D1C7] pt-2 text-base">
                     <span className="font-bold text-[#1B1B1B]">الإجمالي</span>
                     <span className="font-extrabold text-[#0E3B34]">{pricing.grandTotal.toLocaleString('en-US')} ر.س</span>
@@ -1241,7 +1266,15 @@ function SpaceDetailPageInner() {
               <div className="space-y-4">
                 <div className="rounded-xl border border-[#D8D1C7] bg-[#F5F1E8] p-4 text-center">
                   <p className="text-xs font-bold text-[#5F6764]">المبلغ المطلوب</p>
+                  {pricing.couponDiscount > 0 && (
+                    <p className="text-sm font-bold text-[#5F6764] line-through">{pricing.subtotal.toLocaleString('en-US')} ر.س</p>
+                  )}
                   <p className="text-2xl font-extrabold text-[#0E3B34]">{pricing.grandTotal.toLocaleString('en-US')} ر.س</p>
+                  {pricing.couponDiscount > 0 && (
+                    <p className="mt-1 text-xs font-extrabold text-green-700">
+                      بعد خصم كوبون <span dir="ltr">{appliedCoupon?.code}</span> بقيمة {pricing.couponDiscount.toLocaleString('en-US')} ر.س
+                    </p>
+                  )}
                 </div>
 
                 <div className="rounded-xl border border-[#D8D1C7] bg-white p-4 text-sm leading-7 text-[#3F4B47]">
@@ -1296,6 +1329,10 @@ function SpaceDetailPageInner() {
       <Footer />
     </div>
   )
+}
+
+function roundMoney(value: number) {
+  return Math.round(value * 100) / 100
 }
 
 function pricingTypeLabel(type: string) {

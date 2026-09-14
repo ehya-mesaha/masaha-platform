@@ -6,6 +6,7 @@ import { durationHours, generateProgramSessions, getSpaceAvailability, sessionsF
 import { LEGAL_VERSION } from '@/lib/legal'
 import { assertStreamPayConfigured, StreamPayError } from '@/lib/streampay/client'
 import { createCheckoutForOrder } from '@/lib/streampay/service'
+import { allocateDiscountHalalas, CouponError, evaluateCoupon, fromHalalas, normalizeCouponCode, toHalalas } from '@/lib/coupons'
 
 type SelectedService = {
   configId: string
@@ -86,6 +87,7 @@ export async function POST(req: NextRequest) {
     const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : ''
     const requesterIdNumber = typeof body.requesterIdNumber === 'string' ? body.requesterIdNumber.trim().slice(0, 100) : ''
     const checkoutKey = typeof body.checkoutKey === 'string' ? body.checkoutKey.trim().toLowerCase() : ''
+    const couponCode = normalizeCouponCode(body.couponCode)
     const selectedServices: SelectedService[] = Array.isArray(body.services) ? body.services : []
     const servicesByDate: Record<string, SelectedService[]> = body.servicesByDate && typeof body.servicesByDate === 'object' ? body.servicesByDate : {}
     if (!spaceId || !body.startTime || !body.endTime || !requesterIdNumber || !notes || !isUuid(checkoutKey)) {
@@ -235,11 +237,53 @@ export async function POST(req: NextRequest) {
         return buildServiceLines(selections, sessionHours)
       })
       const servicesTotal = roundMoney(sessionServiceLines.reduce((sum, lines) => sum + lines.reduce((lineSum, line) => lineSum + line.lineTotal, 0), 0))
-      const grandTotal = roundMoney(basePrice - discountAmount + servicesTotal)
-      const amountHalalas = Math.round(grandTotal * 100)
-      if (!Number.isSafeInteger(amountHalalas) || amountHalalas < 1) {
+
+      // Each session is priced and rounded on its own, then the order subtotal is the sum of
+      // those lines. Deriving the charge from the same numbers stored on the bookings is what
+      // keeps sum(booking.grandTotal) exactly equal to the amount sent to StreamPay.
+      const sessionPricing = availability.allocations.map((allocation, index) => {
+        const sessionHours = durationHours(allocation.session.startAt, allocation.session.endAt)
+        const sessionBasePrice = roundMoney(space.price * sessionHours)
+        const sessionDiscount = roundMoney(sessionBasePrice * discountPercent / 100)
+        const lines = sessionServiceLines[index]
+        const sessionServicesTotal = roundMoney(lines.reduce((sum, line) => sum + line.lineTotal, 0))
+        return {
+          sessionHours,
+          sessionBasePrice,
+          sessionDiscount,
+          lines,
+          sessionServicesTotal,
+          subtotalHalalas: toHalalas(sessionBasePrice - sessionDiscount + sessionServicesTotal),
+        }
+      })
+      const subtotalHalalas = sessionPricing.reduce((sum, session) => sum + session.subtotalHalalas, 0)
+      if (!Number.isSafeInteger(subtotalHalalas) || subtotalHalalas < 1) {
         throw new BookingError('قيمة الحجز غير صالحة للدفع', 400)
       }
+
+      // Reserving the coupon inside this serializable transaction is what makes the usage
+      // limits hold: two checkouts racing for the last available use conflict and one aborts.
+      let redemption: { couponId: string; code: string; discountHalalas: number } | null = null
+      if (couponCode) {
+        try {
+          const evaluated = await evaluateCoupon(tx, {
+            code: couponCode,
+            userId: user.id as string,
+            subtotalHalalas,
+          })
+          redemption = { couponId: evaluated.coupon.id, code: evaluated.coupon.code, discountHalalas: evaluated.discountHalalas }
+        } catch (error) {
+          if (error instanceof CouponError) throw new BookingError(error.message, 400)
+          throw error
+        }
+      }
+      const couponDiscountHalalas = redemption?.discountHalalas ?? 0
+      const couponAllocation = allocateDiscountHalalas(sessionPricing.map(session => session.subtotalHalalas), couponDiscountHalalas)
+      const amountHalalas = subtotalHalalas - couponDiscountHalalas
+      if (amountHalalas < 1) {
+        throw new BookingError('قيمة الحجز غير صالحة للدفع', 400)
+      }
+
       const paymentOrder = await tx.paymentOrder.create({
         data: {
           checkoutKey,
@@ -248,6 +292,16 @@ export async function POST(req: NextRequest) {
           expiresAt: new Date(Date.now() + 15 * 60 * 1000),
         },
       })
+      if (redemption) {
+        await tx.couponRedemption.create({
+          data: {
+            couponId: redemption.couponId,
+            userId: user.id as string,
+            paymentOrderId: paymentOrder.id,
+            discountHalalas: redemption.discountHalalas,
+          },
+        })
+      }
 
       const program = sessions.length > 1
         ? await tx.bookingProgram.create({
@@ -266,11 +320,8 @@ export async function POST(req: NextRequest) {
 
       const bookings = []
       for (const [index, allocation] of availability.allocations.entries()) {
-        const sessionHours = durationHours(allocation.session.startAt, allocation.session.endAt)
-        const sessionBasePrice = roundMoney(space.price * sessionHours)
-        const sessionDiscount = roundMoney(sessionBasePrice * discountPercent / 100)
-        const lines = sessionServiceLines[index]
-        const allocatedServicesTotal = roundMoney(lines.reduce((sum, line) => sum + line.lineTotal, 0))
+        const session = sessionPricing[index]
+        const sessionCouponDiscount = couponAllocation[index]
         const booking = await tx.booking.create({
           data: {
             spaceId,
@@ -287,13 +338,15 @@ export async function POST(req: NextRequest) {
             paymentOrderId: paymentOrder.id,
             termsAcceptedAt: new Date(),
             termsVersion: LEGAL_VERSION,
-            totalHours: sessionHours,
-            basePrice: sessionBasePrice,
-            discountAmount: sessionDiscount,
-            servicesTotal: allocatedServicesTotal,
-            grandTotal: roundMoney(sessionBasePrice - sessionDiscount + allocatedServicesTotal),
-            services: lines.length
-              ? { create: lines }
+            totalHours: session.sessionHours,
+            basePrice: session.sessionBasePrice,
+            discountAmount: session.sessionDiscount,
+            couponCode: redemption?.code ?? null,
+            couponDiscount: fromHalalas(sessionCouponDiscount),
+            servicesTotal: session.sessionServicesTotal,
+            grandTotal: fromHalalas(session.subtotalHalalas - sessionCouponDiscount),
+            services: session.lines.length
+              ? { create: session.lines }
               : undefined,
           },
           include: { unit: true, space: { include: { type: true } }, services: true },
@@ -301,7 +354,22 @@ export async function POST(req: NextRequest) {
         bookings.push(booking)
       }
 
-      return { bookings, program, paymentOrder, pricing: { totalHours, basePrice, discountPercent, discountAmount, servicesTotal, grandTotal } }
+      return {
+        bookings,
+        program,
+        paymentOrder,
+        pricing: {
+          totalHours,
+          basePrice,
+          discountPercent,
+          discountAmount,
+          servicesTotal,
+          subtotal: fromHalalas(subtotalHalalas),
+          couponCode: redemption?.code ?? null,
+          couponDiscount: fromHalalas(couponDiscountHalalas),
+          grandTotal: fromHalalas(amountHalalas),
+        },
+      }
     }, {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       // Raised above Prisma's defaults (maxWait 2s, timeout 5s): this transaction does several

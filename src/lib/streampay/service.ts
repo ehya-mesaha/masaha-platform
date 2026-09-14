@@ -26,6 +26,7 @@ import {
   type StreamPayment,
   type StreamPaymentLink,
 } from '@/lib/streampay/client'
+import { confirmCouponRedemption, releaseCouponRedemption } from '@/lib/coupons'
 
 type ReconcileInput = {
   orderId?: string
@@ -102,16 +103,17 @@ export async function createCheckoutForOrder(orderId: string) {
       }
     }
     const message = safeErrorMessage(error)
-    await prisma.$transaction([
-      prisma.paymentOrder.update({
+    await prisma.$transaction(async tx => {
+      await tx.paymentOrder.update({
         where: { id: order.id },
         data: { status: 'FAILED', failedAt: new Date(), lastError: message },
-      }),
-      prisma.booking.updateMany({
+      })
+      await tx.booking.updateMany({
         where: { paymentOrderId: order.id, status: 'PENDING_PAYMENT' },
         data: { status: 'PAYMENT_FAILED' },
-      }),
-    ])
+      })
+      await releaseCouponRedemption(tx, order.id)
+    })
     throw error
   }
 }
@@ -435,6 +437,8 @@ async function confirmPaidOrder(input: { orderId: string; invoiceId: string; pay
             note: 'Full refund must be processed by the platform team.',
           },
         })
+        // The booking is being refunded in full, so the buyer keeps the right to reuse the coupon.
+        await releaseCouponRedemption(tx, order.id)
         return 'refund_pending' as const
       }
     }
@@ -453,6 +457,7 @@ async function confirmPaidOrder(input: { orderId: string; invoiceId: string; pay
       where: { paymentOrderId: order.id, status: 'PENDING_PAYMENT' },
       data: { status: 'CONFIRMED' },
     })
+    await confirmCouponRedemption(tx, order.id)
 
     const sellerNotices = new Map<string, { name: string; bookingId: string; count: number }>()
     for (const booking of order.bookings) {
@@ -488,16 +493,17 @@ async function confirmPaidOrder(input: { orderId: string; invoiceId: string; pay
 }
 
 async function expireOrder(orderId: string) {
-  await prisma.$transaction([
-    prisma.paymentOrder.updateMany({
+  await prisma.$transaction(async tx => {
+    await tx.paymentOrder.updateMany({
       where: { id: orderId, status: { in: ['PENDING', 'CHECKOUT_CREATED'] } },
       data: { status: 'EXPIRED', lastError: null },
-    }),
-    prisma.booking.updateMany({
+    })
+    await tx.booking.updateMany({
       where: { paymentOrderId: orderId, status: 'PENDING_PAYMENT' },
       data: { status: 'PAYMENT_EXPIRED' },
-    }),
-  ])
+    })
+    await releaseCouponRedemption(tx, orderId)
+  })
 }
 
 function normalizeSaudiPhone(phone: string | null) {

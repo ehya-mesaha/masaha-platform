@@ -56,6 +56,17 @@ enum PaymentRefundStatus {
   CANCELLED
 }
 
+enum CouponDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CouponRedemptionStatus {
+  RESERVED
+  CONFIRMED
+  RELEASED
+}
+
 enum StreamWebhookStatus {
   RECEIVED
   PROCESSED
@@ -172,16 +183,18 @@ model User {
   paymentOrders            PaymentOrder[]
   paymentProviderCustomers PaymentProviderCustomer[]
   passwordResetTokens      PasswordResetToken[]
+  couponRedemptions        CouponRedemption[]
+  createdCoupons           Coupon[]                  @relation("CouponCreatedBy")
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([expiresAt])
@@ -482,6 +495,8 @@ model Booking {
   totalHours        Float         @default(0)
   basePrice         Float         @default(0)
   discountAmount    Float         @default(0)
+  couponCode        String?
+  couponDiscount    Float         @default(0)
   servicesTotal     Float         @default(0)
   grandTotal        Float         @default(0)
   cancelledAt       DateTime?
@@ -566,9 +581,10 @@ model PaymentOrder {
   buyerId             String
   buyer               User               @relation(fields: [buyerId], references: [id], onDelete: Restrict)
 
-  bookings      Booking[]
-  refunds       PaymentRefund[]
-  webhookEvents StreamWebhookEvent[]
+  bookings         Booking[]
+  refunds          PaymentRefund[]
+  webhookEvents    StreamWebhookEvent[]
+  couponRedemption CouponRedemption?
 
   @@index([buyerId, createdAt])
   @@index([status, expiresAt])
@@ -835,4 +851,48 @@ model SpaceReview {
   @@index([spaceId, isVisible, createdAt])
   @@index([buyerId])
   @@index([rating])
+}
+
+model Coupon {
+  id                String             @id @default(cuid())
+  code              String             @unique
+  description       String?
+  discountType      CouponDiscountType
+  discountValue     Float
+  maxDiscountAmount Float?
+  minBookingAmount  Float?
+  startsAt          DateTime
+  endsAt            DateTime
+  maxRedemptions    Int?
+  maxPerUser        Int?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdById       String?
+  createdBy         User?              @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  redemptions CouponRedemption[]
+
+  @@index([isActive, startsAt, endsAt])
+}
+
+model CouponRedemption {
+  id              String                 @id @default(cuid())
+  status          CouponRedemptionStatus @default(RESERVED)
+  discountHalalas Int
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  confirmedAt     DateTime?
+  releasedAt      DateTime?
+
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  paymentOrderId String       @unique
+  paymentOrder   PaymentOrder @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+
+  @@index([couponId, status])
+  @@index([couponId, userId, status])
 }

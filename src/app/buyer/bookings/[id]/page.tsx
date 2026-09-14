@@ -21,6 +21,8 @@ type Booking = {
   totalHours: number
   basePrice: number
   discountAmount: number
+  couponCode: string | null
+  couponDiscount: number
   servicesTotal: number
   grandTotal: number
   unit: { label: string }
@@ -186,6 +188,12 @@ export default function BuyerBookingDetailPage() {
               <div className="flex justify-between"><span className="text-gray-500">السعر الأساسي</span><span>{formatNumber(booking.basePrice)} ر.س</span></div>
               {booking.discountAmount > 0 && <div className="flex justify-between text-emerald-700"><span>الخصم</span><span>-{formatNumber(booking.discountAmount)} ر.س</span></div>}
               {booking.servicesTotal > 0 && <div className="flex justify-between"><span className="text-gray-500">الخدمات</span><span>{formatNumber(booking.servicesTotal)} ر.س</span></div>}
+              {booking.couponDiscount > 0 && (
+                <div className="flex justify-between text-emerald-700">
+                  <span>كوبون <span dir="ltr">{booking.couponCode}</span></span>
+                  <span>-{formatNumber(booking.couponDiscount)} ر.س</span>
+                </div>
+              )}
               <div className="flex justify-between border-t border-[#D8D1C7] pt-3 text-base font-extrabold text-[#0E3B34]"><span>الإجمالي</span><span>{formatNumber(booking.grandTotal)} ر.س</span></div>
             </div>
           </Card>
