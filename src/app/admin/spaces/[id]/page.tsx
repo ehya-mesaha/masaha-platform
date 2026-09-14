@@ -159,7 +159,15 @@ export default function AdminSpaceDetailPage() {
           <p className="text-[#5F6764] text-sm mt-1">{space.type.name} · {space.city}{space.district ? ` · ${space.district}` : ''}</p>
           <p className="text-xs text-[#5F6764] mt-1">تاريخ الإنشاء: {new Date(space.createdAt).toLocaleDateString('en-US')}</p>
         </div>
-        <Badge variant={variant}>{label}</Badge>
+        <div className="flex flex-col items-end gap-3">
+          <Badge variant={variant}>{label}</Badge>
+          <Link
+            href={`/admin/spaces/${space.id}/edit`}
+            className="rounded-lg bg-[#0E3B34] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#092C27]"
+          >
+            تعديل كل بيانات المساحة
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

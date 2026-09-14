@@ -5,6 +5,9 @@ import { getStepError } from '@/components/spaces/create/validation'
 import type { SpaceFormData } from '@/components/spaces/create/types'
 import type { Prisma } from '@/generated/prisma'
 
+/** Statuses the platform admin may move a space into from the editor. */
+const VALID_SPACE_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'APPROVED', 'REJECTED', 'INACTIVE']
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
@@ -69,6 +72,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         services: space.serviceConfigs.length > 0
           ? space.serviceConfigs.map(config => ({
               id: config.id,
+              // The edit wizard keys its service rows by catalog entry, not by the
+              // per-space config row, so it has to travel with the payload.
+              catalogId: config.catalogId,
               name: config.catalog.name,
               description: config.details || config.catalog.description,
               price: config.price ?? config.catalog.defaultPrice ?? 0,
@@ -97,6 +103,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
+/**
+ * Full update of a space by its owner, or by the platform admin on the owner's behalf.
+ *
+ * Two rules keep this honest:
+ *
+ * 1. A relation is only rebuilt when the payload actually carries it. The handler used to
+ *    delete working hours, rules, pricing tiers and service configs unconditionally and
+ *    recreate them from the request — so a caller that sent only a few fields wiped
+ *    everything it did not mention. Scalars follow the same rule: absent means unchanged.
+ * 2. Only an admin may set the publication status, the internal note and the advertising
+ *    licence. An owner's edit always goes back to review.
+ */
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser()
@@ -106,7 +124,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const space = await prisma.space.findUnique({ where: { id } })
     if (!space) return NextResponse.json({ error: 'المساحة غير موجودة' }, { status: 404 })
 
-    if (space.sellerId !== user.id && user.role !== 'ADMIN') {
+    const isAdmin = user.role === 'ADMIN'
+    if (space.sellerId !== user.id && !isAdmin) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
     }
 
@@ -119,7 +138,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       workingHours, services, rules,
       minBookingHours, maxAdvanceBookingDays, cancellationPolicy,
       identicalUnitsCount, advertisingLicenseNumber, pricingTiers,
+      status, adminNotes,
     } = body
+
+    /** Absent from the payload means "leave this alone", which is not the same as null. */
+    const sent = (field: string) => Object.prototype.hasOwnProperty.call(body, field)
 
     const isFullWizardPayload = Array.isArray(workingHours)
       && Array.isArray(services)
@@ -164,24 +187,29 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'تتضمن الخدمات خدمة غير متاحة حاليًا في دليل الإدارة.' }, { status: 400 })
     }
 
+    if (isAdmin && status !== undefined && !VALID_SPACE_STATUSES.includes(status)) {
+      return NextResponse.json({ error: 'الحالة غير صحيحة' }, { status: 400 })
+    }
+
     const unitCount = Math.max(1, Math.min(100, Number(identicalUnitsCount) || space.identicalUnitsCount || 1))
     const updated = await prisma.$transaction(async (tx) => {
-      await Promise.all([
-        tx.spaceImage.deleteMany({ where: { spaceId: id } }),
-        tx.spaceAmenity.deleteMany({ where: { spaceId: id } }),
-        tx.spaceWorkingHours.deleteMany({ where: { spaceId: id } }),
-        tx.spaceRule.deleteMany({ where: { spaceId: id } }),
-        tx.pricingTier.deleteMany({ where: { spaceId: id } }),
-      ])
+      // Each of these is cleared only because the payload brings a replacement for it.
+      if (Array.isArray(images)) await tx.spaceImage.deleteMany({ where: { spaceId: id } })
+      if (Array.isArray(amenityIds)) await tx.spaceAmenity.deleteMany({ where: { spaceId: id } })
+      if (Array.isArray(workingHours)) await tx.spaceWorkingHours.deleteMany({ where: { spaceId: id } })
+      if (Array.isArray(rules)) await tx.spaceRule.deleteMany({ where: { spaceId: id } })
+      if (Array.isArray(pricingTiers)) await tx.pricingTier.deleteMany({ where: { spaceId: id } })
 
-      const existingUnits = await tx.spaceUnit.findMany({ where: { spaceId: id }, orderBy: { createdAt: 'asc' } })
-      for (let index = 0; index < unitCount; index += 1) {
-        const existingUnit = existingUnits[index]
-        if (existingUnit) await tx.spaceUnit.update({ where: { id: existingUnit.id }, data: { isActive: true, label: `قاعة ${101 + index}` } })
-        else await tx.spaceUnit.create({ data: { spaceId: id, label: `قاعة ${101 + index}` } })
-      }
-      if (existingUnits.length > unitCount) {
-        await tx.spaceUnit.updateMany({ where: { id: { in: existingUnits.slice(unitCount).map((unit) => unit.id) } }, data: { isActive: false } })
+      if (sent('identicalUnitsCount')) {
+        const existingUnits = await tx.spaceUnit.findMany({ where: { spaceId: id }, orderBy: { createdAt: 'asc' } })
+        for (let index = 0; index < unitCount; index += 1) {
+          const existingUnit = existingUnits[index]
+          if (existingUnit) await tx.spaceUnit.update({ where: { id: existingUnit.id }, data: { isActive: true, label: `قاعة ${101 + index}` } })
+          else await tx.spaceUnit.create({ data: { spaceId: id, label: `قاعة ${101 + index}` } })
+        }
+        if (existingUnits.length > unitCount) {
+          await tx.spaceUnit.updateMany({ where: { id: { in: existingUnits.slice(unitCount).map((unit) => unit.id) } }, data: { isActive: false } })
+        }
       }
 
       if (Array.isArray(services)) {
@@ -211,32 +239,59 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           city: managedCity?.name || space.city,
           district,
           address,
-          streetName: streetName || null,
-          buildingNumber: buildingNumber || null,
-          postalCode: postalCode || null,
-          landmarks: landmarks || null,
-          latitude: latitude ? parseFloat(latitude) : null,
-          longitude: longitude ? parseFloat(longitude) : null,
-          capacity: capacity ? Number(capacity) : null,
+          ...(sent('streetName') ? { streetName: streetName || null } : {}),
+          ...(sent('buildingNumber') ? { buildingNumber: buildingNumber || null } : {}),
+          ...(sent('postalCode') ? { postalCode: postalCode || null } : {}),
+          ...(sent('landmarks') ? { landmarks: landmarks || null } : {}),
+          // A partial payload carrying no coordinates must not unpin the space.
+          ...(sent('latitude') ? { latitude: latitude ? parseFloat(latitude) : null } : {}),
+          ...(sent('longitude') ? { longitude: longitude ? parseFloat(longitude) : null } : {}),
+          ...(sent('capacity') ? { capacity: capacity ? Number(capacity) : null } : {}),
           price: Number(price),
           pricePeriod: 'hour',
-          identicalUnitsCount: unitCount,
-          advertisingLicenseNumber: user.role === 'ADMIN'
-            ? (typeof advertisingLicenseNumber === 'string' ? advertisingLicenseNumber.trim() || null : space.advertisingLicenseNumber)
-            : space.advertisingLicenseNumber,
-          minBookingHours: minBookingHours ? Number(minBookingHours) : null,
-          maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null,
-          cancellationPolicy: cancellationPolicy || 'FLEXIBLE',
-          status: user.role === 'ADMIN' ? space.status : 'PENDING_REVIEW',
-          images: images?.length ? { create: images.map((url: string, index: number) => ({ url, order: index })) } : undefined,
-          amenities: amenityIds?.length ? { create: amenityIds.map((amenityId: string) => ({ amenityId })) } : undefined,
-          workingHours: workingHours?.length ? { create: workingHours.filter((item: { isOpen: boolean }) => item.isOpen).map((item: { dayOfWeek: number; openTime: string; closeTime: string }) => ({ dayOfWeek: item.dayOfWeek, isOpen: true, openTime: item.openTime, closeTime: item.closeTime })) } : undefined,
-          pricingTiers: Array.isArray(pricingTiers) ? { create: pricingTiers.filter((tier: { minHours?: number; discountPercent?: number }) => Number(tier.minHours) > 0 && Number(tier.discountPercent) >= 0).map((tier: { minHours: number; discountPercent: number }) => ({ minHours: Number(tier.minHours), discountPercent: Number(tier.discountPercent) })) } : undefined,
-          rules: rules?.length ? { create: rules.filter((rule: { isDefault: boolean }) => rule.isDefault).map((rule: { rule: string; isDefault: boolean }) => ({ rule: rule.rule, isDefault: rule.isDefault })) } : undefined,
+          ...(sent('identicalUnitsCount') ? { identicalUnitsCount: unitCount } : {}),
+          ...(sent('minBookingHours') ? { minBookingHours: minBookingHours ? Number(minBookingHours) : null } : {}),
+          ...(sent('maxAdvanceBookingDays') ? { maxAdvanceBookingDays: maxAdvanceBookingDays ? Number(maxAdvanceBookingDays) : null } : {}),
+          ...(sent('cancellationPolicy') && cancellationPolicy ? { cancellationPolicy } : {}),
+
+          // Platform-managed fields. An owner cannot set any of them, and their edit always
+          // returns the space to the review queue.
+          ...(isAdmin && sent('advertisingLicenseNumber')
+            ? { advertisingLicenseNumber: typeof advertisingLicenseNumber === 'string' ? advertisingLicenseNumber.trim() || null : null }
+            : {}),
+          ...(isAdmin && sent('adminNotes')
+            ? { adminNotes: typeof adminNotes === 'string' ? adminNotes.trim() || null : null }
+            : {}),
+          status: isAdmin ? (status || space.status) : 'PENDING_REVIEW',
+
+          ...(Array.isArray(images) ? { images: { create: images.map((url: string, index: number) => ({ url, order: index })) } } : {}),
+          ...(Array.isArray(amenityIds) ? { amenities: { create: amenityIds.map((amenityId: string) => ({ amenityId })) } } : {}),
+          ...(Array.isArray(workingHours)
+            ? { workingHours: { create: workingHours.filter((item: { isOpen: boolean }) => item.isOpen).map((item: { dayOfWeek: number; openTime: string; closeTime: string }) => ({ dayOfWeek: item.dayOfWeek, isOpen: true, openTime: item.openTime, closeTime: item.closeTime })) } }
+            : {}),
+          ...(Array.isArray(pricingTiers)
+            ? { pricingTiers: { create: pricingTiers.filter((tier: { minHours?: number; discountPercent?: number }) => Number(tier.minHours) > 0 && Number(tier.discountPercent) >= 0).map((tier: { minHours: number; discountPercent: number }) => ({ minHours: Number(tier.minHours), discountPercent: Number(tier.discountPercent) })) } }
+            : {}),
+          ...(Array.isArray(rules)
+            ? { rules: { create: rules.filter((rule: { rule: string; isDefault: boolean }) => rule.isDefault && rule.rule?.trim()).map((rule: { rule: string; isDefault: boolean }) => ({ rule: rule.rule, isDefault: rule.isDefault })) } }
+            : {}),
         },
         include: { type: true, images: true, workingHours: true, services: true, serviceConfigs: { include: { catalog: true } }, units: true, pricingTiers: true, rules: true },
       })
     })
+
+    if (isAdmin) {
+      await prisma.adminAuditLog.create({
+        data: {
+          actorId: String(user.id),
+          action: 'UPDATE_SPACE',
+          entityType: 'Space',
+          entityId: id,
+          before: JSON.parse(JSON.stringify(space)),
+          after: JSON.parse(JSON.stringify(updated)),
+        },
+      }).catch(() => { /* the edit itself is what matters; never fail it over the log */ })
+    }
 
     return NextResponse.json({ space: updated })
   } catch (err) {

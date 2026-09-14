@@ -135,6 +135,15 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt',
+  userId: 'userId'
+};
+
 exports.Prisma.AdminAuditLogScalarFieldEnum = {
   id: 'id',
   action: 'action',
@@ -267,6 +276,7 @@ exports.Prisma.PrivateOccupancyScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   status: 'status',
+  seriesId: 'seriesId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   spaceId: 'spaceId',
@@ -279,6 +289,7 @@ exports.Prisma.TemporaryClosureScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   status: 'status',
+  seriesId: 'seriesId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   spaceId: 'spaceId',
@@ -748,6 +759,7 @@ exports.ConversationType = exports.$Enums.ConversationType = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  PasswordResetToken: 'PasswordResetToken',
   AdminAuditLog: 'AdminAuditLog',
   UserDocument: 'UserDocument',
   SpaceType: 'SpaceType',

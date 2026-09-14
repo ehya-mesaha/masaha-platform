@@ -171,6 +171,20 @@ model User {
   adminAuditLogs           AdminAuditLog[]
   paymentOrders            PaymentOrder[]
   paymentProviderCustomers PaymentProviderCustomer[]
+  passwordResetTokens      PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
 }
 
 model AdminAuditLog {
@@ -368,6 +382,8 @@ model PrivateOccupancy {
   startTime DateTime
   endTime   DateTime
   status    OccupancyStatus @default(CONFIRMED)
+  /// Ties the occurrences of one repeating programme together. Null for a one-off.
+  seriesId  String?
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   spaceId   String
@@ -377,6 +393,7 @@ model PrivateOccupancy {
 
   @@index([spaceId, startTime, endTime])
   @@index([unitId, startTime, endTime])
+  @@index([seriesId])
 }
 
 model TemporaryClosure {
@@ -385,6 +402,8 @@ model TemporaryClosure {
   startTime DateTime
   endTime   DateTime
   status    ClosureStatus @default(ACTIVE)
+  /// Ties the occurrences of one repeating closure together. Null for a one-off.
+  seriesId  String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   spaceId   String
@@ -393,6 +412,7 @@ model TemporaryClosure {
   unit      SpaceUnit?    @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@index([spaceId, startTime, endTime])
+  @@index([seriesId])
   @@index([unitId, startTime, endTime])
 }
 

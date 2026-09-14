@@ -201,25 +201,77 @@ export function extractCoordinatesStrict(value: string): LatLng | null {
 }
 
 /**
- * Last resort for a Google Maps page whose URL carries no coordinates: the map view is
- * embedded in the markup as `APP_INITIALIZATION_STATE=[[[altitude,lng,lat],…`.
+ * Coordinates found in a fetched Google Maps page, tagged by how much they can be trusted.
  *
- * Note the order — longitude comes before latitude. This is the camera position rather
- * than the place's exact pin, so callers should treat it as approximate and let the user
- * confirm it, but it is far better than refusing a link that is perfectly valid.
+ * `pin` is the place itself. `viewport` is only where Google happened to point the camera,
+ * which for a server-side fetch is derived from the *server's* IP rather than the place —
+ * that is how a Riyadh link used to come back as Loudoun County, Virginia, the region our
+ * host runs in. Callers must never accept a `viewport` point without checking it lands
+ * somewhere the platform actually operates.
  */
-export function extractCoordinatesFromHtml(html: string): { point: LatLng; approximate: boolean } | null {
-  const exact = extractCoordinatesStrict(html)
-  if (exact) return { point: exact, approximate: false }
+export type HtmlCoordinates = { point: LatLng; source: 'pin' | 'viewport' }
 
-  const match = html.match(
+/**
+ * Coordinates embedded in the markup of a Google Maps page, for share links whose URL
+ * never carries the pin.
+ *
+ * Ordering is by trustworthiness, strongest first: the static-map image Google renders for
+ * the place is centred on the place, so it is as good as `!3d…!4d…`; the initialization
+ * state's camera position is a guess and is reported as such.
+ */
+export function extractCoordinatesFromHtml(html: string): HtmlCoordinates | null {
+  const exact = extractCoordinatesStrict(html)
+  if (exact) return { point: exact, source: 'pin' }
+
+  // The og:image/preview thumbnail is a Static Maps call centred on the place itself.
+  const staticMap = html.match(
+    /staticmap[^"'<>]*?[?&](?:center|markers)=(?:[^"'<>&]*?\|)?(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/i,
+  )
+  if (staticMap) {
+    const candidate = { lat: Number(staticMap[1]), lng: Number(staticMap[2]) }
+    if (isValidLatLng(candidate)) return { point: candidate, source: 'pin' }
+  }
+
+  // Camera position — longitude before latitude. Geo-IP derived when Google could not
+  // resolve the place, so it is the last thing tried and never trusted on its own.
+  const viewport = html.match(
     /APP_INITIALIZATION_STATE\s*=\s*\[\[\[[-\d.eE+]+,\s*(-?\d+\.\d+),\s*(-?\d+\.\d+)/,
   )
-  if (match) {
-    const candidate = { lat: Number(match[2]), lng: Number(match[1]) }
-    if (isValidLatLng(candidate)) return { point: candidate, approximate: true }
+  if (viewport) {
+    const candidate = { lat: Number(viewport[2]), lng: Number(viewport[1]) }
+    if (isValidLatLng(candidate)) return { point: candidate, source: 'viewport' }
   }
   return null
+}
+
+/**
+ * The place name Google keeps in the path of a share link — `/maps/place/<name>/…`.
+ *
+ * When a link yields no trustworthy coordinates the name is still there, and geocoding it
+ * against Saudi Arabia beats showing the seller a pin on another continent.
+ */
+export function extractPlaceName(url: string): string | null {
+  const match = url.match(/\/maps\/(?:place|search|dir)\/([^/@?#]+)/)
+  if (!match) return null
+  const name = fullyDecode(match[1]).replace(/\+/g, ' ').trim()
+  // A name that is really just the coordinates carries nothing extra to search for.
+  if (!name || name.length < 3 || /^[-\d.,\s°NSEWnsew]+$/.test(name)) return null
+  return name
+}
+
+/**
+ * The area the platform serves — Saudi Arabia plus enough margin to cover its borders.
+ *
+ * Used as a sanity gate on coordinates we only half-trust. An exact pin is honoured
+ * wherever it lands; a guessed one outside these bounds is discarded rather than shown.
+ */
+export const SERVICE_AREA_BOUNDS = { minLat: 15.5, maxLat: 33.0, minLng: 34.0, maxLng: 56.5 }
+
+export function isWithinServiceArea(point: LatLng) {
+  return (
+    point.lat >= SERVICE_AREA_BOUNDS.minLat && point.lat <= SERVICE_AREA_BOUNDS.maxLat &&
+    point.lng >= SERVICE_AREA_BOUNDS.minLng && point.lng <= SERVICE_AREA_BOUNDS.maxLng
+  )
 }
 
 function fullyDecode(value: string) {
