@@ -5,14 +5,29 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import SpaceWizard from '@/components/spaces/SpaceWizard'
 import type { SpaceFormData } from '@/components/spaces/create/types'
+import Badge, { getSpaceStatusBadge } from '@/components/ui/Badge'
 
 const STATUS_OPTIONS = [
-  { value: 'APPROVED', label: 'معتمدة ومنشورة' },
-  { value: 'PENDING_REVIEW', label: 'بانتظار المراجعة' },
-  { value: 'REJECTED', label: 'مرفوضة' },
-  { value: 'INACTIVE', label: 'معطّلة' },
-  { value: 'DRAFT', label: 'مسودة' },
+  { value: 'APPROVED', label: 'معتمدة ومنشورة', hint: 'مرئية للجميع وقابلة للحجز الآن.' },
+  { value: 'PENDING_REVIEW', label: 'بانتظار المراجعة', hint: 'تنتظر قرارك — غير مرئية لطالبي المساحات.' },
+  { value: 'REJECTED', label: 'مرفوضة', hint: 'أرسل سبب الرفض في الملاحظات ليعرف المالك ما يصححه.' },
+  { value: 'INACTIVE', label: 'معطّلة', hint: 'تُسحب من النتائج فورًا دون حذف بياناتها.' },
+  { value: 'DRAFT', label: 'مسودة', hint: 'لم تُرسل للمراجعة بعد.' },
 ] as const
+
+const RING_BY_STATUS: Record<string, string> = {
+  APPROVED: 'ring-green-200 focus:border-green-600',
+  PENDING_REVIEW: 'ring-amber-200 focus:border-amber-600',
+  REJECTED: 'ring-red-200 focus:border-red-600',
+  INACTIVE: 'ring-gray-200 focus:border-gray-500',
+  DRAFT: 'ring-gray-200 focus:border-gray-500',
+}
+
+/** A status change that takes a live listing away from buyers, or puts one in front of them. */
+function isConsequentialChange(from: string, to: string) {
+  if (from === to) return false
+  return from === 'APPROVED' || to === 'APPROVED'
+}
 
 /**
  * The admin's copy of the space form: the same nine steps the owner gets, plus the fields
@@ -23,6 +38,7 @@ export default function AdminEditSpacePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [status, setStatus] = useState('')
+  const [originalStatus, setOriginalStatus] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
   const [licenseNumber, setLicenseNumber] = useState('')
   const [ownerName, setOwnerName] = useState('')
@@ -33,7 +49,9 @@ export default function AdminEditSpacePage() {
       .then(response => response.json())
       .then(data => {
         if (cancelled || !data.space) return
-        setStatus(data.space.status || 'PENDING_REVIEW')
+        const loadedStatus = data.space.status || 'PENDING_REVIEW'
+        setStatus(loadedStatus)
+        setOriginalStatus(loadedStatus)
         setAdminNotes(data.space.adminNotes || '')
         setLicenseNumber(data.space.advertisingLicenseNumber || '')
         setOwnerName(data.space.seller?.name || '')
@@ -54,6 +72,10 @@ export default function AdminEditSpacePage() {
     return null
   }
 
+  const statusChanged = status !== originalStatus && originalStatus !== ''
+  const consequential = statusChanged && isConsequentialChange(originalStatus, status)
+  const activeOption = STATUS_OPTIONS.find(option => option.value === status)
+
   const adminPanel = (
     <section className="mb-6 rounded-2xl border border-[#0E3B34]/15 bg-[#F7FAF8] p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -69,18 +91,31 @@ export default function AdminEditSpacePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-bold text-[#59655D]">حالة النشر</span>
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-xs font-bold text-[#59655D]">حالة النشر</span>
+            {status && <Badge variant={getSpaceStatusBadge(status).variant}>{getSpaceStatusBadge(status).label}</Badge>}
+          </div>
           <select
             value={status}
             onChange={event => setStatus(event.target.value)}
-            className="w-full rounded-lg border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm focus:border-[#0E3B34] focus:outline-none"
+            className={`w-full rounded-lg border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm ring-2 ring-transparent transition-colors focus:outline-none ${status ? RING_BY_STATUS[status] : ''}`}
           >
             {STATUS_OPTIONS.map(option => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
-        </label>
+          {activeOption && <p className="mt-1.5 text-[11px] leading-5 text-[#8B9389]">{activeOption.hint}</p>}
+          {statusChanged && (
+            <p className={`mt-2 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold ${
+              consequential ? 'bg-amber-50 text-amber-800' : 'bg-[#0E3B34]/5 text-[#0E3B34]'
+            }`}>
+              <span aria-hidden="true">{consequential ? '⚠' : '↻'}</span>
+              سيتغير من «{getSpaceStatusBadge(originalStatus).label}» إلى «{getSpaceStatusBadge(status).label}» عند الحفظ
+              {consequential && (status === 'APPROVED' ? ' — ستصبح مرئية للجميع فورًا.' : ' — ستُسحب من النتائج فورًا.')}
+            </p>
+          )}
+        </div>
 
         <label className="block">
           <span className="mb-1.5 block text-xs font-bold text-[#59655D]">رقم الترخيص الإعلاني</span>
@@ -94,7 +129,9 @@ export default function AdminEditSpacePage() {
         </label>
 
         <label className="block md:col-span-2">
-          <span className="mb-1.5 block text-xs font-bold text-[#59655D]">ملاحظات الإدارة (تظهر لصاحب المساحة)</span>
+          <span className="mb-1.5 block text-xs font-bold text-[#59655D]">
+            ملاحظات الإدارة <span className="font-normal text-[#8B9389]">(تظهر لصاحب المساحة)</span>
+          </span>
           <textarea
             value={adminNotes}
             onChange={event => setAdminNotes(event.target.value)}
@@ -102,6 +139,11 @@ export default function AdminEditSpacePage() {
             placeholder="سبب الرفض أو التعديل المطلوب..."
             className="w-full resize-none rounded-lg border border-[#D8D1C7] bg-white px-4 py-2.5 text-sm focus:border-[#0E3B34] focus:outline-none"
           />
+          {status === 'REJECTED' && !adminNotes.trim() && (
+            <p className="mt-1.5 text-[11px] font-bold text-amber-700">
+              المساحة مرفوضة بلا سبب مذكور — أضف ملاحظة ليعرف المالك ما يصححه.
+            </p>
+          )}
         </label>
       </div>
 

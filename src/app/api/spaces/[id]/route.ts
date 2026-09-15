@@ -202,13 +202,33 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       if (sent('identicalUnitsCount')) {
         const existingUnits = await tx.spaceUnit.findMany({ where: { spaceId: id }, orderBy: { createdAt: 'asc' } })
-        for (let index = 0; index < unitCount; index += 1) {
-          const existingUnit = existingUnits[index]
-          if (existingUnit) await tx.spaceUnit.update({ where: { id: existingUnit.id }, data: { isActive: true, label: `قاعة ${101 + index}` } })
-          else await tx.spaceUnit.create({ data: { spaceId: id, label: `قاعة ${101 + index}` } })
+        const toKeep = existingUnits.slice(0, unitCount)
+        const toDeactivate = existingUnits.slice(unitCount)
+
+        // A routine re-save changes no unit at all — every kept unit already has the label
+        // and active state it's about to be set to. Skipping the round trip when nothing
+        // would change is what keeps a space with many units (up to 100) from turning an
+        // edit into a hundred sequential queries; a bulk mismatch (a genuinely reordered or
+        // reactivated unit) still gets its own update.
+        await Promise.all(toKeep.map((unit, index) => {
+          const label = `قاعة ${101 + index}`
+          if (unit.isActive && unit.label === label) return Promise.resolve()
+          return tx.spaceUnit.update({ where: { id: unit.id }, data: { isActive: true, label } })
+        }))
+
+        // Brand-new units — raising identicalUnitsCount past what already exists — are
+        // written in one batched insert instead of one create per unit.
+        if (unitCount > toKeep.length) {
+          await tx.spaceUnit.createMany({
+            data: Array.from({ length: unitCount - toKeep.length }, (_, offset) => ({
+              spaceId: id,
+              label: `قاعة ${101 + toKeep.length + offset}`,
+            })),
+          })
         }
-        if (existingUnits.length > unitCount) {
-          await tx.spaceUnit.updateMany({ where: { id: { in: existingUnits.slice(unitCount).map((unit) => unit.id) } }, data: { isActive: false } })
+
+        if (toDeactivate.length) {
+          await tx.spaceUnit.updateMany({ where: { id: { in: toDeactivate.map((unit) => unit.id) } }, data: { isActive: false } })
         }
       }
 
@@ -278,6 +298,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         },
         include: { type: true, images: true, workingHours: true, services: true, serviceConfigs: { include: { catalog: true } }, units: true, pricingTiers: true, rules: true },
       })
+    }, {
+      // A full wizard save can touch nine relations across as many round trips to the
+      // pooled connection. Prisma's 5s default is comfortably enough on a same-region
+      // deploy, but not with any added latency to the pooler — and losing the whole edit
+      // to a timeout is worse than the transaction simply taking a couple of seconds longer.
+      timeout: 20_000,
+      maxWait: 10_000,
     })
 
     if (isAdmin) {
