@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+
 import type { Coupon, CouponDiscountType, Prisma } from '@/generated/prisma'
 
 /**
@@ -102,57 +104,119 @@ export function allocateDiscountHalalas(subtotals: number[], discountHalalas: nu
 type CouponClient = Prisma.TransactionClient
 
 /**
- * Validates a coupon for one buyer against one subtotal and returns the discount it is
- * worth. Usage counters are read here, so callers that go on to reserve the coupon must
- * run inside the serializable transaction that also creates the redemption - that is
- * what stops two concurrent checkouts from both taking the last available use.
+ * Loads a coupon and checks everything that does not depend on the booking total. One
+ * round trip, and safe to run before the booking transaction opens - which is the point.
+ * That transaction is serializable and holds an advisory lock on the space, so every
+ * query added inside it is spent from the checkout's time budget.
  */
-export async function evaluateCoupon(
-  client: CouponClient,
-  input: { code: string; userId: string; subtotalHalalas: number; now?: Date },
-): Promise<{ coupon: Coupon; discountHalalas: number }> {
-  const code = normalizeCouponCode(input.code)
-  if (!code) throw new CouponError('NOT_FOUND')
+export async function loadRedeemableCoupon(client: CouponClient, code: string, now = new Date()) {
+  const normalized = normalizeCouponCode(code)
+  if (!normalized) throw new CouponError('NOT_FOUND')
 
-  const coupon = await client.coupon.findUnique({ where: { code } })
+  const coupon = await client.coupon.findUnique({ where: { code: normalized } })
   if (!coupon) throw new CouponError('NOT_FOUND')
-
-  const now = input.now ?? new Date()
   if (!coupon.isActive) throw new CouponError('INACTIVE')
   if (coupon.startsAt > now) throw new CouponError('NOT_STARTED')
   if (coupon.endsAt <= now) throw new CouponError('EXPIRED')
-  if (coupon.minBookingAmount != null && input.subtotalHalalas < toHalalas(coupon.minBookingAmount)) {
+  return coupon
+}
+
+/** The half of the decision that depends on the total. Pure - no database access. */
+export function priceCouponForSubtotal(coupon: Coupon, subtotalHalalas: number) {
+  if (coupon.minBookingAmount != null && subtotalHalalas < toHalalas(coupon.minBookingAmount)) {
     throw new CouponError('BELOW_MINIMUM')
   }
+  const discountHalalas = computeCouponDiscountHalalas(coupon, subtotalHalalas)
+  // StreamPay cannot process a zero-value charge, so a coupon that wipes out the whole
+  // total has to be refused outright rather than silently reduced to a token amount.
+  if (discountHalalas >= subtotalHalalas) throw new CouponError('COVERS_FULL_AMOUNT')
+  return discountHalalas
+}
 
+async function assertWithinUsageLimits(client: CouponClient, coupon: Coupon, userId: string) {
   if (coupon.maxRedemptions != null) {
     const used = await client.couponRedemption.count({
       where: { couponId: coupon.id, status: { in: [...ACTIVE_REDEMPTION_STATUSES] } },
     })
     if (used >= coupon.maxRedemptions) throw new CouponError('GLOBAL_LIMIT_REACHED')
   }
-
   if (coupon.maxPerUser != null) {
     const usedByUser = await client.couponRedemption.count({
-      where: { couponId: coupon.id, userId: input.userId, status: { in: [...ACTIVE_REDEMPTION_STATUSES] } },
+      where: { couponId: coupon.id, userId, status: { in: [...ACTIVE_REDEMPTION_STATUSES] } },
     })
     if (usedByUser >= coupon.maxPerUser) throw new CouponError('USER_LIMIT_REACHED')
   }
+}
 
-  const discountHalalas = computeCouponDiscountHalalas(coupon, input.subtotalHalalas)
-  // StreamPay cannot process a zero-value charge, so a coupon that wipes out the whole
-  // total has to be refused outright rather than silently reduced to a token amount.
-  if (discountHalalas >= input.subtotalHalalas) throw new CouponError('COVERS_FULL_AMOUNT')
+/**
+ * Full check including usage counters, for the preview the buyer sees before checkout.
+ * The booking path deliberately does not use this: it reserves the coupon instead, which
+ * enforces the same limits atomically in a single statement.
+ */
+export async function evaluateCoupon(
+  client: CouponClient,
+  input: { code: string; userId: string; subtotalHalalas: number; now?: Date },
+): Promise<{ coupon: Coupon; discountHalalas: number }> {
+  const coupon = await loadRedeemableCoupon(client, input.code, input.now ?? new Date())
+  if (coupon.minBookingAmount != null && input.subtotalHalalas < toHalalas(coupon.minBookingAmount)) {
+    throw new CouponError('BELOW_MINIMUM')
+  }
+  await assertWithinUsageLimits(client, coupon, input.userId)
+  return { coupon, discountHalalas: priceCouponForSubtotal(coupon, input.subtotalHalalas) }
+}
 
-  return { coupon, discountHalalas }
+/**
+ * Claims one use of the coupon in a single statement: the row is inserted only if the
+ * usage counts are still under their limits, so the check and the claim cannot be pulled
+ * apart by a concurrent checkout. Returns false when a limit is already full.
+ *
+ * Deliberately raw SQL rather than count-then-create. The two extra round trips that
+ * count-then-create costs inside the booking transaction were enough to exhaust its
+ * timeout against a distant database and fail the entire booking.
+ */
+export async function reserveCouponRedemption(
+  client: CouponClient,
+  input: {
+    coupon: Pick<Coupon, 'id' | 'maxRedemptions' | 'maxPerUser'>
+    userId: string
+    paymentOrderId: string
+    discountHalalas: number
+  },
+) {
+  const { coupon, userId, paymentOrderId, discountHalalas } = input
+  const globalLimit = coupon.maxRedemptions
+  const perUserLimit = coupon.maxPerUser
+
+  const inserted = await client.$executeRaw`
+    INSERT INTO "CouponRedemption" ("id", "status", "discountHalalas", "couponId", "userId", "paymentOrderId", "createdAt", "updatedAt")
+    SELECT ${randomUUID()}, 'RESERVED'::"CouponRedemptionStatus", ${discountHalalas}::int, ${coupon.id}, ${userId}, ${paymentOrderId}, now(), now()
+    WHERE (${globalLimit}::int IS NULL OR (
+            SELECT count(*) FROM "CouponRedemption"
+            WHERE "couponId" = ${coupon.id} AND "status" IN ('RESERVED', 'CONFIRMED')
+          ) < ${globalLimit}::int)
+      AND (${perUserLimit}::int IS NULL OR (
+            SELECT count(*) FROM "CouponRedemption"
+            WHERE "couponId" = ${coupon.id} AND "userId" = ${userId} AND "status" IN ('RESERVED', 'CONFIRMED')
+          ) < ${perUserLimit}::int)
+  `
+  return inserted > 0
+}
+
+/**
+ * Arguments for freeing the usage slot an unpaid order still holds. Exposed separately so
+ * a caller can drop the release into a batched `$transaction([...])` instead of paying for
+ * an interactive transaction just to run one update.
+ */
+export function releaseCouponRedemptionArgs(paymentOrderId: string) {
+  return {
+    where: { paymentOrderId, status: 'RESERVED' as const },
+    data: { status: 'RELEASED' as const, releasedAt: new Date() },
+  }
 }
 
 /** Frees the usage slot held by an order's redemption when that order never gets paid. */
 export async function releaseCouponRedemption(client: CouponClient, paymentOrderId: string) {
-  await client.couponRedemption.updateMany({
-    where: { paymentOrderId, status: 'RESERVED' },
-    data: { status: 'RELEASED', releasedAt: new Date() },
-  })
+  await client.couponRedemption.updateMany(releaseCouponRedemptionArgs(paymentOrderId))
 }
 
 /** Turns the reservation into a permanent use once the order is actually paid. */

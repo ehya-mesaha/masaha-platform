@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@/generated/prisma'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +8,7 @@ import { durationHours, generateProgramSessions, getSpaceAvailability, sessionsF
 import { LEGAL_VERSION } from '@/lib/legal'
 import { assertStreamPayConfigured, StreamPayError } from '@/lib/streampay/client'
 import { createCheckoutForOrder } from '@/lib/streampay/service'
-import { allocateDiscountHalalas, CouponError, evaluateCoupon, fromHalalas, normalizeCouponCode, toHalalas } from '@/lib/coupons'
+import { allocateDiscountHalalas, CouponError, fromHalalas, loadRedeemableCoupon, normalizeCouponCode, priceCouponForSubtotal, reserveCouponRedemption, toHalalas } from '@/lib/coupons'
 
 type SelectedService = {
   configId: string
@@ -130,6 +132,18 @@ export async function POST(req: NextRequest) {
 
     if (sessions.length === 0) {
       return NextResponse.json({ error: 'لم ينتج عن البرنامج أي جلسات' }, { status: 400 })
+    }
+
+    // Resolved before the transaction opens. Everything inside that transaction runs while
+    // an advisory lock on the space is held, so a lookup done in here costs nothing there.
+    let coupon = null
+    if (couponCode) {
+      try {
+        coupon = await loadRedeemableCoupon(prisma, couponCode)
+      } catch (error) {
+        if (error instanceof CouponError) return NextResponse.json({ error: error.message }, { status: 400 })
+        throw error
+      }
     }
 
     const result = await prisma.$transaction(async tx => {
@@ -261,23 +275,17 @@ export async function POST(req: NextRequest) {
         throw new BookingError('قيمة الحجز غير صالحة للدفع', 400)
       }
 
-      // Reserving the coupon inside this serializable transaction is what makes the usage
-      // limits hold: two checkouts racing for the last available use conflict and one aborts.
-      let redemption: { couponId: string; code: string; discountHalalas: number } | null = null
-      if (couponCode) {
+      // Pricing the coupon needs the subtotal, so it happens here - but it is pure
+      // arithmetic against the already-loaded coupon and costs no round trip.
+      let couponDiscountHalalas = 0
+      if (coupon) {
         try {
-          const evaluated = await evaluateCoupon(tx, {
-            code: couponCode,
-            userId: user.id as string,
-            subtotalHalalas,
-          })
-          redemption = { couponId: evaluated.coupon.id, code: evaluated.coupon.code, discountHalalas: evaluated.discountHalalas }
+          couponDiscountHalalas = priceCouponForSubtotal(coupon, subtotalHalalas)
         } catch (error) {
           if (error instanceof CouponError) throw new BookingError(error.message, 400)
           throw error
         }
       }
-      const couponDiscountHalalas = redemption?.discountHalalas ?? 0
       const couponAllocation = allocateDiscountHalalas(sessionPricing.map(session => session.subtotalHalalas), couponDiscountHalalas)
       const amountHalalas = subtotalHalalas - couponDiscountHalalas
       if (amountHalalas < 1) {
@@ -292,15 +300,23 @@ export async function POST(req: NextRequest) {
           expiresAt: new Date(Date.now() + 15 * 60 * 1000),
         },
       })
-      if (redemption) {
-        await tx.couponRedemption.create({
-          data: {
-            couponId: redemption.couponId,
-            userId: user.id as string,
-            paymentOrderId: paymentOrder.id,
-            discountHalalas: redemption.discountHalalas,
-          },
+      if (coupon) {
+        // One statement that both checks the usage limits and claims the slot, so two
+        // checkouts racing for the last use cannot both succeed.
+        const reserved = await reserveCouponRedemption(tx, {
+          coupon,
+          userId: user.id as string,
+          paymentOrderId: paymentOrder.id,
+          discountHalalas: couponDiscountHalalas,
         })
+        if (!reserved) {
+          throw new BookingError(
+            coupon.maxPerUser != null
+              ? 'لقد استخدمت هذا الكوبون بالفعل بالحد المسموح لحسابك.'
+              : 'اكتمل عدد مرات استخدام هذا الكوبون.',
+            409,
+          )
+        }
       }
 
       const program = sessions.length > 1
@@ -318,44 +334,47 @@ export async function POST(req: NextRequest) {
           })
         : null
 
-      const bookings = []
-      for (const [index, allocation] of availability.allocations.entries()) {
+      // One statement for every booking and one for every service line, rather than a
+      // round trip per session. A long programme used to spend its whole transaction
+      // budget here, and on a distant database that expired the transaction outright.
+      const bookingRows = availability.allocations.map((allocation, index) => {
         const session = sessionPricing[index]
-        const sessionCouponDiscount = couponAllocation[index]
-        const booking = await tx.booking.create({
-          data: {
-            spaceId,
-            unitId: allocation.unitId,
-            buyerId: user.id as string,
-            programId: program?.id ?? null,
-            date: new Date(`${allocation.session.date}T00:00:00+03:00`),
-            startTime: allocation.session.startAt,
-            endTime: allocation.session.endAt,
-            persons,
-            notes: notes || null,
-            requesterIdNumber,
-            status: 'PENDING_PAYMENT',
-            paymentOrderId: paymentOrder.id,
-            termsAcceptedAt: new Date(),
-            termsVersion: LEGAL_VERSION,
-            totalHours: session.sessionHours,
-            basePrice: session.sessionBasePrice,
-            discountAmount: session.sessionDiscount,
-            couponCode: redemption?.code ?? null,
-            couponDiscount: fromHalalas(sessionCouponDiscount),
-            servicesTotal: session.sessionServicesTotal,
-            grandTotal: fromHalalas(session.subtotalHalalas - sessionCouponDiscount),
-            services: session.lines.length
-              ? { create: session.lines }
-              : undefined,
-          },
-          include: { unit: true, space: { include: { type: true } }, services: true },
-        })
-        bookings.push(booking)
+        return {
+          id: randomUUID(),
+          spaceId,
+          unitId: allocation.unitId,
+          buyerId: user.id as string,
+          programId: program?.id ?? null,
+          date: new Date(`${allocation.session.date}T00:00:00+03:00`),
+          startTime: allocation.session.startAt,
+          endTime: allocation.session.endAt,
+          persons,
+          notes: notes || null,
+          requesterIdNumber,
+          status: 'PENDING_PAYMENT' as const,
+          paymentOrderId: paymentOrder.id,
+          termsAcceptedAt: new Date(),
+          termsVersion: LEGAL_VERSION,
+          totalHours: session.sessionHours,
+          basePrice: session.sessionBasePrice,
+          discountAmount: session.sessionDiscount,
+          couponCode: coupon?.code ?? null,
+          couponDiscount: fromHalalas(couponAllocation[index]),
+          servicesTotal: session.sessionServicesTotal,
+          grandTotal: fromHalalas(session.subtotalHalalas - couponAllocation[index]),
+        }
+      })
+      await tx.booking.createMany({ data: bookingRows })
+
+      const serviceRows = sessionPricing.flatMap((session, index) =>
+        session.lines.map(line => ({ ...line, bookingId: bookingRows[index].id })),
+      )
+      if (serviceRows.length > 0) {
+        await tx.bookingService.createMany({ data: serviceRows })
       }
 
       return {
-        bookings,
+        bookingCount: bookingRows.length,
         program,
         paymentOrder,
         pricing: {
@@ -365,18 +384,19 @@ export async function POST(req: NextRequest) {
           discountAmount,
           servicesTotal,
           subtotal: fromHalalas(subtotalHalalas),
-          couponCode: redemption?.code ?? null,
+          couponCode: coupon?.code ?? null,
           couponDiscount: fromHalalas(couponDiscountHalalas),
           grandTotal: fromHalalas(amountHalalas),
         },
       }
     }, {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      // Raised above Prisma's defaults (maxWait 2s, timeout 5s): this transaction does several
-      // sequential round trips per session (space lookup, availability check and one booking.create
-      // per date), which can exceed the defaults under normal latency to the DB region.
-      maxWait: 10000,
-      timeout: 20000,
+      // Far above Prisma's defaults (maxWait 2s, timeout 5s). The work inside is now a fixed
+      // handful of round trips rather than one per session, but the budget stays generous:
+      // when this expires nothing is written and the buyer simply loses the booking, which
+      // is exactly what happened to coupon checkouts against a database a region away.
+      maxWait: 15_000,
+      timeout: 60_000,
     })
 
     const checkout = await createCheckoutForOrder(result.paymentOrder.id)
@@ -390,8 +410,17 @@ export async function POST(req: NextRequest) {
     if (error instanceof BookingError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
-    if (error instanceof Prisma.PrismaClientKnownRequestError && ['P2002', 'P2034'].includes(error.code)) {
+    if (isPrismaCode(error, 'P2002') || isPrismaCode(error, 'P2034')) {
       return NextResponse.json({ error: 'تم حجز الموعد للتو من مستخدم آخر. اختر موعدًا مختلفًا.' }, { status: 409 })
+    }
+    // P2028 is the transaction running out of time, usually a slow link to the database.
+    // Nothing was written, so the honest answer is "try again", not "something broke".
+    if (isPrismaCode(error, 'P2028')) {
+      console.error('Booking transaction expired', error)
+      return NextResponse.json(
+        { error: 'استغرق تأكيد الحجز وقتًا أطول من المتوقع ولم يتم خصم أي مبلغ. أعد المحاولة من فضلك.' },
+        { status: 503 },
+      )
     }
     if (error instanceof StreamPayError) {
       const message = error.code === 'NOT_CONFIGURED'
@@ -410,6 +439,14 @@ class BookingError extends Error {
   constructor(message: string, readonly status: number) {
     super(message)
   }
+}
+
+/**
+ * Prisma 7 raises errors from inside its generated runtime, and that class is not always
+ * the same identity as the re-exported one, so `instanceof` can miss a real error code.
+ */
+function isPrismaCode(error: unknown, code: string) {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === code
 }
 
 function roundMoney(value: number) {

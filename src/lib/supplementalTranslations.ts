@@ -1016,4 +1016,5 @@ export const supplementalTranslations: Record<string, string> = {
   'يظهر لفريق الإدارة فقط': 'Visible to the admin team only',
   'ينتهي': 'Ends',
   'يوجد كوبون بنفس الرمز. اختر رمزًا مختلفًا.': 'A coupon with the same code already exists. Choose a different code.',
+  'استغرق تأكيد الحجز وقتًا أطول من المتوقع ولم يتم خصم أي مبلغ. أعد المحاولة من فضلك.': 'Confirming the booking took longer than expected and nothing was charged. Please try again.',
 }

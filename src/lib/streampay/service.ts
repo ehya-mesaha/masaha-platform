@@ -26,7 +26,7 @@ import {
   type StreamPayment,
   type StreamPaymentLink,
 } from '@/lib/streampay/client'
-import { confirmCouponRedemption, releaseCouponRedemption } from '@/lib/coupons'
+import { confirmCouponRedemption, releaseCouponRedemption, releaseCouponRedemptionArgs } from '@/lib/coupons'
 
 type ReconcileInput = {
   orderId?: string
@@ -103,17 +103,24 @@ export async function createCheckoutForOrder(orderId: string) {
       }
     }
     const message = safeErrorMessage(error)
-    await prisma.$transaction(async tx => {
-      await tx.paymentOrder.update({
-        where: { id: order.id },
-        data: { status: 'FAILED', failedAt: new Date(), lastError: message },
-      })
-      await tx.booking.updateMany({
-        where: { paymentOrderId: order.id, status: 'PENDING_PAYMENT' },
-        data: { status: 'PAYMENT_FAILED' },
-      })
-      await releaseCouponRedemption(tx, order.id)
-    })
+    // Batched, not interactive: an interactive transaction here would run on Prisma's 5s
+    // default and, on expiry, throw over the StreamPay error the caller needs to report.
+    try {
+      await prisma.$transaction([
+        prisma.paymentOrder.update({
+          where: { id: order.id },
+          data: { status: 'FAILED', failedAt: new Date(), lastError: message },
+        }),
+        prisma.booking.updateMany({
+          where: { paymentOrderId: order.id, status: 'PENDING_PAYMENT' },
+          data: { status: 'PAYMENT_FAILED' },
+        }),
+        prisma.couponRedemption.updateMany(releaseCouponRedemptionArgs(order.id)),
+      ])
+    } catch (cleanupError) {
+      // Reconciliation picks the order up later; the original failure is what matters here.
+      console.error('Failed to mark payment order as failed', cleanupError)
+    }
     throw error
   }
 }
@@ -487,23 +494,25 @@ async function confirmPaidOrder(input: { orderId: string; invoiceId: string; pay
     return 'paid' as const
   }, {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-    maxWait: 10_000,
-    timeout: 20_000,
+    // Money has already been taken by the time this runs, so expiring here would leave a
+    // paid order unconfirmed. It gets the same generous budget as booking creation.
+    maxWait: 15_000,
+    timeout: 60_000,
   })
 }
 
 async function expireOrder(orderId: string) {
-  await prisma.$transaction(async tx => {
-    await tx.paymentOrder.updateMany({
+  await prisma.$transaction([
+    prisma.paymentOrder.updateMany({
       where: { id: orderId, status: { in: ['PENDING', 'CHECKOUT_CREATED'] } },
       data: { status: 'EXPIRED', lastError: null },
-    })
-    await tx.booking.updateMany({
+    }),
+    prisma.booking.updateMany({
       where: { paymentOrderId: orderId, status: 'PENDING_PAYMENT' },
       data: { status: 'PAYMENT_EXPIRED' },
-    })
-    await releaseCouponRedemption(tx, orderId)
-  })
+    }),
+    prisma.couponRedemption.updateMany(releaseCouponRedemptionArgs(orderId)),
+  ])
 }
 
 function normalizeSaudiPhone(phone: string | null) {
