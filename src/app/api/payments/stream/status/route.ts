@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 
 import { getCurrentUser } from '@/lib/auth'
-import { StreamPayError } from '@/lib/streampay/client'
-import { getPaymentOrderStatus, reconcileStreamOrder } from '@/lib/streampay/service'
+import { getPaymentOrderStatus } from '@/lib/streampay/service'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function POST(request: Request) {
   const user = await getCurrentUser()
@@ -22,24 +22,15 @@ export async function POST(request: Request) {
   const checkoutToken = readUuid(body.checkoutToken)
   if (!checkoutToken) return NextResponse.json({ error: 'رقم متابعة الدفع غير صالح.' }, { status: 400 })
 
-  const ownedOrder = await getPaymentOrderStatus(checkoutToken, user.id as string)
-  if (!ownedOrder) return NextResponse.json({ error: 'عملية الدفع غير موجودة.' }, { status: 404 })
-
-  const invoiceId = readUuid(body.invoiceId)
-  const paymentId = readUuid(body.paymentId)
-  const paymentLinkId = readUuid(body.paymentLinkId)
-
-  if (invoiceId) {
-    try {
-      await reconcileStreamOrder({ checkoutToken, invoiceId, paymentId, paymentLinkId })
-    } catch (error) {
-      if (!(error instanceof StreamPayError) || !['PAYMENT_NOT_COMPLETED', 'NETWORK_ERROR'].includes(error.code || '')) {
-        console.error('StreamPay return verification failed', error)
-      }
-    }
+  // The invoice, payment and link IDs StreamPay may append to the return URL are not used:
+  // the order is verified by looking its invoice up directly, so a tampered URL changes nothing.
+  let order
+  try {
+    order = await getPaymentOrderStatus(checkoutToken, user.id as string)
+  } catch (error) {
+    console.error('Payment status check failed', error)
+    return NextResponse.json({ error: 'تعذر التحقق من عملية الدفع الآن. سنعيد المحاولة تلقائيًا.' }, { status: 503 })
   }
-
-  const order = await getPaymentOrderStatus(checkoutToken, user.id as string)
   if (!order) return NextResponse.json({ error: 'عملية الدفع غير موجودة.' }, { status: 404 })
 
   return NextResponse.json({

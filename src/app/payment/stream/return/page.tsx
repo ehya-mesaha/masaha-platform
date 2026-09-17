@@ -37,18 +37,29 @@ function StreamPaymentReturnContent() {
             paymentId: searchParams.get('payment_id'),
           }),
         })
-        const data = await response.json()
-        if (!response.ok) {
-          if (!cancelled) setError(data.error || 'تعذر التحقق من عملية الدفع.')
+        const data = await response.json().catch(() => null)
+        if (cancelled) return
+        if (!response.ok || !data) {
+          // A passing hiccup (a 5xx or a timeout page) should not end verification of a
+          // payment that has already been made; only a definite answer does.
+          if ((response.status >= 500 || !data) && attempts < 20) {
+            timer = setTimeout(checkStatus, 3000)
+            return
+          }
+          setError(data?.error || 'تعذر التحقق من عملية الدفع.')
           return
         }
-        if (cancelled) return
         setState(data)
         if (['PENDING', 'CHECKOUT_CREATED'].includes(data.status) && outcome === 'success' && attempts < 20) {
           timer = setTimeout(checkStatus, 3000)
         }
       } catch {
-        if (!cancelled) setError('تعذر الاتصال للتحقق من عملية الدفع. يمكنك مراجعة حجوزاتك بعد قليل.')
+        if (cancelled) return
+        if (attempts < 20) {
+          timer = setTimeout(checkStatus, 3000)
+          return
+        }
+        setError('تعذر الاتصال للتحقق من عملية الدفع. يمكنك مراجعة حجوزاتك بعد قليل.')
       }
     }
 

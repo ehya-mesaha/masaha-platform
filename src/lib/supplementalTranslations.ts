@@ -1017,4 +1017,9 @@ export const supplementalTranslations: Record<string, string> = {
   'ينتهي': 'Ends',
   'يوجد كوبون بنفس الرمز. اختر رمزًا مختلفًا.': 'A coupon with the same code already exists. Choose a different code.',
   'استغرق تأكيد الحجز وقتًا أطول من المتوقع ولم يتم خصم أي مبلغ. أعد المحاولة من فضلك.': 'Confirming the booking took longer than expected and nothing was charged. Please try again.',
+  'المبلغ المطلوب بعد الخصم أقل من الحد الأدنى للدفع الإلكتروني (1 ر.س).': 'The amount due after the discount is below the minimum for online payment (SAR 1).',
+  'تعذر الاتصال بالخادم لحظيًا ولم يتم خصم أي مبلغ. أعد المحاولة بعد لحظات.': 'The server could not be reached just now and nothing was charged. Please try again in a moment.',
+  'استغرق الاتصال وقتًا أطول من المتوقع. أعد المحاولة، ولن يتم إنشاء حجز مكرر.': 'The connection took longer than expected. Try again; no duplicate booking will be created.',
+  'تعذر بدء عملية الدفع. حاول مرة أخرى.': 'Could not start the payment. Please try again.',
+  'تعذر التحقق من عملية الدفع الآن. سنعيد المحاولة تلقائيًا.': 'Could not verify the payment right now. We will retry automatically.',
 }

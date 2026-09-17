@@ -405,14 +405,24 @@ function SpaceDetailPageInner() {
           termsVersion: LEGAL_VERSION,
         }),
       })
-      const data = await res.json()
+      // A platform timeout answers with an HTML page, not JSON.
+      const data = await res.json().catch(() => null)
       if (!res.ok) {
         if (res.status === 401) { router.push('/auth/login'); return }
-        if (res.status === 409) {
-          setBookingError(data.error || 'تعذر بدء عملية الدفع. أعد فتح نافذة الحجز وحاول من جديد.')
+        if (!data) {
+          // No answer from our server, so the order may still be going through. Keeping the
+          // same checkout key lets a retry pick up that order instead of creating a second one.
+          setBookingError('استغرق الاتصال وقتًا أطول من المتوقع. أعد المحاولة، ولن يتم إنشاء حجز مكرر.')
           return
         }
-        setBookingError(data.error || 'حدث خطأ')
+        // The server gave a definite answer and that order will not go ahead. A fresh key lets
+        // the buyer simply press pay again instead of reopening the booking window.
+        setCheckoutKey(crypto.randomUUID())
+        setBookingError(data.error || 'تعذر بدء عملية الدفع. حاول مرة أخرى.')
+        return
+      }
+      if (!data) {
+        setBookingError('لم يصل رابط الدفع بصورة صحيحة. حاول مرة أخرى.')
         return
       }
       if (typeof data.checkoutUrl !== 'string') {

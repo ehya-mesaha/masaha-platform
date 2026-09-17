@@ -133,17 +133,34 @@ export function priceCouponForSubtotal(coupon: Coupon, subtotalHalalas: number) 
   return discountHalalas
 }
 
-async function assertWithinUsageLimits(client: CouponClient, coupon: Coupon, userId: string) {
+/**
+ * A use counts once it is paid, or while its checkout is still inside the payment window.
+ * A reservation whose window has closed stops counting straight away, whether or not the
+ * expiry job has run yet. Otherwise every abandoned checkout would hold a slot until
+ * something released it, and a coupon limited to three uses dies after three buyers
+ * open the payment page and walk away.
+ */
+function activeRedemptionWhere(couponId: string, now: Date, userId?: string): Prisma.CouponRedemptionWhereInput {
+  return {
+    couponId,
+    ...(userId ? { userId } : {}),
+    OR: [
+      { status: 'CONFIRMED' },
+      {
+        status: 'RESERVED',
+        paymentOrder: { status: { in: ['PENDING', 'CHECKOUT_CREATED'] }, expiresAt: { gt: now } },
+      },
+    ],
+  }
+}
+
+async function assertWithinUsageLimits(client: CouponClient, coupon: Coupon, userId: string, now: Date) {
   if (coupon.maxRedemptions != null) {
-    const used = await client.couponRedemption.count({
-      where: { couponId: coupon.id, status: { in: [...ACTIVE_REDEMPTION_STATUSES] } },
-    })
+    const used = await client.couponRedemption.count({ where: activeRedemptionWhere(coupon.id, now) })
     if (used >= coupon.maxRedemptions) throw new CouponError('GLOBAL_LIMIT_REACHED')
   }
   if (coupon.maxPerUser != null) {
-    const usedByUser = await client.couponRedemption.count({
-      where: { couponId: coupon.id, userId, status: { in: [...ACTIVE_REDEMPTION_STATUSES] } },
-    })
+    const usedByUser = await client.couponRedemption.count({ where: activeRedemptionWhere(coupon.id, now, userId) })
     if (usedByUser >= coupon.maxPerUser) throw new CouponError('USER_LIMIT_REACHED')
   }
 }
@@ -157,11 +174,12 @@ export async function evaluateCoupon(
   client: CouponClient,
   input: { code: string; userId: string; subtotalHalalas: number; now?: Date },
 ): Promise<{ coupon: Coupon; discountHalalas: number }> {
-  const coupon = await loadRedeemableCoupon(client, input.code, input.now ?? new Date())
+  const now = input.now ?? new Date()
+  const coupon = await loadRedeemableCoupon(client, input.code, now)
   if (coupon.minBookingAmount != null && input.subtotalHalalas < toHalalas(coupon.minBookingAmount)) {
     throw new CouponError('BELOW_MINIMUM')
   }
-  await assertWithinUsageLimits(client, coupon, input.userId)
+  await assertWithinUsageLimits(client, coupon, input.userId, now)
   return { coupon, discountHalalas: priceCouponForSubtotal(coupon, input.subtotalHalalas) }
 }
 
@@ -173,6 +191,11 @@ export async function evaluateCoupon(
  * Deliberately raw SQL rather than count-then-create. The two extra round trips that
  * count-then-create costs inside the booking transaction were enough to exhaust its
  * timeout against a distant database and fail the entire booking.
+ *
+ * The booking transaction runs at READ COMMITTED, so the per-coupon advisory lock is what
+ * stops two checkouts for different spaces from both counting the same last free slot:
+ * the second waits here until the first commits, then its INSERT sees that row. The lock
+ * uses the two-key form, whose key space never overlaps the one-key space locks.
  */
 export async function reserveCouponRedemption(
   client: CouponClient,
@@ -187,20 +210,34 @@ export async function reserveCouponRedemption(
   const globalLimit = coupon.maxRedemptions
   const perUserLimit = coupon.maxPerUser
 
+  if (globalLimit != null || perUserLimit != null) {
+    await client.$executeRaw`SELECT pg_advisory_xact_lock(${COUPON_LOCK_NAMESPACE}::int, hashtext(${coupon.id}))`
+  }
+
+  // Mirrors activeRedemptionWhere: confirmed uses, plus reservations still inside their window.
   const inserted = await client.$executeRaw`
     INSERT INTO "CouponRedemption" ("id", "status", "discountHalalas", "couponId", "userId", "paymentOrderId", "createdAt", "updatedAt")
     SELECT ${randomUUID()}, 'RESERVED'::"CouponRedemptionStatus", ${discountHalalas}::int, ${coupon.id}, ${userId}, ${paymentOrderId}, now(), now()
     WHERE (${globalLimit}::int IS NULL OR (
-            SELECT count(*) FROM "CouponRedemption"
-            WHERE "couponId" = ${coupon.id} AND "status" IN ('RESERVED', 'CONFIRMED')
+            SELECT count(*) FROM "CouponRedemption" r
+            JOIN "PaymentOrder" o ON o."id" = r."paymentOrderId"
+            WHERE r."couponId" = ${coupon.id}
+              AND (r."status" = 'CONFIRMED'
+                OR (r."status" = 'RESERVED' AND o."status" IN ('PENDING', 'CHECKOUT_CREATED') AND o."expiresAt" > now()))
           ) < ${globalLimit}::int)
       AND (${perUserLimit}::int IS NULL OR (
-            SELECT count(*) FROM "CouponRedemption"
-            WHERE "couponId" = ${coupon.id} AND "userId" = ${userId} AND "status" IN ('RESERVED', 'CONFIRMED')
+            SELECT count(*) FROM "CouponRedemption" r
+            JOIN "PaymentOrder" o ON o."id" = r."paymentOrderId"
+            WHERE r."couponId" = ${coupon.id} AND r."userId" = ${userId}
+              AND (r."status" = 'CONFIRMED'
+                OR (r."status" = 'RESERVED' AND o."status" IN ('PENDING', 'CHECKOUT_CREATED') AND o."expiresAt" > now()))
           ) < ${perUserLimit}::int)
   `
   return inserted > 0
 }
+
+/** Namespace for the two-key advisory lock taken while reserving a limited coupon. */
+const COUPON_LOCK_NAMESPACE = 7201
 
 /**
  * Arguments for freeing the usage slot an unpaid order still holds. Exposed separately so
@@ -219,10 +256,14 @@ export async function releaseCouponRedemption(client: CouponClient, paymentOrder
   await client.couponRedemption.updateMany(releaseCouponRedemptionArgs(paymentOrderId))
 }
 
-/** Turns the reservation into a permanent use once the order is actually paid. */
+/**
+ * Turns the reservation into a permanent use once the order is actually paid. A released
+ * reservation is confirmed too: that is a payment which landed after the window closed,
+ * and the discount was part of the amount the buyer paid, so the use has to count.
+ */
 export async function confirmCouponRedemption(client: CouponClient, paymentOrderId: string) {
   await client.couponRedemption.updateMany({
-    where: { paymentOrderId, status: 'RESERVED' },
+    where: { paymentOrderId, status: { in: ['RESERVED', 'RELEASED'] } },
     data: { status: 'CONFIRMED', confirmedAt: new Date() },
   })
 }

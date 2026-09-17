@@ -10,6 +10,12 @@ import { assertStreamPayConfigured, StreamPayError } from '@/lib/streampay/clien
 import { createCheckoutForOrder } from '@/lib/streampay/service'
 import { allocateDiscountHalalas, CouponError, fromHalalas, loadRedeemableCoupon, normalizeCouponCode, priceCouponForSubtotal, reserveCouponRedemption, toHalalas } from '@/lib/coupons'
 
+// Booking creation holds a database transaction and then talks to StreamPay; give it room.
+export const maxDuration = 60
+
+/** StreamPay refuses prices below 1 SAR, so a smaller charge could never reach checkout. */
+const MIN_CHARGE_HALALAS = 100
+
 type SelectedService = {
   configId: string
   quantity?: number
@@ -288,8 +294,8 @@ export async function POST(req: NextRequest) {
       }
       const couponAllocation = allocateDiscountHalalas(sessionPricing.map(session => session.subtotalHalalas), couponDiscountHalalas)
       const amountHalalas = subtotalHalalas - couponDiscountHalalas
-      if (amountHalalas < 1) {
-        throw new BookingError('قيمة الحجز غير صالحة للدفع', 400)
+      if (amountHalalas < MIN_CHARGE_HALALAS) {
+        throw new BookingError('المبلغ المطلوب بعد الخصم أقل من الحد الأدنى للدفع الإلكتروني (1 ر.س).', 400)
       }
 
       const paymentOrder = await tx.paymentOrder.create({
@@ -390,7 +396,13 @@ export async function POST(req: NextRequest) {
         },
       }
     }, {
-      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      // READ COMMITTED, with the advisory lock above doing the serializing. Under SERIALIZABLE
+      // the snapshot is taken by the lock statement itself, before the lock is granted, so a
+      // checkout that queued behind another for the same space woke up on stale data and was
+      // aborted with a serialization failure - reported to the buyer as "just booked by
+      // someone else" even when the two bookings never overlapped. Here every statement after
+      // the lock sees what the previous holder committed. The coupon slot has its own lock.
+      isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
       // Far above Prisma's defaults (maxWait 2s, timeout 5s). The work inside is now a fixed
       // handful of round trips rather than one per session, but the budget stays generous:
       // when this expires nothing is written and the buyer simply loses the booking, which
@@ -423,6 +435,7 @@ export async function POST(req: NextRequest) {
       )
     }
     if (error instanceof StreamPayError) {
+      console.error('Checkout could not be created', error)
       const message = error.code === 'NOT_CONFIGURED'
         ? 'لم يتم إعداد بوابة الدفع بعد. أضف مفاتيح StreamPay الجديدة في إعدادات الخادم.'
         : error.code === 'ENVIRONMENT_MISMATCH'
@@ -430,7 +443,16 @@ export async function POST(req: NextRequest) {
           : 'تعذر إنشاء رابط الدفع الآن. لم يتم تأكيد الحجز ويمكنك المحاولة مرة أخرى.'
       return NextResponse.json({ error: message }, { status: error.status >= 400 && error.status <= 599 ? error.status : 502 })
     }
-    console.error(error)
+    // Lost or refused database connections (pooler limits, a dropped socket). Nothing was
+    // committed, so tell the buyer it is safe to retry rather than that something broke.
+    if (isDatabaseUnavailable(error)) {
+      console.error('Booking failed: database unavailable', error)
+      return NextResponse.json(
+        { error: 'تعذر الاتصال بالخادم لحظيًا ولم يتم خصم أي مبلغ. أعد المحاولة بعد لحظات.' },
+        { status: 503 },
+      )
+    }
+    console.error('Booking failed with an unexpected error', error)
     return NextResponse.json({ error: 'حدث خطأ أثناء تأكيد الحجز' }, { status: 500 })
   }
 }
@@ -447,6 +469,12 @@ class BookingError extends Error {
  */
 function isPrismaCode(error: unknown, code: string) {
   return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === code
+}
+
+function isDatabaseUnavailable(error: unknown) {
+  if (['P1001', 'P1002', 'P1017', 'P2024', 'P2037'].some(code => isPrismaCode(error, code))) return true
+  const message = error instanceof Error ? error.message : ''
+  return /Connection terminated|ECONNRESET|ETIMEDOUT|too many (clients|connections)|MaxClients|DatabaseNotReachable|ConnectionClosed|SocketTimeout|TooManyConnections/i.test(message)
 }
 
 function roundMoney(value: number) {

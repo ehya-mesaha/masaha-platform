@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { reconcileStreamOrder, safeErrorMessage, syncStreamRefund } from '@/lib/streampay/service'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 const MAX_WEBHOOK_BYTES = 256 * 1024
 const SUCCESS_EVENTS = new Set(['PAYMENT_SUCCEEDED', 'INVOICE_COMPLETED'])
@@ -85,12 +86,18 @@ export async function POST(request: Request) {
       const paymentId = eventType === 'PAYMENT_SUCCEEDED'
         ? readString(payload.entity_id)
         : readString(payment?.id)
-      await reconcileStreamOrder({
+      const { result } = await reconcileStreamOrder({
         orderId: order.id,
         paymentLinkId,
         invoiceId,
         paymentId,
       })
+      // A success event can arrive a moment before StreamPay finishes the invoice. Failing
+      // the delivery makes StreamPay send it again, rather than recording an event we
+      // could not act on as processed.
+      if (result === 'pending') {
+        throw new Error(`${eventType} received but StreamPay has no completed invoice for this order yet`)
+      }
     } else if (order && eventType === 'PAYMENT_REFUNDED') {
       const refundedPaymentId = readString(payload.entity_id) || readString(payment?.id)
       if (!refundedPaymentId) throw new Error('Refund webhook did not include a payment ID')

@@ -15,6 +15,7 @@ import {
   getStreamOrganization,
   getStreamPayment,
   getStreamPaymentLink,
+  listCompletedStreamInvoicesForLink,
   listStreamConsumers,
   readDecimalHalalas,
   readHalalas,
@@ -36,6 +37,14 @@ type ReconcileInput = {
   paymentId?: string | null
 }
 
+export type ReconcileResult = 'paid' | 'refund_pending' | 'pending'
+
+/** Bookings a payment can still confirm. Expired or failed holds come back if money arrives. */
+const CONFIRMABLE_BOOKING_STATUSES = ['PENDING_PAYMENT', 'PAYMENT_EXPIRED', 'PAYMENT_FAILED'] as const
+
+/** Consumer creation errors that mean "this person already exists at StreamPay". */
+const EXISTING_CONSUMER_CODES = new Set(['DUPLICATE_CONSUMER', 'PHONE_ALREADY_REGISTERED', 'RESOURCE_ALREADY_EXISTS'])
+
 let environmentCheck: Promise<void> | null = null
 
 export async function createCheckoutForOrder(orderId: string) {
@@ -46,7 +55,7 @@ export async function createCheckoutForOrder(orderId: string) {
     where: { id: orderId },
     include: {
       buyer: { select: { id: true, name: true, email: true, phone: true } },
-      bookings: { include: { space: { select: { name: true } } } },
+      bookings: { take: 1, select: { space: { select: { name: true } } } },
     },
   })
   if (!order) throw new StreamPayError('Payment order not found', 404, 'ORDER_NOT_FOUND')
@@ -63,14 +72,17 @@ export async function createCheckoutForOrder(orderId: string) {
 
   let paymentLinkId: string | undefined
   try {
-    const consumerId = await getOrCreateStreamConsumer(order.buyer)
     const spaceName = order.bookings[0]?.space.name || 'مساحة'
-    const product = await createStreamProduct({
-      orderId: order.id,
-      name: `حجز ${spaceName}`,
-      description: `حجز عبر منصة إحياء مساحة - رقم العملية ${order.id}`,
-      amountHalalas: order.amountHalalas,
-    })
+    // Independent of each other, so they go out together rather than one after the other.
+    const [consumerId, product] = await Promise.all([
+      getStreamConsumerForCheckout(order.buyer),
+      createStreamProduct({
+        orderId: order.id,
+        name: `حجز ${spaceName}`,
+        description: `حجز عبر منصة إحياء مساحة - رقم العملية ${order.id}`,
+        amountHalalas: order.amountHalalas,
+      }),
+    ])
     const paymentLink = await createStreamPaymentLink({
       orderId: order.id,
       checkoutToken: order.checkoutToken,
@@ -95,6 +107,7 @@ export async function createCheckoutForOrder(orderId: string) {
     })
     return { checkoutUrl, checkoutToken: order.checkoutToken }
   } catch (error) {
+    console.error('StreamPay checkout creation failed', { orderId: order.id, error })
     if (paymentLinkId) {
       try {
         await deactivateStreamPaymentLink(paymentLinkId)
@@ -125,41 +138,35 @@ export async function createCheckoutForOrder(orderId: string) {
   }
 }
 
-export async function reconcileStreamOrder(input: ReconcileInput) {
+/**
+ * Settles an order against what StreamPay actually holds. Confirmation rests on a COMPLETED,
+ * fully paid invoice that belongs to this order's own payment link - never on the link's
+ * status alone, because StreamPay also reports links that simply expired unpaid as
+ * COMPLETED. The invoice is looked up by link when no ID is supplied, so this works the
+ * same from a webhook, from the return page, or from the scheduled sweep.
+ */
+export async function reconcileStreamOrder(input: ReconcileInput): Promise<{ result: ReconcileResult }> {
   assertStreamPayConfigured()
   if (!input.orderId && !input.checkoutToken) {
     throw new StreamPayError('Payment order identifier is required', 400, 'ORDER_ID_REQUIRED')
   }
   const order = await prisma.paymentOrder.findFirst({
     where: input.orderId ? { id: input.orderId } : { checkoutToken: input.checkoutToken },
-    include: {
-      bookings: { include: { space: { select: { id: true, name: true, sellerId: true } } } },
-    },
+    select: { id: true, status: true, amountHalalas: true, currency: true, streamConsumerId: true, streamPaymentLinkId: true },
   })
   if (!order) throw new StreamPayError('Payment order not found', 404, 'ORDER_NOT_FOUND')
-  if (order.status === 'PAID') return { order, result: 'paid' as const }
-  if (order.status === 'REFUND_PENDING') return { order, result: 'refund_pending' as const }
-  if (!order.streamPaymentLinkId) {
-    return { order, result: 'pending' as const }
-  }
+  const settled = settledResult(order.status)
+  if (settled) return { result: settled }
+  if (!order.streamPaymentLinkId) return { result: 'pending' }
   if (input.paymentLinkId && input.paymentLinkId !== order.streamPaymentLinkId) {
     throw new StreamPayError('Payment link does not match this order', 400, 'PAYMENT_MISMATCH')
   }
 
-  const link = await getStreamPaymentLink(order.streamPaymentLinkId)
-  verifyPaymentLink(order, link)
-  if (link.status !== 'COMPLETED') {
-    return { order, result: 'pending' as const }
-  }
-  if (!input.invoiceId) {
-    await prisma.paymentOrder.update({
-      where: { id: order.id },
-      data: { lastError: 'StreamPay completed the link, but no invoice ID was available for final verification.' },
-    })
-    return { order, result: 'pending' as const }
-  }
+  const invoice = await findCompletedInvoice(order.streamPaymentLinkId, input.invoiceId)
+  if (!invoice) return { result: 'pending' }
 
-  const invoice = await getStreamInvoice(input.invoiceId)
+  const link = await getStreamPaymentLink(order.streamPaymentLinkId)
+  const collectedNote = verifyPaymentLink(order, link)
   verifyInvoice(order, invoice)
   let payment: StreamPayment | null = null
   if (input.paymentId) {
@@ -170,14 +177,37 @@ export async function reconcileStreamOrder(input: ReconcileInput) {
   const result = await confirmPaidOrder({
     orderId: order.id,
     invoiceId: invoice.id,
-    paymentId: payment?.id || input.paymentId || null,
+    paymentId: payment?.id || firstSuccessfulPaymentId(invoice),
+    note: collectedNote,
   })
-  const updated = await prisma.paymentOrder.findUniqueOrThrow({ where: { id: order.id } })
-  return { order: updated, result }
+  return { result }
 }
 
+/**
+ * The buyer's view of their order, brought up to date with StreamPay first. The invoice is
+ * found by payment link rather than taken from the return URL, which the buyer can edit,
+ * so confirmation here needs no webhook and no trusted query string.
+ */
 export async function getPaymentOrderStatus(checkoutToken: string, buyerId: string) {
-  const order = await prisma.paymentOrder.findFirst({
+  const order = await findOwnedOrder(checkoutToken, buyerId)
+  if (!order) return null
+  const unresolved = ['PENDING', 'CHECKOUT_CREATED'].includes(order.status)
+  if (unresolved && order.expiresAt <= new Date()) {
+    await settleOrExpireOrder(order)
+  } else if ((unresolved || order.status === 'EXPIRED') && order.streamPaymentLinkId) {
+    try {
+      await reconcileStreamOrder({ orderId: order.id })
+    } catch (error) {
+      console.error('StreamPay status verification failed', { orderId: order.id, error })
+    }
+  } else {
+    return order
+  }
+  return findOwnedOrder(checkoutToken, buyerId)
+}
+
+function findOwnedOrder(checkoutToken: string, buyerId: string) {
+  return prisma.paymentOrder.findFirst({
     where: { checkoutToken, buyerId },
     select: {
       id: true,
@@ -185,53 +215,60 @@ export async function getPaymentOrderStatus(checkoutToken: string, buyerId: stri
       expiresAt: true,
       checkoutToken: true,
       checkoutUrl: true,
+      streamPaymentLinkId: true,
       bookings: { select: { id: true }, take: 1 },
     },
   })
-  if (!order) return null
-  if (['PENDING', 'CHECKOUT_CREATED'].includes(order.status) && order.expiresAt <= new Date()) {
-    await expireOrder(order.id)
-    return { ...order, status: 'EXPIRED' as const }
-  }
-  return order
 }
 
 export async function expireStalePaymentOrders(limit = 50) {
   const orders = await prisma.paymentOrder.findMany({
     where: { status: { in: ['PENDING', 'CHECKOUT_CREATED'] }, expiresAt: { lte: new Date() } },
+    select: { id: true, streamPaymentLinkId: true },
     orderBy: { expiresAt: 'asc' },
     take: Math.min(Math.max(limit, 1), 100),
   })
-  const results = { expired: 0, heldForReview: 0 }
+  const results = { expired: 0, confirmed: 0, heldForReview: 0 }
   for (const order of orders) {
-    if (order.streamPaymentLinkId) {
-      try {
-        const link = await getStreamPaymentLink(order.streamPaymentLinkId)
-        const collected = Number.isSafeInteger(link.amount_collected_in_smallest_unit)
-          ? link.amount_collected_in_smallest_unit!
-          : 0
-        if (link.status === 'COMPLETED' || collected > 0) {
-          await prisma.paymentOrder.update({
-            where: { id: order.id },
-            data: { lastError: 'Expired locally but StreamPay reports collected funds; manual reconciliation is required.' },
-          })
-          results.heldForReview += 1
-          continue
-        }
-        if (link.status === 'ACTIVE') await deactivateStreamPaymentLink(order.streamPaymentLinkId)
-      } catch (error) {
-        await prisma.paymentOrder.update({
-          where: { id: order.id },
-          data: { lastError: `Expiry check failed: ${safeErrorMessage(error)}` },
-        })
-        results.heldForReview += 1
-        continue
-      }
-    }
-    await expireOrder(order.id)
-    results.expired += 1
+    const outcome = await settleOrExpireOrder(order)
+    if (outcome === 'expired') results.expired += 1
+    else if (outcome === 'held') results.heldForReview += 1
+    else results.confirmed += 1
   }
   return results
+}
+
+/**
+ * Closes an order whose payment window has passed. A payment that did land is confirmed
+ * rather than thrown away; otherwise the link is switched off at StreamPay (which keeps
+ * links open longer than we ask) and the hold is released. Anything uncertain - money
+ * collected without a completed invoice, or StreamPay unreachable - is left for review.
+ */
+async function settleOrExpireOrder(order: { id: string; streamPaymentLinkId: string | null }) {
+  if (order.streamPaymentLinkId) {
+    try {
+      const { result } = await reconcileStreamOrder({ orderId: order.id })
+      if (result !== 'pending') return result
+      const link = await getStreamPaymentLink(order.streamPaymentLinkId)
+      const collected = Number.isSafeInteger(link.amount_collected_in_smallest_unit) ? link.amount_collected_in_smallest_unit! : 0
+      if (collected > 0) {
+        await prisma.paymentOrder.update({
+          where: { id: order.id },
+          data: { lastError: 'StreamPay reports collected funds but no completed invoice yet; manual reconciliation may be required.' },
+        })
+        return 'held' as const
+      }
+      if (link.status === 'ACTIVE') await deactivateStreamPaymentLink(order.streamPaymentLinkId)
+    } catch (error) {
+      await prisma.paymentOrder.update({
+        where: { id: order.id },
+        data: { lastError: `Expiry check failed: ${safeErrorMessage(error)}` },
+      })
+      return 'held' as const
+    }
+  }
+  await expireOrder(order.id)
+  return 'expired' as const
 }
 
 export async function syncStreamRefund(orderId: string, paymentId: string) {
@@ -283,7 +320,34 @@ export async function syncStreamRefund(orderId: string, paymentId: string) {
         },
       })
     }
-  })
+  }, { maxWait: 15_000, timeout: 30_000 })
+}
+
+function settledResult(status: string): ReconcileResult | null {
+  if (status === 'REFUND_PENDING') return 'refund_pending'
+  if (['PAID', 'PARTIALLY_REFUNDED', 'REFUNDED'].includes(status)) return 'paid'
+  return null
+}
+
+async function findCompletedInvoice(paymentLinkId: string, invoiceId?: string | null) {
+  if (invoiceId) {
+    const invoice = await getStreamInvoice(invoiceId)
+    if (invoice.payment_link_id !== paymentLinkId) {
+      throw new StreamPayError('Invoice payment link mismatch', 409, 'PAYMENT_MISMATCH')
+    }
+    if (invoice.status === 'COMPLETED') return invoice
+  }
+  const listed = await listCompletedStreamInvoicesForLink(paymentLinkId)
+  const match = listed.data?.find(item => item.payment_link_id === paymentLinkId && item.status === 'COMPLETED')
+  if (!match) return null
+  // The list item is a summary; the verified figures come from the invoice itself.
+  return getStreamInvoice(match.id)
+}
+
+function firstSuccessfulPaymentId(invoice: StreamInvoice) {
+  const payments = Array.isArray(invoice.payments) ? invoice.payments as Array<Record<string, unknown>> : []
+  const paid = payments.find(item => ['SUCCEEDED', 'SETTLED'].includes(String(item.current_status)))
+  return typeof paid?.id === 'string' ? paid.id : null
 }
 
 async function assertExpectedStreamEnvironment() {
@@ -313,6 +377,22 @@ async function assertExpectedStreamEnvironment() {
   return environmentCheck
 }
 
+/**
+ * The StreamPay customer a link is issued to. A customer only saves the buyer from typing
+ * their email on the checkout page, so no failure here is allowed to block the payment:
+ * if StreamPay refuses to create or find one, the link is issued without it.
+ */
+async function getStreamConsumerForCheckout(user: { id: string; name: string; email: string; phone: string | null }) {
+  try {
+    return await getOrCreateStreamConsumer(user)
+  } catch (error) {
+    if (error instanceof StreamPayError && ['NETWORK_ERROR', 'NOT_CONFIGURED'].includes(error.code || '')) throw error
+    if (error instanceof StreamPayError && (error.status === 401 || error.status === 403)) throw error
+    console.error('StreamPay consumer unavailable; issuing the link without one', { userId: user.id, error })
+    return null
+  }
+}
+
 async function getOrCreateStreamConsumer(user: { id: string; name: string; email: string; phone: string | null }) {
   const environment = getStreamEnvironment()
   const existing = await prisma.paymentProviderCustomer.findUnique({
@@ -320,21 +400,23 @@ async function getOrCreateStreamConsumer(user: { id: string; name: string; email
   })
   if (existing) return existing.providerCustomerId
 
+  const phoneNumber = normalizeSaudiPhone(user.phone)
   let consumerId: string
   try {
-    const created = await createStreamConsumer({
-      name: user.name,
-      email: user.email,
-      phoneNumber: normalizeSaudiPhone(user.phone),
-      externalId: user.id,
-    })
-    consumerId = created.id
+    consumerId = (await createStreamConsumer({ name: user.name, email: user.email, phoneNumber, externalId: user.id })).id
   } catch (error) {
-    if (!(error instanceof StreamPayError) || error.code !== 'DUPLICATE_CONSUMER') throw error
-    const listed = await listStreamConsumers(user.email)
-    const match = listed.data?.find(item => item.external_id === user.id || item.email === user.email)
-    if (!match) throw error
-    consumerId = match.id
+    if (!(error instanceof StreamPayError) || !EXISTING_CONSUMER_CODES.has(error.code || '')) throw error
+    // Someone at StreamPay already has this email or phone: usually this same buyer from an
+    // earlier attempt, occasionally a second account sharing a phone number.
+    const match = await findStreamConsumer(user, phoneNumber)
+    if (match) {
+      consumerId = match
+    } else if (phoneNumber) {
+      // The phone belongs to a different customer. The email is all checkout needs.
+      consumerId = (await createStreamConsumer({ name: user.name, email: user.email, externalId: user.id })).id
+    } else {
+      throw error
+    }
   }
 
   const mapping = await prisma.paymentProviderCustomer.upsert({
@@ -345,6 +427,20 @@ async function getOrCreateStreamConsumer(user: { id: string; name: string; email
   return mapping.providerCustomerId
 }
 
+async function findStreamConsumer(user: { id: string; email: string }, phoneNumber: string | undefined) {
+  const email = user.email.trim().toLowerCase()
+  for (const term of [user.email, phoneNumber]) {
+    if (!term) continue
+    const listed = await listStreamConsumers(term)
+    const items = listed.data || []
+    const match = items.find(item => item.external_id === user.id)
+      || items.find(item => typeof item.email === 'string' && item.email.trim().toLowerCase() === email)
+    if (match) return match.id
+  }
+  return null
+}
+
+/** Returns a note to keep on the order when the link collected more than it should have. */
 function verifyPaymentLink(order: { amountHalalas: number; currency: string; streamConsumerId: string | null }, link: StreamPaymentLink) {
   if (link.currency !== order.currency || readHalalas(link) !== order.amountHalalas) {
     throw new StreamPayError('Payment link amount or currency mismatch', 409, 'PAYMENT_MISMATCH')
@@ -352,34 +448,33 @@ function verifyPaymentLink(order: { amountHalalas: number; currency: string; str
   if (order.streamConsumerId && link.organization_consumer_id && link.organization_consumer_id !== order.streamConsumerId) {
     throw new StreamPayError('Payment customer mismatch', 409, 'PAYMENT_MISMATCH')
   }
-  if (link.status === 'COMPLETED') {
-    if (!Number.isSafeInteger(link.amount_collected_in_smallest_unit)) {
-      throw new StreamPayError('Completed payment link is missing the collected amount', 502, 'INVALID_PROVIDER_RESPONSE')
-    }
-    if (link.amount_collected_in_smallest_unit !== order.amountHalalas) {
-      throw new StreamPayError('Collected payment amount mismatch', 409, 'PAYMENT_MISMATCH')
-    }
+  const collected = link.amount_collected_in_smallest_unit
+  if (Number.isSafeInteger(collected) && collected! > order.amountHalalas) {
+    return `StreamPay collected ${collected} halalas against ${order.amountHalalas}; check for a duplicate payment to refund.`
   }
+  return null
 }
 
 function verifyInvoice(order: { amountHalalas: number; currency: string; streamPaymentLinkId: string | null }, invoice: StreamInvoice) {
   if (invoice.status !== 'COMPLETED') {
     throw new StreamPayError('StreamPay invoice is not completed', 409, 'PAYMENT_NOT_COMPLETED')
   }
+  // Required, not merely compared when present: this binding is what stops a completed
+  // invoice from some other payment being presented as payment for this order.
+  if (!invoice.payment_link_id || invoice.payment_link_id !== order.streamPaymentLinkId) {
+    throw new StreamPayError('Invoice payment link mismatch', 409, 'PAYMENT_MISMATCH')
+  }
   if (invoice.currency !== order.currency || readInvoiceTotalHalalas(invoice) !== order.amountHalalas) {
     throw new StreamPayError('Invoice amount or currency mismatch', 409, 'PAYMENT_MISMATCH')
   }
+  // Fully paid and nothing outstanding. This also covers instalments, which stay short of
+  // the total until the last one lands. The count of payment rows is not checked: a
+  // declined attempt followed by a successful one is still a single full payment.
   if (readInvoicePaidHalalas(invoice) !== order.amountHalalas || readInvoiceRemainingHalalas(invoice) !== 0) {
     throw new StreamPayError('Invoice is not fully paid', 409, 'PAYMENT_NOT_COMPLETED')
   }
-  if (readDecimalHalalas(invoice.total_refunded, 'invoice refunded amount') !== 0) {
+  if (readDecimalHalalas(invoice.total_refunded ?? '0', 'invoice refunded amount') !== 0) {
     throw new StreamPayError('Invoice was already refunded', 409, 'PAYMENT_MISMATCH')
-  }
-  if (invoice.no_of_payments !== null && invoice.no_of_payments !== undefined && invoice.no_of_payments !== 1) {
-    throw new StreamPayError('Installment invoices are not accepted for bookings', 409, 'PAYMENT_MISMATCH')
-  }
-  if (invoice.payment_link_id && invoice.payment_link_id !== order.streamPaymentLinkId) {
-    throw new StreamPayError('Invoice payment link mismatch', 409, 'PAYMENT_MISMATCH')
   }
 }
 
@@ -395,59 +490,73 @@ function verifyPayment(order: { amountHalalas: number; currency: string }, invoi
   }
 }
 
-async function confirmPaidOrder(input: { orderId: string; invoiceId: string; paymentId: string | null }) {
+async function confirmPaidOrder(input: { orderId: string; invoiceId: string; paymentId: string | null; note: string | null }) {
   return prisma.$transaction(async tx => {
+    // The webhook's two events and the buyer's return page routinely arrive together. The
+    // row lock makes them take turns, and at READ COMMITTED the one that waited then reads
+    // the order as PAID and stops, instead of confirming and notifying a second time.
+    await tx.$queryRaw`SELECT "id" FROM "PaymentOrder" WHERE "id" = ${input.orderId} FOR UPDATE`
     const order = await tx.paymentOrder.findUnique({
       where: { id: input.orderId },
       include: { bookings: { include: { space: { select: { id: true, name: true, sellerId: true } } } } },
     })
     if (!order) throw new StreamPayError('Payment order not found', 404, 'ORDER_NOT_FOUND')
-    if (order.status === 'PAID') return 'paid' as const
+    const settled = settledResult(order.status)
+    if (settled) return settled
 
     const spaceIds = Array.from(new Set(order.bookings.map(booking => booking.spaceId))).sort()
     for (const spaceId of spaceIds) {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${spaceId}))`
     }
 
-    const bookingIds = order.bookings.map(booking => booking.id)
-    for (const booking of order.bookings) {
-      const conflict = await tx.booking.findFirst({
-        where: {
-          id: { notIn: bookingIds },
+    // A payment can land after the hold expired (StreamPay keeps links open past the window
+    // we ask for), so expired and failed holds are confirmable too, provided the slot is
+    // still free.
+    const payable = order.bookings.filter(booking => (CONFIRMABLE_BOOKING_STATUSES as readonly string[]).includes(booking.status))
+    const payableIds = payable.map(booking => booking.id)
+    // One query for every session rather than one per session: a long programme would
+    // otherwise spend its whole budget here while money sits unconfirmed.
+    const conflict = payable.length > 0 && Boolean(await tx.booking.findFirst({
+      where: {
+        id: { notIn: payableIds },
+        status: 'CONFIRMED',
+        OR: payable.map(booking => ({
           unitId: booking.unitId,
-          status: 'CONFIRMED',
           startTime: { lt: booking.endTime },
           endTime: { gt: booking.startTime },
+        })),
+      },
+      select: { id: true },
+    }))
+
+    if (conflict || payable.length === 0) {
+      await tx.paymentOrder.update({
+        where: { id: order.id },
+        data: {
+          status: 'REFUND_PENDING',
+          paidAt: new Date(),
+          streamInvoiceId: input.invoiceId,
+          streamPaymentId: input.paymentId,
+          lastError: conflict
+            ? 'A booking conflict was detected after payment; full refund required.'
+            : 'Payment arrived for an order with no bookings left to confirm; full refund required.',
         },
-        select: { id: true },
       })
-      if (conflict) {
-        await tx.paymentOrder.update({
-          where: { id: order.id },
-          data: {
-            status: 'REFUND_PENDING',
-            paidAt: new Date(),
-            streamInvoiceId: input.invoiceId,
-            streamPaymentId: input.paymentId,
-            lastError: 'A booking conflict was detected after payment; full refund required.',
-          },
-        })
-        await tx.booking.updateMany({
-          where: { paymentOrderId: order.id, status: 'PENDING_PAYMENT' },
-          data: { status: 'PAYMENT_FAILED' },
-        })
-        await tx.paymentRefund.create({
-          data: {
-            paymentOrderId: order.id,
-            amountHalalas: order.amountHalalas,
-            reason: 'BOOKING_CONFLICT_AFTER_PAYMENT',
-            note: 'Full refund must be processed by the platform team.',
-          },
-        })
-        // The booking is being refunded in full, so the buyer keeps the right to reuse the coupon.
-        await releaseCouponRedemption(tx, order.id)
-        return 'refund_pending' as const
-      }
+      await tx.booking.updateMany({
+        where: { paymentOrderId: order.id, status: { in: [...CONFIRMABLE_BOOKING_STATUSES] } },
+        data: { status: 'PAYMENT_FAILED' },
+      })
+      await tx.paymentRefund.create({
+        data: {
+          paymentOrderId: order.id,
+          amountHalalas: order.amountHalalas,
+          reason: 'BOOKING_CONFLICT_AFTER_PAYMENT',
+          note: 'Full refund must be processed by the platform team.',
+        },
+      })
+      // The booking is being refunded in full, so the buyer keeps the right to reuse the coupon.
+      await releaseCouponRedemption(tx, order.id)
+      return 'refund_pending' as const
     }
 
     await tx.paymentOrder.update({
@@ -457,21 +566,21 @@ async function confirmPaidOrder(input: { orderId: string; invoiceId: string; pay
         paidAt: new Date(),
         streamInvoiceId: input.invoiceId,
         streamPaymentId: input.paymentId,
-        lastError: null,
+        lastError: input.note,
       },
     })
     await tx.booking.updateMany({
-      where: { paymentOrderId: order.id, status: 'PENDING_PAYMENT' },
+      where: { id: { in: payableIds } },
       data: { status: 'CONFIRMED' },
     })
     await confirmCouponRedemption(tx, order.id)
 
     const sellerNotices = new Map<string, { name: string; bookingId: string; count: number }>()
-    for (const booking of order.bookings) {
+    for (const booking of payable) {
       const current = sellerNotices.get(booking.space.sellerId)
       sellerNotices.set(booking.space.sellerId, {
         name: booking.space.name,
-        bookingId: booking.id,
+        bookingId: current?.bookingId || booking.id,
         count: (current?.count || 0) + 1,
       })
     }
@@ -487,13 +596,16 @@ async function confirmPaidOrder(input: { orderId: string; invoiceId: string; pay
           userId: order.buyerId,
           title: 'تم تأكيد الدفع والحجز',
           message: 'تم التحقق من عملية الدفع وتأكيد حجزك بنجاح.',
-          href: `/buyer/bookings/${order.bookings[0]?.id || ''}`,
+          href: `/buyer/bookings/${payable[0].id}`,
         },
       ],
     })
     return 'paid' as const
   }, {
-    isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+    // READ COMMITTED with explicit locks (the order row, then each space) rather than
+    // SERIALIZABLE: a serializable snapshot is taken before the locks are granted, so a
+    // confirmation that queued behind another would abort with a serialization failure.
+    isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
     // Money has already been taken by the time this runs, so expiring here would leave a
     // paid order unconfirmed. It gets the same generous budget as booking creation.
     maxWait: 15_000,

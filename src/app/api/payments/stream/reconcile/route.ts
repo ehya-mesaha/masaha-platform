@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { expireStalePaymentOrders } from '@/lib/streampay/service'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function GET(request: Request) {
   return runReconciliation(request)
@@ -21,11 +22,17 @@ async function runReconciliation(request: Request) {
   return NextResponse.json({ ok: true, ...result })
 }
 
+/**
+ * Accepts the dedicated reconciliation secret (the GitHub workflow) or Vercel's CRON_SECRET,
+ * which Vercel Cron sends as a bearer token when that variable is set on the project.
+ */
 function isAuthorized(header: string | null) {
-  const secret = process.env.STREAMPAY_RECONCILE_SECRET?.trim()
-  if (!secret || secret.startsWith('replace_') || !header?.startsWith('Bearer ')) return false
-  const provided = header.slice(7)
-  const expectedBytes = Buffer.from(secret)
-  const providedBytes = Buffer.from(provided)
-  return expectedBytes.length === providedBytes.length && timingSafeEqual(expectedBytes, providedBytes)
+  if (!header?.startsWith('Bearer ')) return false
+  const providedBytes = Buffer.from(header.slice(7))
+  return [process.env.STREAMPAY_RECONCILE_SECRET, process.env.CRON_SECRET].some(value => {
+    const secret = value?.trim()
+    if (!secret || secret.startsWith('replace_')) return false
+    const expectedBytes = Buffer.from(secret)
+    return expectedBytes.length === providedBytes.length && timingSafeEqual(expectedBytes, providedBytes)
+  })
 }

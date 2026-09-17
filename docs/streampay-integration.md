@@ -15,6 +15,20 @@ The production flow remains:
 
 The website must never call StreamPay with a secret from browser code. The MCP URL and MCP bearer key are not required by the live website.
 
+## StreamPay behaviour the code depends on
+
+Observed against the live organization; keep these in mind before changing the payment code.
+
+- **A `COMPLETED` payment link does not mean paid.** StreamPay also reports links that expired unpaid as `COMPLETED`, with `amount_collected_in_smallest_unit = 0` and no invoice. Payment is proven only by a `COMPLETED`, fully paid invoice whose `payment_link_id` is the order's own link. `GET /invoices?payment_link_id=…&statuses=COMPLETED` finds it, so confirmation needs neither the webhook nor the IDs in the return URL.
+- **Links stay open longer than `valid_until` asks.** A link created with a 15-minute window came back with `valid_until` three hours later. Expiring an order therefore deactivates its link, and a payment that still lands after expiry is confirmed if the slot is free, or moved to `REFUND_PENDING` if it is not.
+- **Amounts are strings with three decimals** (`"25.000"`), or a bare `"0"`.
+- **Consumer creation can fail with `PHONE_ALREADY_REGISTERED`** as well as `DUPLICATE_CONSUMER`. A payment link does not need a consumer, so checkout falls back to issuing the link without one.
+- **Prices below 1 SAR are rejected**, so a coupon may not bring the charge under that.
+
+## Hosting
+
+The database is in Supabase `ap-northeast-1` (Tokyo), so `vercel.json` pins functions to `hnd1`. Every booking and confirmation is a series of database round trips inside a transaction; from `iad1` each one crossed the Pacific and long bookings ran out of transaction time. If the database moves, move the region with it.
+
 ## Required server settings
 
 Copy the StreamPay placeholders from `.env.example` into the deployment's encrypted environment settings and replace them there. Never commit or send the real values in chat.
