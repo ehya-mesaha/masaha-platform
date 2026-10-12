@@ -125,31 +125,44 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
   })
 
   return (
-    <div className="home-search-card relative isolate mt-9 max-w-5xl rounded-2xl border border-white/35 bg-white text-[#1B1B1B] shadow-[0_28px_70px_-32px_rgba(0,0,0,.85)]">
-      <div className="flex rounded-t-2xl border-b border-[#D8D1C7] bg-[#FAF8F3] p-1.5">
-        <button
-          type="button"
-          onClick={() => {
-            setMode('program')
-            setError('')
-          }}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${mode === 'program' ? 'bg-[#0E3B34] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}
-        >
-          {isEnglish ? 'Recurring program' : 'برنامج متكرر'}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setMode('single')
-            setError('')
-          }}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${mode === 'single' ? 'bg-[#0E3B34] text-white shadow-sm' : 'text-[#5F6A61] hover:bg-white'}`}
-        >
-          {isEnglish ? 'One-time booking' : 'حجز مرة واحدة'}
-        </button>
+    <div className="home-search-card relative isolate mt-9 max-w-5xl overflow-visible rounded-2xl border border-white/35 bg-white text-[#1B1B1B] shadow-[0_28px_70px_-32px_rgba(0,0,0,.85)]">
+      <div className="program-card-header">
+        <div className="program-card-heading">
+          <span className="program-card-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path strokeLinecap="round" d="M7.5 3.5v3M16.5 3.5v3M3.5 10h17M8 14h3m-3 3h6" /></svg>
+          </span>
+          <span>
+            <strong>{isEnglish ? 'Find your space' : 'ابحث عن مساحتك'}</strong>
+            <small>{isEnglish ? 'Set your schedule and explore matching spaces' : 'حدد موعدك واكتشف المساحات المناسبة'}</small>
+          </span>
+        </div>
+        <div className="program-mode-tabs" role="group" aria-label={isEnglish ? 'Booking type' : 'نوع الحجز'}>
+          <button
+            type="button"
+            aria-pressed={mode === 'program'}
+            onClick={() => {
+              setMode('program')
+              setError('')
+            }}
+            className={`program-mode-tab ${mode === 'program' ? 'is-active' : ''}`}
+          >
+            {isEnglish ? 'Recurring program' : 'برنامج متكرر'}
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === 'single'}
+            onClick={() => {
+              setMode('single')
+              setError('')
+            }}
+            className={`program-mode-tab ${mode === 'single' ? 'is-active' : ''}`}
+          >
+            {isEnglish ? 'One-time booking' : 'حجز مرة واحدة'}
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-3">
+      <div className="program-fields grid gap-4 p-4 sm:p-5 lg:grid-cols-3">
         <Field label={isEnglish ? 'City' : 'المدينة'}>
           <SearchableSelect
             value={cityId}
@@ -198,9 +211,9 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
       </div>
 
       {mode === 'program' && (
-        <div className="border-t border-[#EEE8DC] px-4 py-4 sm:px-5">
+        <div className="program-days-section border-t px-4 py-4 sm:px-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-extrabold text-[#4D5A51]">{isEnglish ? 'Required weekdays' : 'الأيام المطلوبة'}</p>
+            <p className="program-days-label text-xs font-extrabold">{isEnglish ? 'Required weekdays' : 'الأيام المطلوبة'} <span>{isEnglish ? 'Select one or more days' : 'اختر يومًا أو أكثر'}</span></p>
             {isRestrictedRange && (
               <p className="text-[11px] font-bold text-[#9A7424]">
                 {isEnglish ? 'Only days within your chosen dates can be selected.' : 'يمكن اختيار الأيام الواقعة ضمن التواريخ المحددة فقط.'}
@@ -217,12 +230,13 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
                   disabled={disabled}
                   onClick={() => toggleDay(day.value)}
                   title={disabled ? (isEnglish ? 'This day falls outside the chosen date range' : 'هذا اليوم لا يقع ضمن التواريخ المحددة') : undefined}
-                  className={`rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+                  aria-pressed={weekdays.includes(day.value) && !disabled}
+                  className={`program-day rounded-full border px-3.5 py-2 text-xs font-bold transition ${
                     weekdays.includes(day.value) && !disabled
-                      ? 'border-[#0E3B34] bg-[#0E3B34] text-white'
+                      ? 'is-selected'
                       : disabled
-                        ? 'cursor-not-allowed border-[#E8E1D3] bg-[#F5F1E8] text-[#B5B0A2] opacity-60'
-                        : 'border-[#D8D1C7] bg-white text-[#556159] hover:border-[#B99A63]'
+                        ? 'is-disabled'
+                        : ''
                   }`}
                 >
                   {isEnglish ? day.en : day.ar}
@@ -239,25 +253,25 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
         </div>
       )}
 
-      <div className="grid gap-4 rounded-b-2xl border-t border-[#D8D1C7] bg-[#F5F1E8] p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#566259]">
-            <strong className="text-[#0E3B34]">{isEnglish ? 'Program summary' : 'ملخص البرنامج'}</strong>
-            <span>{summary.durationHours.toLocaleString('en-US')} {isEnglish ? 'hours per session' : 'ساعة لكل جلسة'}</span>
-            <span>{summary.sessions.toLocaleString('en-US')} {isEnglish ? 'sessions' : 'جلسة'}</span>
-            <span>{isEnglish ? 'Total' : 'الإجمالي'}: {summary.totalHours.toLocaleString('en-US')} {isEnglish ? 'hours' : 'ساعة'}</span>
+      <div className="program-footer grid gap-4 rounded-b-2xl border-t p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="program-summary">
+          <div className="program-summary-title">{isEnglish ? 'Booking summary' : 'ملخص الحجز'}</div>
+          <div className="program-summary-stats" aria-live="polite">
+            <span><strong>{summary.durationHours.toLocaleString('en-US')}</strong> {isEnglish ? 'hours per session' : 'ساعة لكل جلسة'}</span>
+            {mode === 'program' && <span><strong>{summary.sessions.toLocaleString('en-US')}</strong> {isEnglish ? 'sessions' : 'جلسة'}</span>}
+            <span><strong>{summary.totalHours.toLocaleString('en-US')}</strong> {isEnglish ? 'total hours' : 'إجمالي الساعات'}</span>
           </div>
           {startDate && (mode === 'single' || endDate) && (
-            <p className="mt-1 text-[11px] text-[#7A837C]">
+            <p className="program-summary-dates mt-2 text-[11px]">
               {dateFormatter.format(new Date(`${startDate}T12:00:00`))}
               {mode === 'program' && endDate ? ` - ${dateFormatter.format(new Date(`${endDate}T12:00:00`))}` : ''}
             </p>
           )}
-          <button type="button" onClick={reset} className="mt-2 text-[11px] font-bold text-[#9A7424] underline underline-offset-4">
+          <button type="button" onClick={reset} className="program-reset mt-2 text-[11px] font-bold underline underline-offset-4">
             {isEnglish ? 'Reset' : 'إعادة تعيين'}
           </button>
         </div>
-        <button type="button" onClick={submit} className="btn-primary min-h-12 rounded-xl px-7 py-3 text-sm font-extrabold">
+        <button type="button" onClick={submit} className="program-submit btn-primary min-h-12 rounded-xl px-7 py-3 text-sm font-extrabold">
           {mode === 'program'
             ? (isEnglish ? 'Show spaces available for the program' : 'عرض المساحات المتاحة للبرنامج')
             : (isEnglish ? 'Show available spaces' : 'عرض المساحات المتاحة')}
@@ -270,7 +284,7 @@ export default function RecurringSearchForm({ types, cities }: { types: SearchOp
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[11px] font-extrabold text-[#5A655D]">{label}</span>
+      <span className="program-field-label mb-1.5 block text-[11px] font-extrabold">{label}</span>
       {children}
     </label>
   )

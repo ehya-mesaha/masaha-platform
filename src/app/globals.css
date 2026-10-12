@@ -2827,9 +2827,9 @@ html[dir="rtl"] .dashboard-nav-link:not(.is-active):hover {
 :root[data-theme="dark"] {
   --bg-warm: #101E18 !important;
   --bg-warm-2: #16261F !important;
-  --border: #263831 !important;
+  --border: #344A3E !important;
   --text: #EDE7D8 !important;
-  --text-muted: #9BA69D !important;
+  --text-muted: #B7C4B8 !important;
 }
 
 [data-theme="dark"] body {
@@ -2844,6 +2844,11 @@ html[dir="rtl"] .dashboard-nav-link:not(.is-active):hover {
 [data-theme="dark"] ::selection {
   background-color: rgba(215, 182, 109, 0.28) !important;
   color: #F1ECDD !important;
+}
+
+[data-theme="dark"] :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #D7B66D;
+  outline-offset: 2px;
 }
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
@@ -3420,4 +3425,182 @@ html[dir="rtl"] .dashboard-nav-link:not(.is-active):hover {
 [data-theme="dark"] .map-canvas-attribution {
   color: #C9D2CB;
   background: rgba(16, 30, 24, 0.85);
+}
+
+/* Homepage booking search: one visual system for both themes. */
+.home-search-card {
+  --program-surface: #fff;
+  --program-raised: #f8f6f1;
+  --program-field-bg: #fff;
+  --program-border: #ded8cc;
+  --program-ink: #23332d;
+  --program-muted: #606f65;
+  --program-accent: #0e3b34;
+  --program-accent-ink: #fff;
+  --program-focus: rgba(14, 59, 52, .14);
+  background: var(--program-surface);
+  border-color: rgba(255, 255, 255, .7);
+  color: var(--program-ink);
+  box-shadow: 0 30px 75px -38px rgba(3, 25, 20, .8), 0 1px 0 rgba(255, 255, 255, .85) inset;
+}
+
+.program-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--program-border);
+  background: var(--program-raised);
+  border-radius: 1rem 1rem 0 0;
+}
+
+.program-card-heading { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+.program-card-heading strong { display: block; color: var(--program-ink); font-size: .95rem; line-height: 1.5; }
+.program-card-heading small { display: block; color: var(--program-muted); font-size: .7rem; line-height: 1.5; }
+.program-card-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1px solid rgba(14, 59, 52, .12);
+  border-radius: .8rem;
+  background: #e8eee9;
+  color: var(--program-accent);
+}
+.program-card-mark svg { width: 1.25rem; height: 1.25rem; }
+
+.program-mode-tabs {
+  display: flex;
+  flex: 0 1 25rem;
+  gap: .25rem;
+  min-width: 0;
+  padding: .25rem;
+  border: 1px solid var(--program-border);
+  border-radius: .8rem;
+  background: var(--program-surface);
+}
+.program-mode-tab {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.55rem;
+  border-radius: .6rem;
+  padding: .45rem .8rem;
+  color: var(--program-muted);
+  font-size: .78rem;
+  font-weight: 800;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.program-mode-tab:hover:not(.is-active) { background: var(--program-raised); color: var(--program-ink); }
+.program-mode-tab.is-active {
+  background: var(--program-accent);
+  color: var(--program-accent-ink);
+  box-shadow: 0 5px 13px -7px rgba(0, 0, 0, .45);
+}
+
+.program-fields { row-gap: 1.1rem; }
+.program-field-label { color: var(--program-muted); font-size: .72rem; }
+.home-search-card .program-field {
+  min-height: 2.85rem;
+  border-color: var(--program-border);
+  background: var(--program-field-bg);
+  color: var(--program-ink);
+  font-size: .8rem;
+}
+.home-search-card .program-field:hover { border-color: #b7a88d; }
+.home-search-card .program-field:focus,
+.home-search-card .program-field:focus-visible {
+  border-color: var(--program-accent);
+  box-shadow: 0 0 0 3px var(--program-focus);
+}
+.home-search-card .program-field::placeholder { color: var(--program-muted); opacity: .8; }
+.home-search-card .program-field svg { color: var(--program-muted); }
+.home-search-card [role="listbox"] { color: var(--program-ink); }
+
+.program-days-section { border-color: var(--program-border); }
+.program-days-label { color: var(--program-ink); }
+.program-days-label span { margin-inline-start: .35rem; color: var(--program-muted); font-size: .7rem; font-weight: 500; }
+.program-day {
+  min-height: 2.25rem;
+  border-color: var(--program-border);
+  background: var(--program-surface);
+  color: var(--program-muted);
+}
+.program-day:hover:not(:disabled):not(.is-selected) { border-color: #b99a63; background: var(--program-raised); color: var(--program-ink); }
+.program-day.is-selected { border-color: var(--program-accent); background: var(--program-accent); color: var(--program-accent-ink); }
+.program-day.is-disabled { opacity: .45; cursor: not-allowed; background: var(--program-raised); }
+
+.program-footer { border-color: var(--program-border); background: var(--program-raised); }
+.program-summary-title { color: var(--program-ink); font-size: .72rem; font-weight: 800; }
+.program-summary-stats { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.program-summary-stats span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .25rem;
+  padding: .35rem .6rem;
+  border: 1px solid var(--program-border);
+  border-radius: .5rem;
+  background: var(--program-surface);
+  color: var(--program-muted);
+  font-size: .68rem;
+}
+.program-summary-stats strong { color: var(--program-ink); font-size: .84rem; }
+.program-summary-dates { color: var(--program-muted); }
+.program-reset { color: #8a682b; }
+.program-reset:hover { color: var(--program-ink); }
+.program-submit { white-space: normal; max-width: 100%; }
+
+.home-search-card :is(button, input):focus-visible {
+  outline: 2px solid #b99a63;
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .home-search-card {
+  --program-surface: #192923;
+  --program-raised: #20332b;
+  --program-field-bg: #12231d;
+  --program-border: #3b5144;
+  --program-ink: #f3f0e7;
+  --program-muted: #bdc9bd;
+  --program-accent: #d4b678;
+  --program-accent-ink: #17251e;
+  --program-focus: rgba(212, 182, 120, .2);
+  background: var(--program-surface) !important;
+  border-color: #43594a !important;
+  color: var(--program-ink) !important;
+  box-shadow: 0 32px 76px -34px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .06) inset !important;
+}
+[data-theme="dark"] .home-search-card .program-field {
+  background: var(--program-field-bg) !important;
+  border-color: var(--program-border) !important;
+  color: var(--program-ink) !important;
+}
+[data-theme="dark"] .home-search-card .program-field:hover { border-color: #8d9d83 !important; }
+[data-theme="dark"] .home-search-card .program-field:focus,
+[data-theme="dark"] .home-search-card .program-field:focus-visible {
+  border-color: var(--program-accent) !important;
+  box-shadow: 0 0 0 3px var(--program-focus) !important;
+}
+[data-theme="dark"] .home-search-card .program-field::placeholder { color: var(--program-muted) !important; opacity: .75; }
+[data-theme="dark"] .program-card-mark { background: #2c4436; border-color: #46614b; color: #e5cb93; }
+[data-theme="dark"] .home-search-card .program-mode-tab.is-active,
+[data-theme="dark"] .home-search-card .program-day.is-selected { background: var(--program-accent) !important; border-color: var(--program-accent) !important; color: var(--program-accent-ink) !important; }
+[data-theme="dark"] .home-search-card .program-summary-stats span { background: #192923 !important; }
+[data-theme="dark"] .program-reset { color: #e5cb93; }
+[data-theme="dark"] .home-search-card input[type="date"],
+[data-theme="dark"] .home-search-card input[type="time"] { color-scheme: dark; }
+[data-theme="dark"] .home-search-card .text-\[\#9B9D98\],
+[data-theme="dark"] .home-search-card .placeholder\:text-\[\#9B9D98\]::placeholder { color: #bdc9bd !important; }
+[data-theme="dark"] .home-search-card .bg-\[\#FAF8F3\] { background: #24372d !important; }
+[data-theme="dark"] .home-search-card .border-\[\#EEE8DC\] { border-color: var(--program-border) !important; }
+[data-theme="dark"] .home-search-card [role="option"][aria-selected="true"] { background: #345e4d !important; color: #fff !important; }
+
+/* Green logo artwork loses contrast on dark navigation and form surfaces. */
+[data-theme="dark"] .brand-logo[src*="-green.png"] { filter: brightness(0) invert(.93); }
+
+@media (max-width: 680px) {
+  .program-card-header { align-items: stretch; flex-direction: column; gap: .8rem; padding: .9rem 1rem; }
+  .program-mode-tabs { flex-basis: auto; width: 100%; }
+  .program-submit { width: 100%; }
 }
