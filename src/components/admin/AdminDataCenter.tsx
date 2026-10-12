@@ -189,7 +189,7 @@ export default function AdminDataCenter({
         </div>
       </section>
 
-      <section className="mb-6 rounded-[26px] border border-[#B99A63]/30 bg-gradient-to-br from-[#F7F1E4] to-white p-5 lg:p-6">
+      <section className="surface-highlight mb-6 rounded-[26px] border border-[#B99A63]/30 bg-gradient-to-br from-[#F7F1E4] to-white p-5 lg:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#0E3B34] text-[#D7B66D] shadow-lg shadow-[#0E3B34]/15">

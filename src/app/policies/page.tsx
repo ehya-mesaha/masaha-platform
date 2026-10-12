@@ -158,7 +158,7 @@ function LegalDocument({
   const meta = DOCUMENT_META[document.id]
   return (
     <article id={document.id} className="scroll-mt-28 overflow-hidden rounded-[28px] border border-[#D8D1C7] bg-white shadow-[0_24px_70px_rgba(17,40,32,.055)]">
-      <header className="border-b border-[#E5DDD1] bg-gradient-to-l from-[#F8F3E8] to-white px-6 py-7 sm:px-8">
+      <header className="surface-highlight border-b border-[#E5DDD1] bg-gradient-to-l from-[#F8F3E8] to-white px-6 py-7 sm:px-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-extrabold tracking-wider text-[#B1872E]">الوثيقة {meta.number}</p>

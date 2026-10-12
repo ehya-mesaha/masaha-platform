@@ -50,7 +50,7 @@ export default function StepServices({ form, update, serviceCatalog = [] }: Step
       <h2 className="font-display mb-1 text-xl font-extrabold text-[#1B1B1B]">إضافة خدمات المساحة</h2>
       <p className="mb-6 text-sm text-[#5F6764]">الخدمات اختيارية بالكامل. فعّل فقط ما تقدمه لمساحتك وحدد سعره؛ الدليل يُحدَّث تلقائيًا كلما أضافت الإدارة خدمة جديدة.</p>
 
-      <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#D8D1C7] bg-gradient-to-l from-[#F5F1E8] to-[#FBF8F0] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="surface-highlight mb-5 flex flex-col gap-4 rounded-2xl border border-[#D8D1C7] bg-gradient-to-l from-[#F5F1E8] to-[#FBF8F0] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-[#0E3B34] text-white shadow-sm">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>

@@ -96,7 +96,7 @@ export default function SearchableSelect({
   }
 
   return (
-    <div ref={rootRef} className={`relative ${className}`} onKeyDown={handleKeyDown}>
+    <div ref={rootRef} className={`searchable-select relative ${className}`} onKeyDown={handleKeyDown}>
       <button
         type="button"
         disabled={disabled}
@@ -109,12 +109,12 @@ export default function SearchableSelect({
       >
         <span
           data-no-translate={selected ? 'true' : undefined}
-          className={`min-w-0 flex-1 truncate ${selected ? '' : 'text-[#9B9D98]'}`}
+          className={`min-w-0 flex-1 truncate ${selected ? '' : 'select-placeholder'}`}
         >
           {selected?.name || allLabel || placeholder}
         </span>
         <svg
-          className={`h-4 w-4 flex-none text-[#6A756D] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`select-chevron h-4 w-4 flex-none transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -126,7 +126,7 @@ export default function SearchableSelect({
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-[calc(100%+8px)] z-[80] overflow-hidden rounded-xl border border-[#D8D1C7] bg-white shadow-[0_24px_55px_-24px_rgba(9,44,39,.5)]">
+        <div className="searchable-select-menu absolute inset-x-0 top-[calc(100%+8px)] z-[80] overflow-hidden rounded-xl border border-[#D8D1C7] bg-white shadow-[0_24px_55px_-24px_rgba(9,44,39,.5)]">
           <div className="border-b border-[#EEE8DC] p-2.5">
             <div className="flex items-center gap-2 rounded-lg border border-[#D8D1C7] bg-[#FAF8F3] px-3 focus-within:border-[#0E3B34] focus-within:ring-2 focus-within:ring-[#0E3B34]/10">
               <svg className="h-4 w-4 flex-none text-[#7A837C]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
