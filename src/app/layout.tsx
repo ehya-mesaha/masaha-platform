@@ -8,6 +8,7 @@ import LanguageProvider from '@/components/i18n/LanguageProvider'
 import ThemeProvider from '@/components/theme/ThemeProvider'
 import FirstVisitOpening from '@/components/layout/FirstVisitOpening'
 import ExperienceLayer from '@/components/layout/ExperienceLayer'
+import { TEMPORARY_BLANK_PAGE } from '@/lib/temporary-blank-page'
 import {
   BRAND_NAME_AR, BRAND_NAME_EN, LEGAL_NAME_AR, LEGAL_NAME_EN,
   SITE_TITLE_AR, SITE_TITLE_EN, SITE_URL,
@@ -89,6 +90,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  if (TEMPORARY_BLANK_PAGE) {
+    return (
+      <html lang="ar" data-temporary-blank>
+        <body style={{ margin: 0, minHeight: '100vh', background: '#fff' }} />
+      </html>
+    )
+  }
+
   const cookieStore = await cookies()
   const locale = cookieStore.get('masaha_locale')?.value === 'en' ? 'en' : 'ar'
   const dir = locale === 'en' ? 'ltr' : 'rtl'
