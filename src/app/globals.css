@@ -82,8 +82,6 @@ body::before {
   mask-image: linear-gradient(to bottom, black, transparent 75%);
 }
 
-html[data-temporary-blank] body::before { display: none; }
-
 html[dir="ltr"] body {
   font-family: var(--font-cairo), 'Segoe UI', Tahoma, Arial, system-ui, sans-serif;
 }

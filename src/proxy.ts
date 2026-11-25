@@ -6,14 +6,10 @@ import {
   SESSION_MAX_AGE_SECONDS,
   sessionCookieOptions,
 } from '@/lib/session'
-import { TEMPORARY_BLANK_PAGE } from '@/lib/temporary-blank-page'
 
 const SESSION_REFRESH_AFTER_SECONDS = 60 * 60 * 24
 
 export async function proxy(req: NextRequest) {
-  // Let the root layout render the same blank page for protected routes, too.
-  if (TEMPORARY_BLANK_PAGE) return NextResponse.next()
-
   const token = req.cookies.get(SESSION_COOKIE_NAME)?.value
   const pathname = req.nextUrl.pathname
 
